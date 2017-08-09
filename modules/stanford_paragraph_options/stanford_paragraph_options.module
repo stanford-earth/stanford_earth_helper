@@ -1,0 +1,74 @@
+<?php
+
+/**
+ * @file
+ * Contains stanford_paragraph_options.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use \Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_help().
+ */
+function stanford_paragraph_options_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the stanford_paragraph_options module.
+    case 'help.page.stanford_paragraph_options':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Limit the options of paragraph types for fields.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function stanford_paragraph_options_form_node_complex_page_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Keyed array of field name => array of paragraph types to exclude.
+  $fields = [
+    'field_component' => [
+      //      'stanford_buttons',
+      'stanford_callout_block',
+      //      'stanford_callout_blocks',
+      //      'stanford_callout_filmstrip',
+      //      'stanford_callout_text',
+      //      'stanford_deep_link_banner',
+      //      'stanford_double_filmstrip',
+      'stanford_expandable_card',
+      'stanford_film_card',
+      //      'stanford_fw_banner',
+      'stanford_highlight_card',
+      'stanford_icon_link',
+      //      'stanford_link_banner',
+      'stanford_link_item',
+      'stanford_paragraph_callout_card',
+      //      'stanford_paragraph_callout_cards',
+      //      'stanford_paragraph_feat_blocks',
+      //      'stanford_paragraph_filmstrip',
+      //      'stanford_paragraph_hero_banner',
+      //      'stanford_paragraph_quote_banner',
+      'stanford_paragraph_simple_block',
+      //      'stanford_postcard',
+      //      'stanford_section_header',
+      'stanford_slide',
+      //      'stanford_tall_filmstrip',
+      'stanford_tall_slide',
+      //      'stanford_textarea',
+      //      'stanford_video',
+      //      'stanford_viewfield',
+      //      'stanford_wysiwyg',
+    ],
+  ];
+  foreach ($fields as $field => $unwanted_types) {
+    if (isset($form[$field])) {
+      foreach ($unwanted_types as $type) {
+        unset($form[$field]['widget']['add_more']["add_more_button_$type"]);
+      }
+    }
+  }
+}
