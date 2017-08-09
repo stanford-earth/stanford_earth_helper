@@ -1,0 +1,10 @@
+{
+  "name": "stanford-earth/stanford_paragraph_options",
+  "description": "Stanford Paragraph Options",
+  "type": "stanford-module",
+  "homepage": "https://github.com/stanford-earth/stanford_paragraph_options",
+  "authors": [],
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+  "require": {}
+}
