@@ -1,8 +1,8 @@
 {
-  "name": "stanford-earth/stanford_paragraph_options",
-  "description": "Stanford Paragraph Options",
+  "name": "stanford-earth/stanford_earth_helper",
+  "description": "Stanford Earth Helper",
   "type": "stanford-module",
-  "homepage": "https://github.com/stanford-earth/stanford_paragraph_options",
+  "homepage": "https://github.com/stanford-earth/stanford_earth_helper",
   "authors": [],
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
