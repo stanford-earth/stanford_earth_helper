@@ -24,10 +24,11 @@ function stanford_paragraph_options_help($route_name, RouteMatchInterface $route
   }
 }
 
+
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter().
  */
-function stanford_paragraph_options_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+function stanford_paragraph_options_form_node_complex_page_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   // Keyed array of field name => array of paragraph types to exclude.
   $fields = [
     'field_component' => [
