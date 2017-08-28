@@ -24,7 +24,6 @@ function stanford_paragraph_options_help($route_name, RouteMatchInterface $route
   }
 }
 
-
 /**
  * Implements hook_form_FORM_ID_alter().
  */
