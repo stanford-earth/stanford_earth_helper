@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * stanford_news_helper.module
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function stanford_news_helper_form_node_stanford_news_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form_state->getFormObject()->getEntity()->isNew()) {
+    $subform = &$form['field_s_news_media_contacts']['widget'][0]['subform'];
+    $subform['field_highlight_cards_title']['widget'][0]['value']['#default_value'] = 'Media Contacts';
+    $card_subform = &$subform['field_p_section_highlight_cards']['widget'][0]['subform'];
+    $card_subform['field_p_highlight_card_title']['widget'][0]['value']['#default_value'] = 'Ker Than';
+    $card_subform['field_p_highlight_card_subtitle']['widget'][0]['value']['#default_value'] = '650-723-9820';
+    $card_subform['field_p_highlight_card_desc']['widget'][0]['value']['#default_value'] = 'kerthan@stanford.edu';
+  }
+}
