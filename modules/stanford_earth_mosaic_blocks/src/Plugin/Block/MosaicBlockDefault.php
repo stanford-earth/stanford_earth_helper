@@ -123,7 +123,7 @@ class MosaicBlockDefault extends BlockBase {
                 'link' => 'https://www.stanford.edu',
               ],
             ],
-            'link' => 'https://stanford.edu/',
+            'link' => 'https://pangea.stanford.edu/people/all?tmp_associate_type=regular&tmp_affiliation=all&field_ses_phd_student_value=All&name=',
             'title' => $this->t('Faculty'),
           ],
           [
@@ -169,7 +169,7 @@ class MosaicBlockDefault extends BlockBase {
                 'link' => 'https://www.stanford.edu',
               ],
             ],
-            'link' => 'https://stanford.edu/',
+            'link' => 'https://pangea.stanford.edu/alumni',
             'title' => $this->t('Alumni'),
           ],
         ],
