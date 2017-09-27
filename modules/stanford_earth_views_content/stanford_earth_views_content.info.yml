@@ -1,0 +1,22 @@
+name: 'Stanford Earth Views Content'
+description: 'Node type to embed views on.'
+type: module
+core: 8.x
+dependencies:
+  - allowed_formats
+  - ds
+  - entity_reference_revisions
+  - field
+  - menu_ui
+  - node
+  - panelizer
+  - paragraphs
+  - path
+  - rdf
+  - scheduler
+  - stanford_paragraph_hero_banner
+  - stanford_paragraph_video
+  - text
+  - user
+  - viewfield
+  - views

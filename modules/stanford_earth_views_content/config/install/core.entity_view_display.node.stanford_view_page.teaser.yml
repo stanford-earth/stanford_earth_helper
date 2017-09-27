@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - core.entity_view_mode.node.teaser
+    - field.field.node.stanford_view_page.field_s_view_lower_body
+    - field.field.node.stanford_view_page.field_s_view_top_media
+    - field.field.node.stanford_view_page.field_s_view_view
+    - node.type.stanford_view_page
+  module:
+    - user
+id: node.stanford_view_page.teaser
+targetEntityType: node
+bundle: stanford_view_page
+mode: teaser
+content:
+  links:
+    weight: 100
+    region: content
+hidden:
+  field_s_view_lower_body: true
+  field_s_view_top_media: true
+  field_s_view_view: true

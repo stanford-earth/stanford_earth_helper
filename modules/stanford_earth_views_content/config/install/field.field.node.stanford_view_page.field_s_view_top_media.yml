@@ -1,0 +1,134 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_s_view_top_media
+    - node.type.stanford_view_page
+    - paragraphs.paragraphs_type.stanford_paragraph_hero_banner
+    - paragraphs.paragraphs_type.stanford_video
+  module:
+    - entity_reference_revisions
+id: node.stanford_view_page.field_s_view_top_media
+field_name: field_s_view_top_media
+entity_type: node
+bundle: stanford_view_page
+label: 'Top Media'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:paragraph'
+  handler_settings:
+    negate: 0
+    target_bundles:
+      stanford_paragraph_hero_banner: stanford_paragraph_hero_banner
+      stanford_video: stanford_video
+    target_bundles_drag_drop:
+      inline_image:
+        weight: 36
+        enabled: false
+      stanford_buttons:
+        weight: 37
+        enabled: false
+      stanford_callout_block:
+        weight: 38
+        enabled: false
+      stanford_callout_blocks:
+        weight: 39
+        enabled: false
+      stanford_callout_filmstrip:
+        weight: 40
+        enabled: false
+      stanford_callout_text:
+        weight: 41
+        enabled: false
+      stanford_column_text:
+        weight: 42
+        enabled: false
+      stanford_deep_link_banner:
+        weight: 43
+        enabled: false
+      stanford_double_filmstrip:
+        weight: 44
+        enabled: false
+      stanford_expandable_card:
+        weight: 45
+        enabled: false
+      stanford_film_card:
+        weight: 46
+        enabled: false
+      stanford_fw_banner:
+        weight: 47
+        enabled: false
+      stanford_highlight_card:
+        weight: 48
+        enabled: false
+      stanford_icon_link:
+        weight: 49
+        enabled: false
+      stanford_link_banner:
+        weight: 50
+        enabled: false
+      stanford_link_item:
+        weight: 51
+        enabled: false
+      stanford_paragraph_callout_card:
+        weight: 52
+        enabled: false
+      stanford_paragraph_callout_cards:
+        weight: 53
+        enabled: false
+      stanford_paragraph_feat_blocks:
+        weight: 54
+        enabled: false
+      stanford_paragraph_filmstrip:
+        weight: 55
+        enabled: false
+      stanford_paragraph_hero_banner:
+        enabled: true
+        weight: 56
+      stanford_paragraph_quote_banner:
+        weight: 57
+        enabled: false
+      stanford_paragraph_simple_block:
+        weight: 58
+        enabled: false
+      stanford_postcard:
+        weight: 59
+        enabled: false
+      stanford_responsive_image:
+        weight: 60
+        enabled: false
+      stanford_section_header:
+        weight: 61
+        enabled: false
+      stanford_section_highlight_cards:
+        weight: 62
+        enabled: false
+      stanford_slat:
+        weight: 63
+        enabled: false
+      stanford_slide:
+        weight: 64
+        enabled: false
+      stanford_tall_filmstrip:
+        weight: 65
+        enabled: false
+      stanford_tall_slide:
+        weight: 66
+        enabled: false
+      stanford_textarea:
+        weight: 67
+        enabled: false
+      stanford_video:
+        enabled: true
+        weight: 68
+      stanford_viewfield:
+        weight: 69
+        enabled: false
+      stanford_wysiwyg:
+        weight: 70
+        enabled: false
+field_type: entity_reference_revisions
