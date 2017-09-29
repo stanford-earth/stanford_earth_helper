@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_mosaic_blocks\Plugin\Block;
 
 use Drupal\Core\Block\BlockBase;
+use Drupal\Core\Url\Link;
 
 /**
  * Provides a 'Hello' Block.
@@ -74,7 +75,7 @@ class MosaicBlockDefault extends BlockBase {
                 // 'link' => 'https://www.stanford.edu',
               ],
             ],
-            'link' => 'https://stanford.edu/',
+            'link' => '/community/students',
             'title' => 'Students',
           ],
           [
@@ -123,7 +124,7 @@ class MosaicBlockDefault extends BlockBase {
                 // 'link' => 'https://www.stanford.edu',
               ],
             ],
-            'link' => 'https://pangea.stanford.edu/people/all?tmp_associate_type=regular&tmp_affiliation=all&field_ses_phd_student_value=All&name=',
+            'link' => '/community/faculty',
             'title' => $this->t('Faculty'),
           ],
           [
@@ -169,7 +170,7 @@ class MosaicBlockDefault extends BlockBase {
                 // 'link' => 'https://www.stanford.edu',
               ],
             ],
-            'link' => 'https://pangea.stanford.edu/alumni',
+            'link' => '/community/alumni',
             'title' => $this->t('Alumni'),
           ],
         ],
