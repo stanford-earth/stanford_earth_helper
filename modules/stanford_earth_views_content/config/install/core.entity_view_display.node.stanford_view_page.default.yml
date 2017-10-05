@@ -110,7 +110,7 @@ third_party_settings:
         weight: 0
         layout: layout_ibeam
         layout_settings: {  }
-        page_title: ''
+        page_title: '[node:title]'
         storage_type: panelizer_default
         storage_id: 'node:stanford_view_page:default:default'
         builder: standard
