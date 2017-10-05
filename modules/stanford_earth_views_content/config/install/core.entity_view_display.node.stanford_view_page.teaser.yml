@@ -1,9 +1,10 @@
 langcode: en
-status: true
+status: false
 dependencies:
   config:
     - core.entity_view_mode.node.teaser
     - field.field.node.stanford_view_page.field_s_view_lower_body
+    - field.field.node.stanford_view_page.field_s_view_top_body
     - field.field.node.stanford_view_page.field_s_view_top_media
     - field.field.node.stanford_view_page.field_s_view_view
     - node.type.stanford_view_page
@@ -19,5 +20,6 @@ content:
     region: content
 hidden:
   field_s_view_lower_body: true
+  field_s_view_top_body: true
   field_s_view_top_media: true
   field_s_view_view: true

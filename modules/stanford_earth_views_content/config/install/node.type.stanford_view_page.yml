@@ -22,7 +22,7 @@ third_party_settings:
     unpublish_revision: false
 name: 'View Page'
 type: stanford_view_page
-description: ''
+description: 'Place a view on a page with some top and bottom context.'
 help: ''
 new_revision: false
 preview_mode: 1
