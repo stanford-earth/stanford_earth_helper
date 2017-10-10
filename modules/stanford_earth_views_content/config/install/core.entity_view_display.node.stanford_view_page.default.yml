@@ -1,0 +1,162 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.stanford_view_page.field_s_view_lower_body
+    - field.field.node.stanford_view_page.field_s_view_top_body
+    - field.field.node.stanford_view_page.field_s_view_top_media
+    - field.field.node.stanford_view_page.field_s_view_view
+    - node.type.stanford_view_page
+  module:
+    - entity_reference_revisions
+    - panelizer
+    - text
+    - user
+    - viewfield
+third_party_settings:
+  panelizer:
+    enable: true
+    custom: false
+    allow: false
+    default: default
+    displays:
+      default:
+        blocks:
+          15ae95f6-5b29-4449-a7fb-29b94b587be7:
+            id: 'entity_field:node:field_s_view_lower_body'
+            label: 'Lower Body'
+            provider: ctools_block
+            label_display: '0'
+            formatter:
+              label: hidden
+              type: text_default
+              settings: {  }
+              third_party_settings: {  }
+              weight: 0
+              region: content
+            region: first
+            weight: 1
+            context_mapping:
+              entity: '@panelizer.entity_context:entity'
+            uuid: 15ae95f6-5b29-4449-a7fb-29b94b587be7
+          e43ad672-923e-4524-966a-0e9e7a8f9291:
+            id: 'entity_field:node:field_s_view_top_body'
+            label: 'Top Body'
+            provider: ctools_block
+            label_display: '0'
+            formatter:
+              label: hidden
+              type: text_default
+              settings: {  }
+              third_party_settings: {  }
+              weight: 0
+              region: content
+            region: first
+            weight: -1
+            context_mapping:
+              entity: '@panelizer.entity_context:entity'
+            uuid: e43ad672-923e-4524-966a-0e9e7a8f9291
+          03a330a3-239c-40e3-b1fb-46c51b94ec01:
+            id: 'entity_field:node:field_s_view_top_media'
+            label: 'Top Media'
+            provider: ctools_block
+            label_display: '0'
+            formatter:
+              label: hidden
+              type: entity_reference_revisions_entity_view
+              settings:
+                view_mode: default
+                link: ''
+              third_party_settings: {  }
+              weight: 0
+              region: content
+            region: hero
+            weight: -1
+            context_mapping:
+              entity: '@panelizer.entity_context:entity'
+            uuid: 03a330a3-239c-40e3-b1fb-46c51b94ec01
+          cf0c42cb-450f-4e4a-806d-c483011f8a52:
+            id: 'entity_field:node:field_s_view_view'
+            label: View
+            provider: ctools_block
+            label_display: '0'
+            formatter:
+              label: hidden
+              type: viewfield_default
+              settings:
+                view_title: hidden
+                always_build_output: 0
+                empty_view_title: hidden
+              third_party_settings: {  }
+              weight: 0
+              region: content
+            region: first
+            weight: 0
+            context_mapping:
+              entity: '@panelizer.entity_context:entity'
+            uuid: cf0c42cb-450f-4e4a-806d-c483011f8a52
+          02469cef-ca84-49bb-b501-292c80cba866:
+            id: page_title_block
+            label: 'Page title'
+            provider: core
+            label_display: '0'
+            region: first
+            weight: -2
+            uuid: 02469cef-ca84-49bb-b501-292c80cba866
+            context_mapping: {  }
+        id: panels_variant
+        label: Default
+        uuid: 54b8daf9-dbdf-44cb-b545-19f9f6236491
+        weight: 0
+        layout: layout_ibeam
+        layout_settings: {  }
+        page_title: '[node:title]'
+        storage_type: panelizer_default
+        storage_id: 'node:stanford_view_page:default:default'
+        builder: standard
+        pattern: panelizer
+        static_context: {  }
+id: node.stanford_view_page.default
+targetEntityType: node
+bundle: stanford_view_page
+mode: default
+content:
+  field_s_view_lower_body:
+    type: text_default
+    weight: 5
+    region: content
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+  field_s_view_top_body:
+    weight: 3
+    label: hidden
+    settings: {  }
+    third_party_settings: {  }
+    type: text_default
+    region: content
+  field_s_view_top_media:
+    type: entity_reference_revisions_entity_view
+    weight: 1
+    region: content
+    label: hidden
+    settings:
+      view_mode: default
+      link: ''
+    third_party_settings: {  }
+  field_s_view_view:
+    type: viewfield_default
+    weight: 4
+    region: content
+    label: hidden
+    settings:
+      view_title: hidden
+      always_build_output: 0
+      empty_view_title: hidden
+    third_party_settings: {  }
+  links:
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden: {  }

@@ -1,0 +1,29 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_s_view_lower_body
+    - node.type.stanford_view_page
+  module:
+    - allowed_formats
+    - text
+third_party_settings:
+  allowed_formats:
+    content_editor: '0'
+    markdown: '0'
+    basic_html: '0'
+    restricted_html: '0'
+    full_html: '0'
+    plain_text: '0'
+id: node.stanford_view_page.field_s_view_lower_body
+field_name: field_s_view_lower_body
+entity_type: node
+bundle: stanford_view_page
+label: 'Lower Body'
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long
