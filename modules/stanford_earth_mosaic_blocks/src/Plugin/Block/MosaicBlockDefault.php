@@ -52,7 +52,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('A smiling man at a computer.'),
+                  '#alt' => $this->t('A smiling blonde woman.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student2.png',
                 ],
@@ -68,7 +68,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('A dark haired woman sitting cross legged and smiling.'),
+                  '#alt' => $this->t('A dark haired woman with a camera in a bamboo forest.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student4.png',
                 ],
@@ -101,7 +101,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('A smiling mature woman.'),
+                  '#alt' => $this->t('A smiling man with glasses.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac2.png',
                 ],
@@ -155,7 +155,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('Blonde woman in a blue shirt.'),
+                  '#alt' => $this->t('Smiling man with plant.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum3.png',
                 ],
