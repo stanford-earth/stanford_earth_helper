@@ -27,7 +27,7 @@ class MosaicBlockDefault extends BlockBase {
         'is_centered' => FALSE,
         'is_featured' => FALSE,
         'subhead' => '<p>' . $this->t('We are scientists! Undergraduates, graduate students, professors, educational staff, and alumni working professionals. We build community in our field trips, classes, and cocurriculars. We care about the Earth and making its resources available to people across the globe now and in the future.') . '</p>',
-        'superhead' => $this->t('Our Community.'),
+        'superhead' => $this->t('Our Community'),
         'tiles' => [
           [
             'cite_name' => $this->t('Elsa M. Ordway'),
@@ -40,7 +40,7 @@ class MosaicBlockDefault extends BlockBase {
               '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/studentmain.png',
             ],
             'is_right' => TRUE,
-            'quote' => $this->t('We face enormous hrdles as a society in dealing with a changing climate, over extraction of resources, and biodiversity loss. Still, I remain optimistic in our ability to identify and design solutions.'),
+            'quote' => $this->t('We face enormous hurdles as a society in dealing with a changing climate, over extraction of resources, and biodiversity loss. Still, I remain optimistic about our ability to identify and design solutions.'),
             'items' => [
               [
                 'image' => [
@@ -52,7 +52,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('A smiling man at a computer.'),
+                  '#alt' => $this->t('A smiling blonde woman.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student2.png',
                 ],
@@ -68,7 +68,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('A dark haired woman sitting cross legged and smiling.'),
+                  '#alt' => $this->t('A dark haired woman with a camera in a bamboo forest.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student4.png',
                 ],
@@ -101,7 +101,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('A smiling mature woman.'),
+                  '#alt' => $this->t('A smiling man with glasses.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac2.png',
                 ],
@@ -155,7 +155,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
-                  '#alt' => $this->t('Blonde woman in a blue shirt.'),
+                  '#alt' => $this->t('Smiling man with plant.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum3.png',
                 ],
