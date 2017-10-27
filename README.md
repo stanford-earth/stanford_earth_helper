@@ -1,5 +1,5 @@
 # [Stanford Earth Helper](https://github.com/stanford-earth/stanford_earth_helper)
-##### Version: 8.x-1.x
+##### Version: 8.x-1.0-alpha1
 
 Maintainers: [jbickar](https://github.com/jbickar), [sherakama](https://github.com/sherakama)  
 
@@ -31,18 +31,6 @@ Troubleshooting
 ---
 
 If you are experiencing issues with this module try reverting the feature first. If you are still experiencing issues try posting an issue on the GitHub issues page.
-
-Developer
----
-
-If you wish to develop on this module you will most likely need to compile some new css. Please use the sass structure provided and compile with the sass compiler packaged in this module. To install:
-
-```
-npm install
-grunt watch
- or
-grunt devmode
-```
 
 Contribution / Collaboration
 ---
