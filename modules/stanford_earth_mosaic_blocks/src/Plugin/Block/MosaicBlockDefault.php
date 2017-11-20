@@ -80,7 +80,7 @@ class MosaicBlockDefault extends BlockBase {
             'title' => 'Students',
           ],
           [
-            'cite_name' => $this->t('Biondo Biondi.'),
+            'cite_name' => $this->t('Biondo Biondi. '),
             'cite_title' => $this->t('Geophysics Professor.'),
             'classes' => 'photo-mosaic--thumbs-up',
             'description' => $this->t('We discover and teach.'),
