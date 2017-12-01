@@ -11,7 +11,9 @@ use Drupal\Core\Form\FormStateInterface;
  * Implements hook_form_FORM_ID_alter().
  */
 function stanford_news_helper_form_node_stanford_news_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  if ($form_state->getFormObject()->getEntity()->isNew()) {
+  $fobject = $form_state->getFormObject();
+  $fentity = $fobject->getEntity();
+  if ($fentity->isNew()) {
     $subform = &$form['field_s_news_media_contacts']['widget'][0]['subform'];
     $subform['field_highlight_cards_title']['widget'][0]['value']['#default_value'] = 'Media Contacts';
     $card_subform = &$subform['field_p_section_highlight_cards']['widget'][0]['subform'];
@@ -19,4 +21,16 @@ function stanford_news_helper_form_node_stanford_news_form_alter(&$form, FormSta
     $card_subform['field_p_highlight_card_subtitle']['widget'][0]['value']['#default_value'] = '650-723-9820';
     $card_subform['field_p_highlight_card_desc']['widget'][0]['value']['#default_value'] = 'kerthan@stanford.edu';
   }
+
+  // Check if we are adding a new hero banner and set the variant to tall.
+  $input = $form_state->getUserInput();
+  if (isset($input['_triggering_element_name']) && $input['_triggering_element_name'] == "field_s_news_top_media_stanford_paragraph_hero_banner_add_more") {
+    $top_media_widget = $form['field_s_news_top_media']['widget'];
+    foreach ($top_media_widget as $key => $value) {
+     if (is_numeric($key)) {
+        $form['field_s_news_top_media']['widget'][$key]['subform']['field_p_hero_banner_tall']['widget']['#default_value'] = ["is-tall" => 'is-tall'];
+      }
+    }
+  }
+
 }
