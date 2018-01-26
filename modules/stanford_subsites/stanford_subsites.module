@@ -1,0 +1,131 @@
+<?php
+/**
+ * @file
+ *
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityStorageException;
+use Drupal\Component\Utility\Unicode;
+use Drupal\Component\Utility\Html;
+use Drupal\system\Entity\Menu;
+use Drupal\menu_link_content\Entity\MenuLinkContent;
+
+/**
+ * Change view mode to subsite for nodes with a reference.
+ * @param [type]          $view_mode [description]
+ * @param EntityInterface $entity    [description]
+ * @param [type]          $context   [description]
+ */
+function stanford_subsites_entity_view_mode_alter(&$view_mode, EntityInterface $entity, $context) {
+  $subsite_ref = stanford_subsites_get_parent_reference_from_entity($entity);
+
+  if (
+    $entity->getEntityTypeId() == 'node'
+    && !empty($subsite_ref)
+  ) {
+    $view_mode = 'subsite';
+  }
+}
+
+/**
+ * Create a menu when creating a subsite.
+ * @param  [type] $entity [description]
+ * @return [type]         [description]
+ */
+function stanford_subsites_entity_insert(EntityInterface $entity) {
+
+  // See if they field is available.
+  $subsite_ref = stanford_subsites_get_parent_reference_from_entity($entity);
+
+  // We only want new parent subsite nodes. If the subsite ref field is empty
+  // then we assume that the new subsite node is a parent node.
+  if ($entity->getEntityTypeId() !== "node"
+    || $entity->bundle() !== "stanford_subsite"
+    || !empty($subsite_ref)
+  ) {
+    return;
+  }
+
+  $title = $entity->label();
+  $menu_id = stanford_subsites_get_menu_id_from_title($title);
+
+  $menu = Menu::load($menu_id);
+  if (!$menu) {
+    $menu = Menu::create([
+      'id' => $menu_id,
+      'label' => $title . ' Menu',
+      'description' => 'A subsite menu',
+    ])->save();
+    drupal_set_message("Created new menu for subsite", 'success', FALSE);
+
+    $menu_link = MenuLinkContent::create([
+      'title' => 'Overview',
+      'link' => ['uri' => 'internal:/node/' . $entity->Id()],
+      'menu_name' => $menu_id,
+      'expanded' => TRUE,
+    ]);
+    $menu_link->save();
+
+  }
+  else {
+    drupal_set_message("No subsite menu created. Menu ID already exists.", 'error', FALSE);
+  }
+
+}
+
+/**
+ * [stanford_subsites_get_parent_reference_from_entity description]
+ * @param  EntityInterface $entity [description]
+ * @return [type]                  [description]
+ */
+function stanford_subsites_get_parent_reference_from_entity(EntityInterface $entity) {
+  $subsite_ref = FALSE;
+
+  try {
+    $field = $entity->get('field_s_subsite_ref');
+    if (!empty($field)) {
+      $subsite_ref = $field->getValue();
+    }
+  }
+  catch (Exception $e) {
+  }
+
+  return $subsite_ref;
+}
+
+/**
+ * [stanford_subsites_get_menu_id_from_title description]
+ * @param  [type] $title [description]
+ * @return [type]        [description]
+ */
+function stanford_subsites_get_menu_id_from_title($title) {
+  if (empty($title)) {
+    throw new Exception("No title sent to get_menu_id function");
+  }
+
+  $filter = [' ' => '_', '-' => '_', '/' => '_', '[' => '', ']' => ''];
+  return Html::cleanCssIdentifier(strtolower($title), $filter);
+}
+
+/**
+ * When an entity is deleted and it is a subsite run cleanup.
+ * @param  EntityInterface $entity [description]
+ * @return [type]                  [description]
+ */
+function stanford_subsites_entity_delete(EntityInterface $entity) {
+  if ($entity->getEntityTypeId() !== "node"
+    || $entity->bundle() !== "stanford_subsite"
+  ) {
+    return;
+  }
+
+  $title = $entity->label();
+  $menu_id = stanford_subsites_get_menu_id_from_title($title);
+  $menu = Menu::load($menu_id);
+
+  if ($menu) {
+    $menu->delete();
+    drupal_set_message("Deleted subsite menu", 'success', FALSE);
+  }
+}

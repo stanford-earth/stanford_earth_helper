@@ -2,7 +2,7 @@ name: MRC Display Suite Blocks
 description: Place blocks in node displays
 core: 8.x
 type: module
-version: VERSION
+version: 8.x
 package: Stanford MRC
 dependencies:
   - block
