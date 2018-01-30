@@ -25,22 +25,34 @@ class SubsiteMenuBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function build() {
+
     $node = \Drupal::routeMatch()->getParameter('node');
-    if ($node instanceof NodeInterface) {
-      $subsite_parent_id = $node->get('field_s_subsite_ref')->getValue();
-      if (is_numeric($subsite_parent_id[0]['target_id']) && $subsite_parent_id[0]['target_id'] > 0) {
-        $subsite_parent_node = Node::load($subsite_parent_id[0]['target_id']);
-      }
+    $subsite_parent_id = $node->get('field_s_subsite_ref')->getValue();
+
+    // If node is the subsite parent itself.
+    if (
+      !empty($node->get('field_s_subsite_ref')) &&
+      $node->getType() == "stanford_subsite" &&
+      empty($subsite_parent_id[0]['target_id'])
+    ) {
+      $subsite_parent_node = $node;
     }
+
+    // If node has a reference to a subsite use that reference.
+    if (
+      isset($subsite_parent_id[0]['target_id']) &&
+      is_numeric($subsite_parent_id[0]['target_id']) &&
+      $subsite_parent_id[0]['target_id'] > 0
+    ) {
+      $subsite_parent_node = Node::load($subsite_parent_id[0]['target_id']);
+    }
+
     // No node... No problems.
     if (empty($subsite_parent_node)) {
       return;
     }
 
-    $title = $subsite_parent_node->label();
-    $menu_id = stanford_subsites_get_menu_id_from_title($title);
-
-    $menu_name = $menu_id;
+    $menu_name = stanford_subsites_get_menu_name_from_subsite_entity($subsite_parent_node);
     $menu_tree = \Drupal::menuTree();
 
     $parameters = $menu_tree->getCurrentRouteMenuTreeParameters($menu_name);

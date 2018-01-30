@@ -10,6 +10,9 @@ use Drupal\Component\Utility\Unicode;
 use Drupal\Component\Utility\Html;
 use Drupal\system\Entity\Menu;
 use Drupal\menu_link_content\Entity\MenuLinkContent;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeTypeInterface;
+use Drupal\node\NodeInterface;
 
 /**
  * Change view mode to subsite for nodes with a reference.
@@ -48,7 +51,7 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
   }
 
   $title = $entity->label();
-  $menu_id = stanford_subsites_get_menu_id_from_title($title);
+  $menu_id = stanford_subsites_get_menu_name_from_subsite_entity($entity);
 
   $menu = Menu::load($menu_id);
   if (!$menu) {
@@ -66,9 +69,9 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
       'expanded' => TRUE,
     ]);
     $menu_link->save();
-
   }
-  else {
+
+  if (!$menu) {
     drupal_set_message("No subsite menu created. Menu ID already exists.", 'error', FALSE);
   }
 
@@ -99,13 +102,12 @@ function stanford_subsites_get_parent_reference_from_entity(EntityInterface $ent
  * @param  [type] $title [description]
  * @return [type]        [description]
  */
-function stanford_subsites_get_menu_id_from_title($title) {
-  if (empty($title)) {
-    throw new Exception("No title sent to get_menu_id function");
+function stanford_subsites_get_menu_name_from_subsite_entity($entity) {
+  if (empty($entity)) {
+    throw new Exception("No entity sent to function");
   }
 
-  $filter = [' ' => '_', '-' => '_', '/' => '_', '[' => '', ']' => ''];
-  return Html::cleanCssIdentifier(strtolower($title), $filter);
+  return "subsite_menu_" . $entity->id();
 }
 
 /**
@@ -120,12 +122,54 @@ function stanford_subsites_entity_delete(EntityInterface $entity) {
     return;
   }
 
-  $title = $entity->label();
-  $menu_id = stanford_subsites_get_menu_id_from_title($title);
+  $menu_id = stanford_subsites_get_menu_name_from_subsite_entity($entity);
   $menu = Menu::load($menu_id);
 
   if ($menu) {
     $menu->delete();
     drupal_set_message("Deleted subsite menu", 'success', FALSE);
   }
+}
+
+/**
+ * [menu_ui_form_node_form_alter description]
+ * @param  [type]             $form       [description]
+ * @param  FormStateInterface $form_state [description]
+ * @return [type]                         [description]
+ */
+function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form_state) {
+  // Generate a list of possible parents (not including this link or descendants).
+  // @todo This must be handled in a #process handler.
+  $node = $form_state->getFormObject()->getEntity();
+  $defaults = menu_ui_get_menu_link_defaults($node);
+  /** @var \Drupal\node\NodeTypeInterface $node_type */
+  $node_type = $node->type->entity;
+  /** @var \Drupal\Core\Menu\MenuParentFormSelectorInterface $menu_parent_selector */
+  $menu_parent_selector = \Drupal::service('menu.parent_form_selector');
+  $menu_names = menu_ui_get_menus();
+  $type_menus = $node_type->getThirdPartySetting('menu_ui', 'available_menus', ['main']);
+  $available_menus = [];
+  $query = Drupal::service('entity.query')
+    ->get('node')
+    ->condition('type', "stanford_subsite")
+    ->condition('field_s_subsite_ref', NULL, 'IS NULL');
+  $entity_ids = $query->execute();
+  foreach ($entity_ids as $sub_id) {
+    $available_menus["subsite_menu_" . $sub_id] = $menu_names["subsite_menu_" . $sub_id];
+  }
+
+  foreach ($type_menus as $menu) {
+    $available_menus[$menu] = $menu_names[$menu];
+  }
+
+  if ($defaults['id']) {
+    $default = $defaults['menu_name'] . ':' . $defaults['parent'];
+  }
+  else {
+    $default = $node_type->getThirdPartySetting('menu_ui', 'parent', 'main:');
+  }
+  $parent_element = $menu_parent_selector->parentSelectElement($default, $defaults['id'], $available_menus);
+
+  $form['menu']['link']['menu_parent'] = array_merge($form['menu']['link']['menu_parent'], $parent_element);
+
 }
