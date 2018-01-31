@@ -107,7 +107,7 @@ function stanford_subsites_get_menu_name_from_subsite_entity($entity) {
     throw new Exception("No entity sent to function");
   }
 
-  return "subsite_menu_" . $entity->id();
+  return "subsite-menu-" . $entity->id();
 }
 
 /**
@@ -155,7 +155,7 @@ function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form
     ->condition('field_s_subsite_ref', NULL, 'IS NULL');
   $entity_ids = $query->execute();
   foreach ($entity_ids as $sub_id) {
-    $available_menus["subsite_menu_" . $sub_id] = $menu_names["subsite_menu_" . $sub_id];
+    $available_menus["subsite-menu-" . $sub_id] = $menu_names["subsite-menu-" . $sub_id];
   }
 
   foreach ($type_menus as $menu) {

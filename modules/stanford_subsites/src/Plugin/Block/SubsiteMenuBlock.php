@@ -56,6 +56,8 @@ class SubsiteMenuBlock extends BlockBase {
     $menu_tree = \Drupal::menuTree();
 
     $parameters = $menu_tree->getCurrentRouteMenuTreeParameters($menu_name);
+    // $parameters->setMaxDepth(2);
+    $parameters->onlyEnabledLinks();
     $tree = $menu_tree->load($menu_name, $parameters);
     $manipulators = array(
       // Only show links that are accessible for the current user.
