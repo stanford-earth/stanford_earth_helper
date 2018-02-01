@@ -53,7 +53,12 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
   $title = $entity->label();
   $menu_id = stanford_subsites_get_menu_name_from_subsite_entity($entity);
 
-  $menu = Menu::load($menu_id);
+  try {
+    $menu = Menu::load($menu_id);
+  }
+  catch (Exception $e) {
+    // Could not load menu. Ok.
+  }
   if (!$menu) {
     $menu = Menu::create([
       'id' => $menu_id,
@@ -66,7 +71,7 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
       'title' => 'Overview',
       'link' => ['uri' => 'internal:/node/' . $entity->Id()],
       'menu_name' => $menu_id,
-      'expanded' => TRUE,
+      'expanded' => FALSE,
     ]);
     $menu_link->save();
   }
