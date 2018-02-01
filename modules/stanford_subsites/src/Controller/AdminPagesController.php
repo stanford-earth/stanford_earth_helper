@@ -26,7 +26,7 @@ class AdminPagesController extends ControllerBase {
    * @return [type] [description]
    */
   public function settingsPage() {
-    $content = "<h1>Hi</h1>";
+    $content = "<h1>Hi</h1><p>Nothing to see here yet.</p>";
     return [
       '#markup' => $content,
     ];

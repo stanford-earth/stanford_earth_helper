@@ -5,3 +5,6 @@
 'administer stanford_subsites':
   title: Administer Stanford Subsites
   description: Allow users to set and change configuration settings.
+'create top level stanford_subsites':
+  title: Create Top Level Stanford Subsites
+  description: Allow users to create parent subsites.

@@ -13,6 +13,7 @@ use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\NodeTypeInterface;
 use Drupal\node\NodeInterface;
+use Drupal\user\Entity\User;
 
 /**
  * Change view mode to subsite for nodes with a reference.
@@ -97,6 +98,7 @@ function stanford_subsites_get_parent_reference_from_entity(EntityInterface $ent
     }
   }
   catch (Exception $e) {
+    return FALSE;
   }
 
   return $subsite_ref;
@@ -143,38 +145,83 @@ function stanford_subsites_entity_delete(EntityInterface $entity) {
  * @return [type]                         [description]
  */
 function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form_state) {
+
+  $user = \Drupal::currentUser();
+
+  // Only alter if the subsite reference field is available.
+  if (!isset($form['field_s_subsite_ref'])) {
+    return;
+  }
+
+  // Add the subsite menus to the list of available menus to choose from.
+  stanford_subsites_form_node_form_alter_available_menus($form, $form_state);
+
+  // Restrict the parent settings group from anyone without permission.
+  $subsiteadmin = $user->hasPermission('create top level stanford_subsites');
+  foreach ($form['#group_children'] as $field_name => $group) {
+    if ($group == "group_subsite_settings") {
+      $form[$field_name]['#access'] = $subsiteadmin;
+    }
+  }
+
+}
+
+/**
+ * Alters the available menus to allow for unselected subsite menus.
+ * @param  [type]             $form       [description]
+ * @param  FormStateInterface $form_state [description]
+ * @return [type]                         [description]
+ */
+function stanford_subsites_form_node_form_alter_available_menus(&$form, FormStateInterface $form_state) {
+
+  $user = \Drupal::currentUser();
+  $subsiteadmin = $user->hasPermission('create top level stanford_subsites');
+
   // Generate a list of possible parents (not including this link or descendants).
-  // @todo This must be handled in a #process handler.
   $node = $form_state->getFormObject()->getEntity();
   $defaults = menu_ui_get_menu_link_defaults($node);
+
   /** @var \Drupal\node\NodeTypeInterface $node_type */
   $node_type = $node->type->entity;
+
   /** @var \Drupal\Core\Menu\MenuParentFormSelectorInterface $menu_parent_selector */
   $menu_parent_selector = \Drupal::service('menu.parent_form_selector');
   $menu_names = menu_ui_get_menus();
   $type_menus = $node_type->getThirdPartySetting('menu_ui', 'available_menus', ['main']);
   $available_menus = [];
+
+  // Get a list of all subsite parents.
   $query = Drupal::service('entity.query')
     ->get('node')
     ->condition('type', "stanford_subsite")
     ->condition('field_s_subsite_ref', NULL, 'IS NULL');
   $entity_ids = $query->execute();
+
+  // Add them to the possibility list.
   foreach ($entity_ids as $sub_id) {
     $available_menus["subsite-menu-" . $sub_id] = $menu_names["subsite-menu-" . $sub_id];
   }
 
-  foreach ($type_menus as $menu) {
-    $available_menus[$menu] = $menu_names[$menu];
+  // Add each of the content type configued menus to the list as well but only
+  // if the user is a subsite admin. This generally restricts the main menu from
+  // content authors.
+  if ($subsiteadmin) {
+    foreach ($type_menus as $menu) {
+      $available_menus[$menu] = $menu_names[$menu];
+    }
   }
 
+  // Default.
   if ($defaults['id']) {
     $default = $defaults['menu_name'] . ':' . $defaults['parent'];
   }
   else {
     $default = $node_type->getThirdPartySetting('menu_ui', 'parent', 'main:');
   }
+
+  // The parent item in the list of options.
   $parent_element = $menu_parent_selector->parentSelectElement($default, $defaults['id'], $available_menus);
 
+  // Put it all together in one glorious drop down.
   $form['menu']['link']['menu_parent'] = array_merge($form['menu']['link']['menu_parent'], $parent_element);
-
 }
