@@ -41,7 +41,10 @@
           // Fade the menu options form in.
           $("#edit-menu--2").fadeIn();
           // Select the subsite parent from the list of drop downs.
-          $("#edit-menu-menu-parent option[value='subsite-menu-" + val + ":']").attr('selected', 'selected');
+          $("#edit-menu-menu-parent option")
+            .removeAttr('selected')
+            .filter('[value="subsite-menu-' + val + ':"]')
+            .attr('selected', 'selected');
           // Set the title of the field to what is already in the page title.
           $("#edit-menu-title").val($("#edit-title-0-value").val());
         }
