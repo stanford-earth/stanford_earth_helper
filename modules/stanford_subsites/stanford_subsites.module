@@ -218,6 +218,9 @@ function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form
     }
   }
 
+  // Attach javascript functionality.
+  $form['#attached']['library'][] = "stanford_subsites/subsites_node_form";
+
 }
 
 /**
