@@ -17,6 +17,7 @@ use Drupal\node\NodeInterface;
 use Drupal\node\Entity\Node;
 use Drupal\user\Entity\User;
 use Drupal\taxonomy\Entity\Term;
+use Drupal\pathauto\Entity\PathautoPattern;
 
 /**
  * Change view mode to subsite for nodes with a reference.
@@ -131,7 +132,7 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
   if (!$menu) {
     $menu = Menu::create([
       'id' => $menu_id,
-      'label' => $title . ' Menu',
+      'label' => $title,
       'description' => 'A subsite menu',
     ])->save();
     drupal_set_message("Created new menu for subsite", 'success', FALSE);
@@ -305,4 +306,60 @@ function stanford_subsites_form_node_form_alter_available_menus(&$form, FormStat
 
   // Put it all together in one glorious drop down.
   $form['menu']['link']['menu_parent'] = array_merge($form['menu']['link']['menu_parent'], $parent_element);
+}
+
+function stanford_subsites_pathauto_pattern_alter(&$pattern, array $context) {
+  $node = FALSE;
+
+  // Only act on nodes.
+  if ($context['module'] !== 'node') {
+    return;
+  }
+
+  // Check for reference field.
+  $node = $context['data']['node'];
+  $fields = $node->getFields();
+  if (!isset($fields['field_s_subsite_ref'])) {
+    return;
+  }
+
+  // Get the value of the field.
+  try {
+    $field = $node->get('field_s_subsite_ref');
+    $value = $field->getValue();
+  }
+  catch(Exception $e) {
+    return;
+  }
+
+  // Parent.
+  if (empty($value)) {
+    $pattern = PathautoPattern::load('stanford_subsites_parent');
+    return $pattern;
+  }
+
+  // Child.
+  if ($value[0]['target_id']) {
+
+    // Menu structure.
+    $menu_field = $node->get('menu_link');
+    $menu_value = $menu_field->getValue();
+    if (empty($menu_value[0]['target_id'])) {
+      // Top level child.
+      $pattern = PathautoPattern::load('stanford_subsites');
+    }
+    else {
+      $menu_link = MenuLinkContent::load($menu_value[0]['target_id']);
+      if ($menu_link->getParentId() !== "") {
+        // Nested child.
+        $pattern = PathautoPattern::load('subsite_nested_child');
+      }
+      else {
+        // Top level child.
+        $pattern = PathautoPattern::load('stanford_subsites');
+      }
+    }
+  }
+
+  return $pattern;
 }
