@@ -16,7 +16,7 @@
 stanford_subsites.settings:
   path: 'admin/config/subsites'
   defaults:
-    _controller: '\Drupal\stanford_subsites\Controller\AdminPagesController::settingsPage'
+    _form: '\Drupal\stanford_subsites\Form\SubsiteSettingsForm'
     _title: 'Subsites Settings'
   requirements:
     _permission: 'administer stanford_subsites'

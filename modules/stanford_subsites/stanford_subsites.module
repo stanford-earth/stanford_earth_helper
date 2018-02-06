@@ -16,6 +16,7 @@ use Drupal\node\NodeTypeInterface;
 use Drupal\node\NodeInterface;
 use Drupal\node\Entity\Node;
 use Drupal\user\Entity\User;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Change view mode to subsite for nodes with a reference.
@@ -64,8 +65,28 @@ function stanford_subsites_entity_view(array &$build, EntityInterface $entity, E
     return;
   }
 
-  $brand = $subsite->get('field_s_subsite_branding_color')->getValue()[0]['value'];
+  $brand = $subsite->get('field_s_subsite_branding_color')->getValue();
+  if (isset($brand[0]['value'])) {
+    $color = $brand[0]['value'];
+    $css = stanford_subsites_generate_css($color);
+    // Cheat and attach it to the head.
+    $build['#attached']['html_head'][] = [
+      [
+        '#tag' => 'style',
+        '#value' => $css,
+        '#attributes' => ['type' => 'text/css'],
+      ],
+      'branding-css',
+    ];
+  }
+}
 
+/**
+ * [stanford_subsites_generate_css description]
+ * @param  [type] $brand [description]
+ * @return [type]        [description]
+ */
+function stanford_subsites_generate_css($brand) {
   // Colored header box.
   $css = ".layout--aiur #floating_sidebar__wrapper .floating_sidebar h2 { background-color: $brand; }\n";
   // Subnav left border on active.
@@ -73,16 +94,7 @@ function stanford_subsites_entity_view(array &$build, EntityInterface $entity, E
   // Nav link color.
   $css .= ".layout--aiur #floating_sidebar__wrapper .menu li a { color: $brand; }\n";
 
-  // Cheat and attach it to the head.
-  $build['#attached']['html_head'][] = [
-    [
-      '#tag' => 'style',
-      '#value' => $css,
-      '#attributes' => ['type' => 'text/css'],
-    ],
-    'branding-css',
-  ];
-
+  return $css;
 }
 
 /**
@@ -104,6 +116,7 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
     return;
   }
 
+  // CREATE A Menu to store the subsite navigation.
   $title = $entity->label();
   $menu_id = stanford_subsites_get_menu_name_from_subsite_entity($entity);
 
@@ -113,6 +126,8 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
   catch (Exception $e) {
     // Could not load menu. Ok.
   }
+
+  // If the menu already exists just skip creation. Something went wrong.
   if (!$menu) {
     $menu = Menu::create([
       'id' => $menu_id,
@@ -134,6 +149,15 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
     drupal_set_message("No subsite menu created. Menu ID already exists.", 'error', FALSE);
   }
 
+  // If taxonomy term creation is enabled do so.
+  $config = \Drupal::config('stanford_subsites.settings');
+  if ($config->get('create_taxonomy_term')) {
+    $vocab = $config->get('create_taxonomy_vocabulary');
+    $term = Term::create([
+      'name' => $title,
+      'vid' => $vocab,
+    ])->save();
+  }
 }
 
 /**
