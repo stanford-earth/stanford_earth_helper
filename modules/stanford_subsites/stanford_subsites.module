@@ -226,6 +226,7 @@ function stanford_subsites_entity_delete(EntityInterface $entity) {
 function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form_state) {
 
   $user = \Drupal::currentUser();
+  $subsiteadmin = $user->hasPermission('create top level stanford_subsites');
 
   // Only alter if the subsite reference field is available.
   if (!isset($form['field_s_subsite_ref'])) {
@@ -233,7 +234,6 @@ function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form
   }
 
   // Restrict the parent settings group from anyone without permission.
-  $subsiteadmin = $user->hasPermission('create top level stanford_subsites');
   foreach ($form['#group_children'] as $field_name => $group) {
     if ($group == "group_subsite_settings") {
       $form[$field_name]['#access'] = $subsiteadmin;
