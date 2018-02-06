@@ -9,7 +9,6 @@ use Drupal\Core\Url;
 use Drupal\Core\Link;
 use Drupal\taxonomy\Entity\Vocabulary;
 
-
 /**
  * Implements a ChosenConfig form.
  */

@@ -1,0 +1,5 @@
+services:
+  stanford_subsites.menu_overrider:
+    class: \Drupal\stanford_subsites\Overrides\StanfordSubsitesMenuConfigOverrides
+    tags:
+      - {name: config.factory.override, priority: 5}

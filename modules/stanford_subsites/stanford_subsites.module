@@ -218,7 +218,7 @@ function stanford_subsites_entity_delete(EntityInterface $entity) {
 }
 
 /**
- * [menu_ui_form_node_form_alter description]
+ * [stanford_subsites_form_node_form_alter description]
  * @param  [type]             $form       [description]
  * @param  FormStateInterface $form_state [description]
  * @return [type]                         [description]
@@ -231,9 +231,6 @@ function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form
   if (!isset($form['field_s_subsite_ref'])) {
     return;
   }
-
-  // Add the subsite menus to the list of available menus to choose from.
-  stanford_subsites_form_node_form_alter_available_menus($form, $form_state);
 
   // Restrict the parent settings group from anyone without permission.
   $subsiteadmin = $user->hasPermission('create top level stanford_subsites');
@@ -249,65 +246,11 @@ function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form
 }
 
 /**
- * Alters the available menus to allow for unselected subsite menus.
- * @param  [type]             $form       [description]
- * @param  FormStateInterface $form_state [description]
- * @return [type]                         [description]
+ * [stanford_subsites_pathauto_pattern_alter description]
+ * @param  [type] $pattern [description]
+ * @param  array  $context [description]
+ * @return [type]          [description]
  */
-function stanford_subsites_form_node_form_alter_available_menus(&$form, FormStateInterface $form_state) {
-
-  $user = \Drupal::currentUser();
-  $subsiteadmin = $user->hasPermission('create top level stanford_subsites');
-
-  // Generate a list of possible parents (not including this link or descendants).
-  $node = $form_state->getFormObject()->getEntity();
-  $defaults = menu_ui_get_menu_link_defaults($node);
-
-  /** @var \Drupal\node\NodeTypeInterface $node_type */
-  $node_type = $node->type->entity;
-
-  /** @var \Drupal\Core\Menu\MenuParentFormSelectorInterface $menu_parent_selector */
-  $menu_parent_selector = \Drupal::service('menu.parent_form_selector');
-  $menu_names = menu_ui_get_menus();
-  $type_menus = $node_type->getThirdPartySetting('menu_ui', 'available_menus', ['main']);
-  $available_menus = [];
-
-  // Get a list of all subsite parents.
-  $query = Drupal::service('entity.query')
-    ->get('node')
-    ->condition('type', "stanford_subsite")
-    ->condition('field_s_subsite_ref', NULL, 'IS NULL');
-  $entity_ids = $query->execute();
-
-  // Add them to the possibility list.
-  foreach ($entity_ids as $sub_id) {
-    $available_menus["subsite-menu-" . $sub_id] = $menu_names["subsite-menu-" . $sub_id];
-  }
-
-  // Add each of the content type configued menus to the list as well but only
-  // if the user is a subsite admin. This generally restricts the main menu from
-  // content authors.
-  if ($subsiteadmin) {
-    foreach ($type_menus as $menu) {
-      $available_menus[$menu] = $menu_names[$menu];
-    }
-  }
-
-  // Default.
-  if ($defaults['id']) {
-    $default = $defaults['menu_name'] . ':' . $defaults['parent'];
-  }
-  else {
-    $default = $node_type->getThirdPartySetting('menu_ui', 'parent', 'main:');
-  }
-
-  // The parent item in the list of options.
-  $parent_element = $menu_parent_selector->parentSelectElement($default, $defaults['id'], $available_menus);
-
-  // Put it all together in one glorious drop down.
-  $form['menu']['link']['menu_parent'] = array_merge($form['menu']['link']['menu_parent'], $parent_element);
-}
-
 function stanford_subsites_pathauto_pattern_alter(&$pattern, array $context) {
   $node = FALSE;
 
@@ -328,7 +271,7 @@ function stanford_subsites_pathauto_pattern_alter(&$pattern, array $context) {
     $field = $node->get('field_s_subsite_ref');
     $value = $field->getValue();
   }
-  catch(Exception $e) {
+  catch (Exception $e) {
     return;
   }
 
