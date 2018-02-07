@@ -135,7 +135,7 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
       'label' => $title,
       'description' => 'A subsite menu',
     ])->save();
-    drupal_set_message("Created new menu for subsite", 'success', FALSE);
+    drupal_set_message("Created new menu for subsite", 'status', FALSE);
 
     $menu_link = MenuLinkContent::create([
       'title' => 'Overview',
