@@ -26,6 +26,8 @@ class StanfordSubsitesMenuConfigOverrides implements ConfigFactoryOverrideInterf
    */
   protected $overrides;
 
+  protected $called;
+
   /**
    * [createInstance description]
    * @param  ContainerInterface  $container   [description]
@@ -56,12 +58,16 @@ class StanfordSubsitesMenuConfigOverrides implements ConfigFactoryOverrideInterf
   public function loadOverrides($names) {
     $overrides = array();
 
-    // Prevent nested callbacks and multiple db query calls.
-    if ($this->overrides) {
-      return $this->overrides;
-    }
-
     if (in_array('node.type.stanford_subsite', $names)) {
+
+      // The SQL query below caused an infinite loop. This prevents it.
+      $this->called++;
+      if ($this->called > 1) {
+        if ($this->overrides) {
+          return $this->overrides;
+        }
+        return $overrides;
+      }
 
       // Always add the main menu.
       $available_menus = ['main'];
@@ -70,6 +76,7 @@ class StanfordSubsitesMenuConfigOverrides implements ConfigFactoryOverrideInterf
       $query->condition('type', "stanford_subsite")
             ->condition('field_s_subsite_ref', NULL, 'IS NULL');
       $entity_ids = $query->execute();
+
       foreach ($entity_ids as $sub_id) {
         $available_menus[] = "subsite-menu-" . $sub_id;
       }
@@ -81,8 +88,10 @@ class StanfordSubsitesMenuConfigOverrides implements ConfigFactoryOverrideInterf
           ],
         ],
       ];
+
+      $this->overrides = $overrides;
     }
-    $this->overrides = $overrides;
+
     return $overrides;
   }
 
