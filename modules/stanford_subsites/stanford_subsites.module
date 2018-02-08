@@ -4,45 +4,69 @@
  *
  */
 
+use Drupal\Component\Utility\Unicode;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageException;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-use Drupal\Component\Utility\Unicode;
-use Drupal\Component\Utility\Html;
-use Drupal\system\Entity\Menu;
-use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\menu_link_content\Entity\MenuLinkContent;
 use Drupal\node\NodeTypeInterface;
 use Drupal\node\NodeInterface;
 use Drupal\node\Entity\Node;
-use Drupal\user\Entity\User;
-use Drupal\taxonomy\Entity\Term;
 use Drupal\pathauto\Entity\PathautoPattern;
+use Drupal\system\Entity\Menu;
+use Drupal\taxonomy\Entity\Term;
+use Drupal\user\Entity\User;
 
 /**
- * Change view mode to subsite for nodes with a reference.
- * @param [type]          $view_mode [description]
- * @param EntityInterface $entity    [description]
- * @param [type]          $context   [description]
+ * Change view mode to subsite for nodes with a subsite reference.
+ *
+ * @param string $view_mode
+ *   The view mode key.
+ * @param EntityInterface $entity
+ *   An entity object.
+ * @param mixed $context
+ *   Contextual parameters about the current situation.
  */
 function stanford_subsites_entity_view_mode_alter(&$view_mode, EntityInterface $entity, $context) {
+
+  // Try and fetch the subsite by this reference helper function.
   $subsite_ref = stanford_subsites_get_parent_reference_from_entity($entity);
 
+  // If the item we are currently working on is not a node we don't
+  // want to change its view mode.
+  // If the item does not have a reference to a subsite, leave its
+  // view mode alone.
   if (
     $entity->getEntityTypeId() == 'node'
     && !empty($subsite_ref)
   ) {
+    // All conditions are met. Force the view mode of subsite.
     $view_mode = 'subsite';
   }
 }
 
 /**
- * [stanford_subsites_enity_view description]
- * @param  [type] $entity [description]
- * @return [type]         [description]
+ * Alter the output when viewing subsites.
+ *
+ * Currently only adds some additional css markup to the output.
+ *
+ * @param array $build
+ *   Render array.
+ * @param EntityInterface $entity
+ *   The entity object being viewed.
+ * @param EntityViewDisplayInterface $display
+ *   See Drupal API docs about this one.
+ * @param string $view_mode
+ *   The string key view mode in use.
+ *
+ * @return null
+ *   Hopefully null as we want to directly modify $build.
  */
 function stanford_subsites_entity_view(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
 
+  // The information we seek is in a subsite. Provide storage.
   $subsite = NULL;
 
   // Only work on node entities.
@@ -55,22 +79,25 @@ function stanford_subsites_entity_view(array &$build, EntityInterface $entity, E
     $subsite = $entity;
   }
 
-  // Check to see if there is a subsite reference from a parent item.
+  // Check to see if there is a subsite reference to a parent item by way of
+  // the subsite_ref field.
   $subsite_ref = stanford_subsites_get_parent_reference_from_entity($entity);
   if (isset($subsite_ref['target_id']) && is_numeric($subsite_ref['target_id'])) {
     $subsite = Node::load($subsite_ref['target_id']);
   }
 
-  // Only work if there is a branding color available.
+  // We only need to continue if there is a branding color available.
   if (!isset($subsite->field_s_subsite_branding_color)) {
     return;
   }
 
+  // Get the color code information and generage some dynamic css.
   $brand = $subsite->get('field_s_subsite_branding_color')->getValue();
   if (isset($brand[0]['value'])) {
     $color = $brand[0]['value'];
     $css = stanford_subsites_generate_css($color);
-    // Cheat and attach it to the head.
+    // Cheat and attach it to the head as this is the way to avoid having
+    // to declare a library asset.
     $build['#attached']['html_head'][] = [
       [
         '#tag' => 'style',
@@ -83,9 +110,13 @@ function stanford_subsites_entity_view(array &$build, EntityInterface $entity, E
 }
 
 /**
- * [stanford_subsites_generate_css description]
- * @param  [type] $brand [description]
- * @return [type]        [description]
+ * Helper function to standardize css generation for branding colors.
+ *
+ * @param string $brand
+ *   Rgba or hex color codes.
+ *
+ * @return string
+ *   CSS code.
  */
 function stanford_subsites_generate_css($brand) {
   // Colored header box.
@@ -100,12 +131,16 @@ function stanford_subsites_generate_css($brand) {
 
 /**
  * Create a menu when creating a subsite.
- * @param  [type] $entity [description]
- * @return [type]         [description]
+ *
+ * @param EntityInterface $entity
+ *   The entity being created.
+ *
+ * @return null
+ *   Shouldn't have a return.
  */
 function stanford_subsites_entity_insert(EntityInterface $entity) {
 
-  // See if they field is available.
+  // See if the refrence field is available and has value.
   $subsite_ref = stanford_subsites_get_parent_reference_from_entity($entity);
 
   // We only want new parent subsite nodes. If the subsite ref field is empty
@@ -117,19 +152,23 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
     return;
   }
 
-  // CREATE A Menu to store the subsite navigation.
+  // Create A Menu to store the subsite navigation.
   $title = $entity->label();
   $menu_id = stanford_subsites_get_menu_name_from_subsite_entity($entity);
 
+  // Check to see if the menu exists first.
+  // It shouldn't but People do strange things ok!
   try {
     $menu = Menu::load($menu_id);
   }
   catch (Exception $e) {
-    // Could not load menu. Ok.
+    // Could not load menu. Ok. Carry on.
   }
 
-  // If the menu already exists just skip creation. Something went wrong.
+  // If the menu already exists just skip creation.
+  // There may be a valid reason the menu exists but it is likely an error.
   if (!$menu) {
+    // Menu does not exist. Make it.
     $menu = Menu::create([
       'id' => $menu_id,
       'label' => $title,
@@ -137,6 +176,8 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
     ])->save();
     drupal_set_message("Created new menu for subsite", 'status', FALSE);
 
+    // Create a default link called "Overview" for the menu so that it has
+    // something in it by default.
     $menu_link = MenuLinkContent::create([
       'title' => 'Overview',
       'link' => ['uri' => 'internal:/node/' . $entity->Id()],
@@ -145,9 +186,8 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
     ]);
     $menu_link->save();
   }
-
-  if (!$menu) {
-    drupal_set_message("No subsite menu created. Menu ID already exists.", 'error', FALSE);
+  else {
+    drupal_set_message("Menu already existed. Failed to create new one.", 'error', FALSE);
   }
 
   // If taxonomy term creation is enabled do so.
@@ -162,9 +202,16 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
 }
 
 /**
- * [stanford_subsites_get_parent_reference_from_entity description]
- * @param  EntityInterface $entity [description]
- * @return [type]                  [description]
+ * Helper function to get the entity id of the parent subsite.
+ *
+ * Fetches and returns the entity_id of the parent subsite node by way of the
+ * field_s_subsite_ref field value.
+ *
+ * @param EntityInterface $entity
+ *   The entity in which to find a refrence field and value.
+ *
+ * @return mixed
+ *   The id if available and FALSE if none.
  */
 function stanford_subsites_get_parent_reference_from_entity(EntityInterface $entity) {
   $subsite_ref = FALSE;
@@ -184,11 +231,15 @@ function stanford_subsites_get_parent_reference_from_entity(EntityInterface $ent
 }
 
 /**
- * [stanford_subsites_get_menu_id_from_title description]
- * @param  [type] $title [description]
- * @return [type]        [description]
+ * Helper function to standardize the menu naming convention for subsites.
+ *
+ * @param EntityInterface $entity
+ *   The entity to get a menu id from.
+ *
+ * @return string
+ *   The id of the menu.
  */
-function stanford_subsites_get_menu_name_from_subsite_entity($entity) {
+function stanford_subsites_get_menu_name_from_subsite_entity(EntityInterface $entity) {
   if (empty($entity)) {
     throw new Exception("No entity sent to function");
   }
@@ -197,9 +248,12 @@ function stanford_subsites_get_menu_name_from_subsite_entity($entity) {
 }
 
 /**
- * When an entity is deleted and it is a subsite run cleanup.
- * @param  EntityInterface $entity [description]
- * @return [type]                  [description]
+ * When an entity is deleted, and it is a subsite, run cleanup.
+ *
+ * @param EntityInterface $entity
+ *   An entity.
+ *
+ * @return null
  */
 function stanford_subsites_entity_delete(EntityInterface $entity) {
   if ($entity->getEntityTypeId() !== "node"
@@ -208,6 +262,7 @@ function stanford_subsites_entity_delete(EntityInterface $entity) {
     return;
   }
 
+  // Get and delete the subsite's menu.
   $menu_id = stanford_subsites_get_menu_name_from_subsite_entity($entity);
   $menu = Menu::load($menu_id);
 
@@ -218,13 +273,14 @@ function stanford_subsites_entity_delete(EntityInterface $entity) {
 }
 
 /**
- * [stanford_subsites_form_node_form_alter description]
- * @param  [type]             $form       [description]
- * @param  FormStateInterface $form_state [description]
- * @return [type]                         [description]
+ * Add some helper functionality to the node edit form of subsites.
+ *
+ * {@inheritdoc}
  */
 function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form_state) {
 
+  // Check to see if the user has permissions to create parent subsites.
+  // If not, we want to hide the parent subsite configuration fields.
   $user = \Drupal::currentUser();
   $subsiteadmin = $user->hasPermission('create top level stanford_subsites');
 
@@ -234,6 +290,7 @@ function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form
   }
 
   // Restrict the parent settings group from anyone without permission.
+  // All parent settings should be placed in this group in order to hide them.
   foreach ($form['#group_children'] as $field_name => $group) {
     if ($group == "group_subsite_settings") {
       $form[$field_name]['#access'] = $subsiteadmin;
@@ -242,28 +299,32 @@ function stanford_subsites_form_node_form_alter(&$form, FormStateInterface $form
 
   // Attach javascript functionality.
   $form['#attached']['library'][] = "stanford_subsites/subsites_node_form";
-
 }
 
 /**
- * [stanford_subsites_pathauto_pattern_alter description]
- * @param  [type] $pattern [description]
- * @param  array  $context [description]
- * @return [type]          [description]
+ * Manipulate pathauto logic to support subsite patterns.
+ *
+ * @param PathautoPattern $pattern
+ *   A loaded PathautoPattern.
+ * @param array $context
+ *   An array of contextual information about what we are working on.
+ *
+ * @return PathautoPattern
+ *   The pattern to use in generating a path.
  */
 function stanford_subsites_pathauto_pattern_alter(&$pattern, array $context) {
   $node = FALSE;
 
   // Only act on nodes.
   if ($context['module'] !== 'node') {
-    return;
+    return NULL;
   }
 
   // Check for reference field.
   $node = $context['data']['node'];
   $fields = $node->getFields();
   if (!isset($fields['field_s_subsite_ref'])) {
-    return;
+    return NULL;
   }
 
   // Get the value of the field.
@@ -272,7 +333,7 @@ function stanford_subsites_pathauto_pattern_alter(&$pattern, array $context) {
     $value = $field->getValue();
   }
   catch (Exception $e) {
-    return;
+    return NULL;
   }
 
   // Parent.

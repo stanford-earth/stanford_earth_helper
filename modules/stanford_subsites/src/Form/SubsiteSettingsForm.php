@@ -29,19 +29,22 @@ class SubsiteSettingsForm extends ConfigFormBase {
   }
 
   /**
-   * Chosen configuration form.
+   * Subsite configuration form.
    *
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    // Stanford Subsite settings:
+    // Stanford Subsite settings.
     $subsite_conf = $this->configFactory->get('stanford_subsites.settings');
 
+    // Get a usable list of all available vocabularies for the select element.
     $vocabularies = Vocabulary::loadMultiple();
     foreach ($vocabularies as $key => $vocab) {
       $vocabularies[$key] = $vocab->label();
     }
 
+    // Checkbox to enable the automatic creation of a term when creating a
+    // parent subsite.
     $form['create_taxonomy_term'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Automatically create a taxonomy term on subsite creation?'),
@@ -49,6 +52,8 @@ class SubsiteSettingsForm extends ConfigFormBase {
       '#description' => $this->t('Check box to enable.'),
     ];
 
+    // The vocabulary options to save the new terms in to.
+    // Only show when create_taxonomy_term is enabled.
     $form['create_taxonomy_vocabulary'] = [
       '#type' => 'select',
       '#title' => $this->t('Create a new term in which vocabulary?'),
@@ -62,6 +67,7 @@ class SubsiteSettingsForm extends ConfigFormBase {
       ]
     ];
 
+    // Gotta have one of these.
     $form['submit'] = [
       '#type' => 'submit',
       '#value' => $this->t('Submit'),
@@ -76,14 +82,18 @@ class SubsiteSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Get the config in where we will store these things.
     $config = $this->configFactory->getEditable('stanford_subsites.settings');
 
+    // Set the config straight up.
     $config
       ->set('create_taxonomy_term', $form_state->getValue('create_taxonomy_term'))
       ->set('create_taxonomy_vocabulary', $form_state->getValue('create_taxonomy_vocabulary'));
 
+    // Save the config.
     $config->save();
 
+    // Submit the parents.
     parent::submitForm($form, $form_state);
   }
 

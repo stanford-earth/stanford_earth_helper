@@ -7,12 +7,13 @@
   Drupal.behaviors.stanford_subsites_node_form = {
     attach: function(context, settings) {
 
+      // Hide the parent settings fieldgroup a subsite has been selected.
       if ($("#edit-field-s-subsite-ref", context).val() > 0) {
         $("#edit-group-subsite-settings", context).stop().hide();
       }
 
-      // When a child subsite is selected hide the parent settings and open
-      // the menu vt.
+      // When a child subsite is selected hide the parent
+      // settings and open the menu vt.
       $("#edit-field-s-subsite-ref").change(function(e) {
 
         // The value of the subsite field.

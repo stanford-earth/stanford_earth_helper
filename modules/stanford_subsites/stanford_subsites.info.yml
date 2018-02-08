@@ -9,3 +9,4 @@ dependencies:
   - ds_extras
   - entity
   - block
+  - menu_ui
