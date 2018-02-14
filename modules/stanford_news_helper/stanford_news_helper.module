@@ -17,9 +17,9 @@ function stanford_news_helper_form_node_stanford_news_form_alter(&$form, FormSta
     $subform = &$form['field_s_news_media_contacts']['widget'][0]['subform'];
     $subform['field_highlight_cards_title']['widget'][0]['value']['#default_value'] = 'Media Contacts';
     $card_subform = &$subform['field_p_section_highlight_cards']['widget'][0]['subform'];
-    $card_subform['field_p_highlight_card_title']['widget'][0]['value']['#default_value'] = 'Ker Than';
-    $card_subform['field_p_highlight_card_subtitle']['widget'][0]['value']['#default_value'] = '650-723-9820';
-    $card_subform['field_p_highlight_card_desc']['widget'][0]['value']['#default_value'] = 'kerthan@stanford.edu';
+    $card_subform['field_p_highlight_card_title']['widget'][0]['value']['#default_value'] = 'Barbara Buell';
+    $card_subform['field_p_highlight_card_subtitle']['widget'][0]['value']['#default_value'] = '650-723-1771';
+    $card_subform['field_p_highlight_card_desc']['widget'][0]['value']['#default_value'] = 'bbuell@stanford.edu';
   }
 
   // Check if we are adding a new hero banner and set the variant to tall.
