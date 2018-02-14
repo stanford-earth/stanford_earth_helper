@@ -1,6 +1,6 @@
 name: 'Stanford Earth Views Content'
 description: 'Node type to embed views on.'
-version: 8.x-1.0-alpha4
+version: 8.x-1.0-dev
 type: module
 core: 8.x
 dependencies:
