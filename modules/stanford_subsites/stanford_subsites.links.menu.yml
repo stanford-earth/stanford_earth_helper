@@ -1,0 +1,6 @@
+stanford_subsites.settings:
+  title: Subsites Settings
+  route_name: stanford_subsites.settings
+  parent: system.admin_config
+  description: 'Configure Subsites Settings.'
+  weight: -5
