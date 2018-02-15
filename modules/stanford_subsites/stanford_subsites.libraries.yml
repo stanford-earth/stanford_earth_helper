@@ -1,0 +1,7 @@
+subsites_node_form:
+  version: VERSION
+  js:
+    js/subsite-node-form.js: {}
+  dependencies:
+    - core/drupal
+    - core/jquery
