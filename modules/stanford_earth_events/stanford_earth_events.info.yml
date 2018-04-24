@@ -4,7 +4,9 @@ description: 'Imports events from events.stanford.edu'
 core: 8.x
 package: Stanford
 version: 8.x-1.0-dev
-# dependencies:
-#   - layout_plugin
+dependencies:
+  - migrate_tools
+  - migrate_plus
+  - migrate_file
 # libraries:
 #   - /example_name
