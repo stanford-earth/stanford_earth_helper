@@ -1,0 +1,10 @@
+name: 'Stanford Earth Events'
+type: module
+description: 'Imports events from events.stanford.edu'
+core: 8.x
+package: Stanford
+version: 8.x-1.0-dev
+# dependencies:
+#   - layout_plugin
+# libraries:
+#   - /example_name
