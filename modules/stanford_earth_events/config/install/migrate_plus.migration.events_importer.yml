@@ -36,10 +36,10 @@ source:
       name: field_s_event_date
       label: Date
       selector: isoEventDate
-    # -
-    #   name: field_s_event_image
-    #   label: 'Image URL'
-    #   selector: imageUrl
+    -
+      name: field_s_event_image
+      label: 'Image URL'
+      selector: imageUrl
     -
       name: field_s_event_more_info
       label: 'More info'
@@ -70,51 +70,33 @@ source:
     basic_html: basic_html
     minimal_html: minimal_html
     source_base_path: 'http://events.stanford.edu/'
+    file_destination: 'public://events'
 process:
   status: constants/status
   type: constants/type
   title: title
-  field_s_event_description/value: field_s_event_description
-  field_s_event_description/format: constants/basic_html
-  field_s_event_audience/value: field_s_event_audience
-  field_s_event_date/value:
-    -
-      plugin: format_date
-      source: field_s_event_date
-      from_format: 'Y-m-d H:i:s O'
-      to_format: U
-      timezone: 'Etc/GMT'
-    -
-      plugin: format_date
-      from_format: U
-      to_format: 'Y-m-d\TH:i:s'
-      timezone: 'Etc/GMT'
-  field_s_event_image/target_id:
-    -
-      plugin: migration_lookup
-      migration: events_image_importer
-      source: guid
-    -
-      plugin: default_value
-      default_value: null
-  field_s_event_more_info/uri: field_s_event_more_info
-  field_s_event_more_info/title: title
-  field_s_event_public/value: field_s_event_public
-  # field_s_event_tags:
+  # field_s_event_description/value: field_s_event_description
+  # field_s_event_description/format: constants/basic_html
+  # field_s_event_audience/value: field_s_event_audience
+  # field_s_event_date/value:
   #   -
-  #     source: field_s_event_tags
-  #     plugin: entity_generate
-  #     entity_type: taxonomy_term
-  #     bundle_key: vid
-  #     bundle: stanford_event_tags
-  #     value_key: name
+  #     plugin: format_date
+  #     source: field_s_event_date
+  #     from_format: 'Y-m-d H:i:s O'
+  #     to_format: U
+  #     timezone: 'Etc/GMT'
   #   -
-  #     plugin: default_value
-  #     default_value: null
-  field_s_event_when/value: field_s_event_when
-  field_s_event_where/value: field_s_event_where
+  #     plugin: format_date
+  #     from_format: U
+  #     to_format: 'Y-m-d\TH:i:s'
+  #     timezone: 'Etc/GMT'
+  field_s_event_image:
+    plugin: file_remote_url
+    source: "https://i.ytimg.com/vi/2Bm4H33xC9s/maxresdefault.jpg"
+  # field_s_event_more_info/uri: field_s_event_more_info
+  # field_s_event_more_info/title: title
+  # field_s_event_public/value: field_s_event_public
+  # field_s_event_when/value: field_s_event_when
+  # field_s_event_where/value: field_s_event_where
 destination:
   plugin: 'entity:node'
-migration_dependencies:
-  required:
-    - migrate_plus.migration.events_image_importer
