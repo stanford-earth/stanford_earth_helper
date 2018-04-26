@@ -70,33 +70,38 @@ source:
     basic_html: basic_html
     minimal_html: minimal_html
     source_base_path: 'http://events.stanford.edu/'
-    file_destination: 'public://events'
+    file_destination: 'public://stanford-event/importer/'
 process:
   status: constants/status
   type: constants/type
   title: title
-  # field_s_event_description/value: field_s_event_description
-  # field_s_event_description/format: constants/basic_html
-  # field_s_event_audience/value: field_s_event_audience
-  # field_s_event_date/value:
-  #   -
-  #     plugin: format_date
-  #     source: field_s_event_date
-  #     from_format: 'Y-m-d H:i:s O'
-  #     to_format: U
-  #     timezone: 'Etc/GMT'
-  #   -
-  #     plugin: format_date
-  #     from_format: U
-  #     to_format: 'Y-m-d\TH:i:s'
-  #     timezone: 'Etc/GMT'
+  field_s_event_description/value: field_s_event_description
+  field_s_event_description/format: constants/basic_html
+  field_s_event_audience/value: field_s_event_audience
+  field_s_event_date/value:
+    -
+      plugin: format_date
+      source: field_s_event_date
+      from_format: 'Y-m-d H:i:s O'
+      to_format: U
+      timezone: 'Etc/GMT'
+    -
+      plugin: format_date
+      from_format: U
+      to_format: 'Y-m-d\TH:i:s'
+      timezone: 'Etc/GMT'
   field_s_event_image:
-    plugin: file_remote_url
-    source: "https://i.ytimg.com/vi/2Bm4H33xC9s/maxresdefault.jpg"
-  # field_s_event_more_info/uri: field_s_event_more_info
-  # field_s_event_more_info/title: title
-  # field_s_event_public/value: field_s_event_public
-  # field_s_event_when/value: field_s_event_when
-  # field_s_event_where/value: field_s_event_where
+    plugin: image_import
+    source: field_s_event_image
+    destination: constants/file_destination
+    uid: 0
+    title: title
+    alt: 'Alt text missing'
+    skip_on_missing_source: false
+  field_s_event_more_info/uri: field_s_event_more_info
+  field_s_event_more_info/title: title
+  field_s_event_public/value: field_s_event_public
+  field_s_event_when/value: field_s_event_when
+  field_s_event_where/value: field_s_event_where
 destination:
   plugin: 'entity:node'
