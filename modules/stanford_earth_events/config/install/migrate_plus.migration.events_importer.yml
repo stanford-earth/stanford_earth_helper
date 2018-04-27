@@ -116,8 +116,8 @@ process:
     destination: constants/file_destination
     uid: 0
     title: title
-    alt: 'Alt text missing'
-    skip_on_missing_source: false
+    alt: ''
+    skip_on_missing_source: true
   field_s_event_more_info/uri: field_s_event_more_info
   field_s_event_more_info/title: title
   field_s_event_public/value: field_s_event_public
