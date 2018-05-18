@@ -1,0 +1,6 @@
+stanford_earth_events.importers:
+  title: Event Importer Settings
+  route_name: stanford_earth_events.importers
+  parent: system.admin_config
+  description: 'Configure Event Importers.'
+  weight: -5
