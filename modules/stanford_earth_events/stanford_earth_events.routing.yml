@@ -1,0 +1,7 @@
+stanford_earth_events.importers:
+  path: '/admin/stanford/events/importers'
+  defaults:
+    _title: 'Public and Private Event feeds lists'
+    _form: '\Drupal\stanford_earth_events\Form\EventImportersForm'
+  requirements:
+    _permission: 'administer events importers'
