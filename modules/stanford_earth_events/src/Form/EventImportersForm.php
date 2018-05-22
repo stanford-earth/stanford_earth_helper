@@ -37,9 +37,13 @@ class EventImportersForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+
+    // Create a two field form for editing the list of public and private event
+    // feeds from events.stanford.edu.
     $listed = $this->config('migrate_plus.migration.events_importer')->get('source.urls');
     $unlisted = $this->config('migrate_plus.migration.events_importer_unlisted')->get('source.urls');
 
+    // Fetch their current values.
     $listed_values = is_array($listed) ? implode($listed, PHP_EOL) : $listed;
     $unlisted_values = is_array($unlisted) ? implode($unlisted, PHP_EOL) : $unlisted;
 
@@ -66,22 +70,30 @@ class EventImportersForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+
+    // Validate that the urls are in good format and no extra whitespace has
+    // been added.
     $listed = array_filter(explode(PHP_EOL, $form_state->getValue('listed_events')));
     $unlisted = array_filter(explode(PHP_EOL, $form_state->getValue('unlisted_events')));
     $listed = array_map('trim', $listed);
     $unlisted = array_map('trim', $unlisted);
 
+    // Check for empty lines and valid urls on listed events.
     foreach ($listed as $k => $v) {
+
+      // No empty lines.
       if (empty($v)) {
         $form_state->setErrorByName('listed_events', $this->t('Cannot have empty lines'));
       }
 
+      // Valid url?
       if (!UrlHelper::isValid($v, TRUE)) {
         $form_state->setErrorByName('listed_events', $this->t('Invalid url included in settings'));
       }
 
     }
 
+    // Check for empty lines and valid urls on unlisted events.
     foreach ($unlisted as $k => $v) {
       if (empty($v)) {
         $form_state->setErrorByName('unlisted_events', $this->t('Cannot have empty lines'));
@@ -99,6 +111,7 @@ class EventImportersForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
+    // Actually do the save of the new configuration.
     $listed = array_filter(explode(PHP_EOL, $form_state->getValue('listed_events')));
     $unlisted = array_filter(explode(PHP_EOL, $form_state->getValue('unlisted_events')));
     $listed = array_map('trim', $listed);
@@ -112,6 +125,9 @@ class EventImportersForm extends ConfigFormBase {
     $this->configFactory->getEditable('migrate_plus.migration.events_importer')
       ->set('source.urls', array_filter($listed))
       ->save();
+
+    // Clear out all caches to ensure the config gets picked up.
+    drupal_flush_all_caches();
 
     parent::submitForm($form, $form_state);
   }
