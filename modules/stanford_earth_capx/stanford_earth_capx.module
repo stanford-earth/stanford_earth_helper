@@ -1,0 +1,63 @@
+<?php
+/**
+ * @file
+ * File description.
+ *
+ * Long description.
+ */
+
+use Drupal\Component\Utility\Unicode;
+use Drupal\migrate\Exception\RequirementsException;
+use Drupal\migrate\Plugin\RequirementsInterface;
+use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate_tools\MigrateExecutable;
+use Drupal\migrate\MigrateMessage;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\migrate\Row;
+use Drupal\migrate\Plugin\MigrateSourceInterface;
+
+/**
+ * Implements hook_entity_delete().
+ */
+function stanford_earth_capx_entity_delete(EntityInterface $entity) {
+
+    if ($entity->bundle() !== 'user') return;
+
+    $database = \Drupal::database();
+    /** @var \Drupal\migrate\Plugin\MigrationPluginManager $manager */
+    $manager = \Drupal::service('plugin.manager.migration');
+    $migrations = $manager->createInstances([]);
+
+    /** @var \Drupal\migrate_plus\Entity\Migration $migration */
+    foreach ($migrations as $migration) {
+        $destination = $migration->get('destination');
+
+        if (isset($destination['plugin']) && strpos($destination['plugin'], 'entity:') !== FALSE) {
+            list(, $type) = explode(':', $destination['plugin']);
+
+            if ($type == $entity->getEntityTypeId()) {
+                $table = 'migrate_map_' . $migration->id();
+
+                if ($database->schema()->tableExists($table)) {
+                    $database->delete($table)
+                        ->condition('destid1', $entity->id())
+                        ->execute();
+                }
+                return;
+            }
+        }
+    }
+}
+
+function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+  $xyz = 1;
+    $ok = true;
+    if ($value = $row->getSourceProperty('sunetid')) {
+        if ($value === 'ksharp') {
+           // $ok = false;
+        }
+    }
+    return $ok;
+    // return parent::prepareRow($row);
+  //$x->setSourceProperty('short_title','Beep boop');
+}
