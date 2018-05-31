@@ -7,7 +7,7 @@ use Drupal\migrate\Event\MigrateEvents;
 use Drupal\migrate\Event\MigratePreRowSaveEvent;
 use Drupal\migrate\Event\MigratePostRowSaveEvent;
 use Drupal\migrate\Row;
-use Drupal\Core\Database;
+use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
  * Class EntityTypeSubscriber.
@@ -48,14 +48,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
           strpos($source['profilePhoto'],"ts=")+3);
         $photo_timestamp = intval($ts);
     }
-    if (!empty($sunetid)) {
-      $db = \Drupal::database();
-      $result = $db->query("SELECT * FROM {migrate_info_earth_capx_importer} " .
-        " WHERE sunetid = :sunetid", array(':sunetid'=>$sunetid));
-      foreach ($result as $record) {
-        $xyz = print_r($record,true);
-      }
-    }
+    $info = new EarthCapxInfo($sunetid);
   }
   
 }

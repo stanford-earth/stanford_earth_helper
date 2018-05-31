@@ -1,33 +1,10 @@
 <?php
 
+use Drupal\stanford_earth_capx\EarthCapxInfo;
+
 /**
  * Implements hook_schema().
  */
 function stanford_earth_capx_schema() {
-    return [
-        'migrate_info_earth_capx_importer' => [
-            'description' => "Stanford Cap-X Profile Import Information",
-            'fields' => [
-                'sunetid' => [
-                    'type' => 'varchar',
-                    'length' => 8,
-                    'not null' => TRUE,
-                    'description' => "SUNetID for this account and profile",
-                ],
-                'etag' => [
-                    'type' => 'varchar',
-                    'length' => 255,
-                    'not null' => FALSE,
-                    'description' => "Hex etag of profile from CAP API",
-                ],
-                'photo_timestamp' => [
-                    'type' => 'int',
-                    'unsigned' => TRUE,
-                    'not null' => FALSE,
-                    'description' => "Timestamp of profile photo update",
-                ],
-            ],
-            'primary key' => ['sunetid'],
-        ],
-    ];
+  return EarthCapxInfo::getSchema();
 }
