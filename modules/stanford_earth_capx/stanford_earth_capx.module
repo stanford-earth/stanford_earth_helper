@@ -19,6 +19,7 @@ use Drupal\migrate\Plugin\MigrateSourceInterface;
 /**
  * Implements hook_entity_delete().
  */
+
 function stanford_earth_capx_entity_delete(EntityInterface $entity) {
 
     if ($entity->bundle() !== 'user') return;
