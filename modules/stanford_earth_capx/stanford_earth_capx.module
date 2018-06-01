@@ -6,22 +6,23 @@
  * Long description.
  */
 
-use Drupal\Component\Utility\Unicode;
-use Drupal\migrate\Exception\RequirementsException;
-use Drupal\migrate\Plugin\RequirementsInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\migrate_tools\MigrateExecutable;
-use Drupal\migrate\MigrateMessage;
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
-use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
- * Implements hook_entity_delete().
+ * Implements hook_migrate_prepare_row().
  */
-
 function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
-  $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
-  return $info->getOkayToUpdateProfile($row->getSource());
+
+  // we need to clean up the phones data from the CAP API since it's an
+  // array without keys. This is where we rewrite the array
+  $phones = $row->getSourceProperty('phone');
+  $newphones = [];
+  foreach ($phones as $ph) {
+    $newphones[] = ['phone' => $ph];
+  }
+  $row->setSourceProperty('phone', $newphones);
+  return true;
+
 }

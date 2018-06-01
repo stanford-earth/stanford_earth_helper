@@ -176,6 +176,11 @@ class EarthCapxInfo
             'not null' => FALSE,
             'description' => "Timestamp of profile photo update",
           ],
+          'entity_id' => [
+            'type' => 'int',
+            'not null' => FALSE,
+            'description' => "Entity id to which the profile was imported",
+          ],
         ],
         'primary key' => ['sunetid'],
       ],
