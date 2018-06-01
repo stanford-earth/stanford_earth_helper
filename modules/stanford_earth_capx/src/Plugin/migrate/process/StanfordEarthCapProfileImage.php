@@ -13,6 +13,7 @@ use Drupal\migrate_file\Plugin\migrate\process\FileImport;
 use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Exception\ClientException;
+use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
  * Imports an image from a Stanford Profiles CAP API url 
@@ -98,14 +99,24 @@ class StanfordEarthCapProfileImage extends FileImport {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
+    // see if we already have the current profile photo
+    $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
+    // only proceed if the profile has changed (by checking etag & photo timestamp
+    //$okay =  $info->getOkayToUpdateProfile($row->getSource());
+
+    // throw an exception if not okay to skip this record
+    //if (!$okay) {
+    //  throw new MigrateException(NULL, 0, NULL, 3, 2);
+    //}
+    
     //$field_config = FieldConfig::loadByName($this->configuration['destination_property_entity'],
     //    $this->configuration['destination_property_bundle'],$destination_property);
-   // return NULL;
+    $value = ['target_id' => 13576];
     //$this->configuration['destination'] = "public://kenneth-sharpo.jpg";
     // Ignore this setting.
     $this->configuration['id_only'] = FALSE;
     // Run the parent transform to do all the file handling.
-    $value = parent::transform($value, $migrate_executable, $row, $destination_property);
+    //$value = parent::transform($value, $migrate_executable, $row, $destination_property);
 
     if ($value && is_array($value)) {
       // Add the image field specific sub fields.

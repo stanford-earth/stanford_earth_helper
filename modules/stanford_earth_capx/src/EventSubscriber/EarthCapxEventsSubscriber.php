@@ -34,6 +34,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
 
   /**
    * React to a migrate PRE_ROW_SAVE event.
+   * and decide if we really need to re-import a profile
    *
    * @param \Drupal\migrate\Event\MigratePreRowSaveEvent $event
    *
@@ -55,6 +56,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
 
   /**
    * React to a migrate POST_ROW_SAVE event.
+   * Save information that we will need to determine whether to reimport.
    *
    * @param \Drupal\migrate\Event\MigratePostRowSaveEvent $event
    *
@@ -63,17 +65,29 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     // save CAP API etag and other information so we don't later re-import
     // a profile that has not changed.
     $source = $event->getRow()->getSource();
-    //$sunetid = '';
-    //if (!empty($source['sunetid'])) $sunetid = $source['sunetid'];
-    //$info = new EarthCapxInfo($sunetid);
-    $dest = $event->getDestinationIdValues();
-    $xyz = print_r($dest,TRUE);
+    $destination = 0;
+    $destination_ids = $event->getDestinationIdValues();
+    if (!empty($destination_ids[0])) {
+      $destination = intval($destination_ids[0]);
+    }
     $info = new EarthCapxInfo((!empty($source['sunetid']) ? $source['sunetid'] : ''));
-    $info->setInfoRecord($source);
+    $info->setInfoRecord($source,$destination);
   }
 
+  /**
+   * React to a migrate POST_ROW_DELETE event.
+   * If a rollback removes a profile, we want to delete it from our info table.
+   *
+   * @param \Drupal\migrate\Event\MigratePostRowDeleteEvent $event
+   *
+   */
   public function migratePostRowDelete(MigrateRowDeleteEvent $event) {
-    $ids = $event->getDestinationIdValues();
+    $destination_ids = $event->getDestinationIdValues();
+    $destination = 0;
+    if (!empty($destination_ids['uid'])) {
+      $destination = intval($destination_ids['uid']);
+    }
+    EarthCapxInfo::delete($destination);
   }
   
 }

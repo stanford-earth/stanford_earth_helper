@@ -11,6 +11,9 @@ namespace Drupal\stanford_earth_capx;
 use Drupal\Core\Database;
 use Drupal\migrate\MigrateMessage;
 
+/*
+ * Encapsulates an information table for CAP-X Profile imports
+ */
 class EarthCapxInfo
 {
 
@@ -23,6 +26,7 @@ class EarthCapxInfo
   private $sunetid;
   private $etag;
   private $profilePhotoTimestamp;
+  private $entity_id;
   private $status;
 
   /**
@@ -37,6 +41,7 @@ class EarthCapxInfo
     $this->status = self::EARTH_CAPX_INFO_INVALID;
     $this->etag = "";
     $this->profilePhotoTimestamp = "";
+    $this->entity_id = 0;
     if (!empty($su_id)) {
       $this->status = self::EARTH_CAPX_INFO_NEW;
       $this->sunetid = $su_id;
@@ -50,6 +55,9 @@ class EarthCapxInfo
         }
         if (!empty($record->photo_timestamp)) {
           $this->profilePhotoTimestamp = $record->photo_timestamp;
+        }
+        if (!empty($record->entity_id)) {
+          $this->entity_id = $record->entity_id;
         }
       }
     }
@@ -82,10 +90,12 @@ class EarthCapxInfo
   }
   
   /**
-   * update the table with information from the source array
+   * update the table with information from the source array and destination id
+   * only do the operation if information has changed
+   * 
    * @param array $source
    */
-  public function setInfoRecord($source = []) {
+  public function setInfoRecord($source = [], $entity_id = 0) {
     // see if we have valid sunetids
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
@@ -103,10 +113,10 @@ class EarthCapxInfo
     $source_etag = '';
     if (!empty($source['etag'])) $source_etag = $source['etag'];
     $source_ts = '';
-    if (!empty($source['profilePhoto']) && is_string($source['profilePhoto'])) {
-      $ts1 = strpos($source['profilePhoto'],"ts=");
+    if (!empty($source['profile_photo']) && is_string($source['profile_photo'])) {
+      $ts1 = strpos($source['profile_photo'],"ts=");
       if ($ts1 !== false) {
-        $ts2 = substr($source['profilePhoto'],$ts1);
+        $ts2 = substr($source['profile_photo'],$ts1);
         if (strpos($ts2,"&") !== false)  {
           $source_ts = substr($ts2,3,strpos($ts2,"&")-3);
         } else {
@@ -118,7 +128,8 @@ class EarthCapxInfo
     // if existing in table, see if we need to update
     if ($this->status == self::EARTH_CAPX_INFO_FOUND) {
       if ($this->etag !== $source_etag ||
-        $this->profilePhotoTimestamp !== $source_ts) {
+        $this->profilePhotoTimestamp !== $source_ts ||
+        $this->entityId != $entity_id) {
           // the information is different, so delete record and set status = NEW
           \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
             ->condition('sunetid',$this->sunetid)
@@ -136,23 +147,27 @@ class EarthCapxInfo
           'sunetid' => $this->sunetid,
           'etag' => $this->etag,
           'photo_timestamp' => $this->profilePhotoTimestamp,
+          'entity_id' => $entity_id,
         ])
         ->execute();
     }
   }
 
   /**
-   * delete a record from the table by sunetid
+   * delete a record from the table by entity_id
    * @param string $su_id
    */
-  public static function delete($su_id = "") {
-    if (!empty($su_id)) {
+  public static function delete($entity_id = 0) {
+    if ($entity_id > 0) {
       \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-        ->condition('sunetid',$su_id)
+        ->condition('entity_id',$entity_id)
         ->execute();
     }
   }
 
+  /*
+   * the schema for this table to be retrieved by the module hook_schema call
+   */
   public static function getSchema() {
     return [
       'migrate_info_earth_capx_importer' => [
@@ -181,6 +196,11 @@ class EarthCapxInfo
             'not null' => FALSE,
             'description' => "Entity id to which the profile was imported",
           ],
+          'profile_photo_id' => [
+            'type' => 'int',
+            'not null' => FALSE,
+            'description' => "File id of the profile photo already imported",
+          ]
         ],
         'primary key' => ['sunetid'],
       ],
