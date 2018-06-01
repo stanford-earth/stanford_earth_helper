@@ -27,6 +27,7 @@ class EarthCapxInfo
   private $etag;
   private $profilePhotoTimestamp;
   private $entity_id;
+  private $profilePhotoFid;
   private $status;
 
   /**
@@ -42,6 +43,7 @@ class EarthCapxInfo
     $this->etag = "";
     $this->profilePhotoTimestamp = "";
     $this->entity_id = 0;
+    $this->profilePhotoFid = 0;
     if (!empty($su_id)) {
       $this->status = self::EARTH_CAPX_INFO_NEW;
       $this->sunetid = $su_id;
@@ -57,18 +59,58 @@ class EarthCapxInfo
           $this->profilePhotoTimestamp = $record->photo_timestamp;
         }
         if (!empty($record->entity_id)) {
-          $this->entity_id = $record->entity_id;
+          $this->entity_id = intval($record->entity_id);
+        }
+        if (!empty($record->profile_photo_id)) {
+          $this->profilePhotoFid = intval($record->profile_photo_id);
         }
       }
     }
   }
 
   /**
+   * get the photo timestamp from the cap url
+   */
+  private function getPhotoTimestamp($photoUrl = "") {
+    $photo_ts = '';
+    if (!empty($photoUrl) && is_string($photoUrl)) {
+      $ts1 = strpos($photoUrl,"ts=");
+      if ($ts1 !== false) {
+        $ts2 = substr($photoUrl,$ts1);
+        if (strpos($ts2,"&") !== false)  {
+          $photo_ts = substr($ts2,3,strpos($ts2,"&")-3);
+        } else {
+          $photo_ts = substr($ts2,3);
+        }
+      }
+    }
+    return $photo_ts;
+  }
+  
+  /**
+   * see if we have an existing and current profile photo_id
+   * if we do, return its fid. if we don't, return false
+   * @param array $source
+   */
+  public function currentProfilePhotoId($source = []) {
+    if (empty($source['profile_photo']) || empty($this->profilePhotoFid)
+      || empty($this->profilePhotoTimestamp)) {
+      return false;
+    }
+    $photo_ts = $this->getPhotoTimestamp($source['profile_photo']);
+    if ($photo_ts == $this->profilePhotoTimestamp) {
+      return $this->profilePhotoFid;
+    } else {
+      return false;
+    }
+  }
+  
+  /**
    * return true if profile should be updated because it is new
    * or because the etag has changed.
    * @param array $source
    */
-  public function getOkayToUpdateProfile($source = []) {
+  public function getOkayToUpdateProfile($source = [], $photoId = 0) {
     $oktoupdate = false;
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
@@ -82,7 +124,7 @@ class EarthCapxInfo
       if (!empty($source['etag'])) {
         $source_etag = $source['etag'];
       }
-      if ($this->etag !== $source_etag) {
+      if ($this->etag !== $source_etag || $this->profilePhotoFid !== $photoId) {
         $oktoupdate = true;
       }
     }
@@ -95,7 +137,7 @@ class EarthCapxInfo
    * 
    * @param array $source
    */
-  public function setInfoRecord($source = [], $entity_id = 0) {
+  public function setInfoRecord($source = [], $entity_id = 0, $photo_id = 0) {
     // see if we have valid sunetids
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
@@ -112,23 +154,19 @@ class EarthCapxInfo
     // get the fields from the source array
     $source_etag = '';
     if (!empty($source['etag'])) $source_etag = $source['etag'];
+    
     $source_ts = '';
-    if (!empty($source['profile_photo']) && is_string($source['profile_photo'])) {
-      $ts1 = strpos($source['profile_photo'],"ts=");
-      if ($ts1 !== false) {
-        $ts2 = substr($source['profile_photo'],$ts1);
-        if (strpos($ts2,"&") !== false)  {
-          $source_ts = substr($ts2,3,strpos($ts2,"&")-3);
-        } else {
-          $source_ts = substr($ts2,3);
-        }
-      }
+    if (!empty($source['profile_photo'])) {
+      $source_ts = $this->getPhotoTimestamp($source['profile_photo']);
     }
 
+    $photo_id = intval($photo_id);
+    
     // if existing in table, see if we need to update
     if ($this->status == self::EARTH_CAPX_INFO_FOUND) {
       if ($this->etag !== $source_etag ||
         $this->profilePhotoTimestamp !== $source_ts ||
+        $this->profilePhotoFid !== $photo_id ||
         $this->entityId != $entity_id) {
           // the information is different, so delete record and set status = NEW
           \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
@@ -142,12 +180,14 @@ class EarthCapxInfo
     if ($this->status == self::EARTH_CAPX_INFO_NEW) {
       $this->etag = $source_etag;
       $this->profilePhotoTimestamp = $source_ts;
+      $this->profilePhotoFid = $photo_id;
       \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
         ->fields([
           'sunetid' => $this->sunetid,
           'etag' => $this->etag,
           'photo_timestamp' => $this->profilePhotoTimestamp,
           'entity_id' => $entity_id,
+          'profile_photo_id' => $this->profilePhotoFid,
         ])
         ->execute();
     }

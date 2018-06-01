@@ -101,22 +101,13 @@ class StanfordEarthCapProfileImage extends FileImport {
 
     // see if we already have the current profile photo
     $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
-    // only proceed if the profile has changed (by checking etag & photo timestamp
-    //$okay =  $info->getOkayToUpdateProfile($row->getSource());
-
-    // throw an exception if not okay to skip this record
-    //if (!$okay) {
-    //  throw new MigrateException(NULL, 0, NULL, 3, 2);
-    //}
-    
-    //$field_config = FieldConfig::loadByName($this->configuration['destination_property_entity'],
-    //    $this->configuration['destination_property_bundle'],$destination_property);
-    $value = ['target_id' => 13576];
-    //$this->configuration['destination'] = "public://kenneth-sharpo.jpg";
-    // Ignore this setting.
-    $this->configuration['id_only'] = FALSE;
-    // Run the parent transform to do all the file handling.
-    //$value = parent::transform($value, $migrate_executable, $row, $destination_property);
+    $photoId = $info->currentProfilePhotoId($row->getSource());
+    if ($photoId) {
+      $value = ['target_id' => $photoId];
+    } else {
+      $this->configuration['id_only'] = FALSE;
+      $value = parent::transform($value, $migrate_executable, $row, $destination_property);
+    }
 
     if ($value && is_array($value)) {
       // Add the image field specific sub fields.

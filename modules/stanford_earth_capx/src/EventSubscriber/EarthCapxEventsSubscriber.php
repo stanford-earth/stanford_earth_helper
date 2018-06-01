@@ -46,6 +46,11 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     // see if we already have migration information for this profile
     $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
     // only proceed if the profile has changed (by checking etag & photo timestamp
+    $photo_id = 0;
+    $photo_field = $row->getDestinationProperty('field_s_person_image');
+    if (!empty($photo_field['target_id'])) {
+      $photo_id = $photo_field['target_id'];
+    }
     $okay =  $info->getOkayToUpdateProfile($row->getSource());
 
     // throw an exception if not okay to skip this record
@@ -70,8 +75,15 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     if (!empty($destination_ids[0])) {
       $destination = intval($destination_ids[0]);
     }
+    
+    // get the fid of the profile photo
+    $photoId = 0;
+    $dest_values = $event->getRow()->getDestinationProperty('field_s_person_image');
+    if (!empty($dest_values['target_id'])) {
+      $photoId = intval($dest_values['target_id']);
+    }
     $info = new EarthCapxInfo((!empty($source['sunetid']) ? $source['sunetid'] : ''));
-    $info->setInfoRecord($source,$destination);
+    $info->setInfoRecord($source,$destination, $photoId);
   }
 
   /**
