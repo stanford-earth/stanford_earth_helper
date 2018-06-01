@@ -35,20 +35,11 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
    *
    */
   public function migratePostRowSave(MigratePostRowSaveEvent $event) {
-
     $source = $event->getRow()->getSource();
     $sunetid = '';
     if (!empty($source['sunetid'])) $sunetid = $source['sunetid'];
-    $etag = '';
-    if (!empty($source['etag'])) $etag = $source['etag'];
-    $photo_timestamp = 0;
-    if (!empty($source['profilePhoto']) && is_string($source['profilePhoto']) &&
-      strpos($source['profilePhoto'],"ts=") !== false) {
-        $ts = substr($source['profilePhoto'],
-          strpos($source['profilePhoto'],"ts=")+3);
-        $photo_timestamp = intval($ts);
-    }
     $info = new EarthCapxInfo($sunetid);
+    $info->setInfoRecord($source);
   }
   
 }
