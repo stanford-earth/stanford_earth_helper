@@ -121,7 +121,7 @@ class EarthCapxInfo {
     if (empty($source['sunetid']) ||
       $this->status == self::EARTH_CAPX_INFO_INVALID ||
       $source['sunetid'] !== $this->sunetid) {
-      $msg->display('Unable to validate new profile information.', 'error');
+      $msg->display(t('Unable to validate new profile information.'), 'error');
     }
     elseif ($this->status == self::EARTH_CAPX_INFO_NEW) {
       $oktoupdate = TRUE;
@@ -156,12 +156,12 @@ class EarthCapxInfo {
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
       $this->status == self::EARTH_CAPX_INFO_INVALID) {
-      $msg->display('Unable to update EarthCapxInfo table. Missing source id.', 'error');
+      $msg->display(t('Unable to update EarthCapxInfo table. Missing source id.'), 'error');
       return;
     }
     if ($source['sunetid'] !== $this->sunetid) {
-      $msg->display('Unable to update EarthCapxInfo table. Mismatched ids: ' .
-        $source['sunetid'] . ', ' . $this->sunetid);
+      $msg->display(t('Unable to update EarthCapxInfo table. Mismatched ids: @sunet1, @sunet2',
+        ['@sunet1' => $source['sunetid'], '@sunet2' => $this->sunetid]));
       return;
     }
 
@@ -183,7 +183,7 @@ class EarthCapxInfo {
       if ($this->etag !== $source_etag ||
         $this->profilePhotoTimestamp !== $source_ts ||
         $this->profilePhotoFid !== $photo_id ||
-        $this->entityId != $entityId) {
+        $this->entityId !== $entityId) {
         // The information is different, so delete record and set status = NEW.
         \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
           ->condition('sunetid', $this->sunetid)
@@ -197,12 +197,13 @@ class EarthCapxInfo {
       $this->etag = $source_etag;
       $this->profilePhotoTimestamp = $source_ts;
       $this->profilePhotoFid = $photo_id;
+      $this->entityId = $entityId;
       \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
         ->fields([
           'sunetid' => $this->sunetid,
           'etag' => $this->etag,
           'photo_timestamp' => $this->profilePhotoTimestamp,
-          'entityId' => $entityId,
+          'entityId' => $this->entityId,
           'profile_photo_id' => $this->profilePhotoFid,
         ])
         ->execute();

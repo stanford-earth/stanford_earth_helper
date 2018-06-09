@@ -4,26 +4,22 @@ namespace Drupal\stanford_earth_capx\Plugin\migrate\process;
 
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
-use Drupal\field\Entity\FieldConfig;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\Plugin\MigrateProcessInterface;
-use Drupal\migrate\Plugin\Migration;
 use Drupal\migrate\Row;
 use Drupal\migrate_file\Plugin\migrate\process\FileImport;
 use Drupal\file\Entity\File;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use GuzzleHttp\Exception\ClientException;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
- * Imports an image from a Stanford Profiles CAP API url 
+ * Imports an image from a Stanford Profiles CAP API url.
  *
  * Extends the regular file_import plugin but adds the following additional
  * optional configuration keys.
  * - alt: The alt attribute for the image
  * - title: The title attribute for the image
  * - width: The width of the image
- * - height: The height of the image
+ * - height: The height of the image.
  *
  * All of the above fields fields support copying destination values. These are
  * indicated by a starting @ sign. Values using @ must be wrapped in quotes.
@@ -36,6 +32,8 @@ use Drupal\stanford_earth_capx\EarthCapxInfo;
  * @see Drupal\migrate\Plugin\migrate\process\Get
  *
  * @see Drupal\migrate_file\Plugin\migrate\process\FileImport.php
+ *
+ * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  *
  * Example:
  *
@@ -68,10 +66,7 @@ use Drupal\stanford_earth_capx\EarthCapxInfo;
  *     alt: !file
  *     skip_on_missing_source: true
  *
- *
  * @endcode
- *
- * @see \Drupal\migrate\Plugin\MigrateProcessInterface
  *
  * @MigrateProcessPlugin(
  *   id = "stanford_earth_cap_profile_image"
@@ -99,12 +94,13 @@ class StanfordEarthCapProfileImage extends FileImport {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    // see if we already have the current profile photo
+    // See if we already have the current profile photo.
     $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
     $photoId = $info->currentProfilePhotoId($row->getSource());
     if ($photoId) {
       $value = ['target_id' => $photoId];
-    } else {
+    }
+    else {
       $this->configuration['id_only'] = FALSE;
       $value = parent::transform($value, $migrate_executable, $row, $destination_property);
     }

@@ -1,9 +1,8 @@
 <?php
+
 /**
  * @file
- * File description.
- *
- * Long description.
+ * Implements Drupal hooks for stanford_earth_capx module.
  */
 
 use Drupal\migrate\Plugin\MigrationInterface;
@@ -17,15 +16,15 @@ use Drupal\stanford_earth_capx\EarthCapxInfo;
  */
 function stanford_earth_capx_entity_delete(EntityInterface $entity) {
 
-  // only do this for user content
+  // Only do this for user content.
   if ($entity->bundle() !== 'user') {
     return;
   }
 
-  // delete record from capx info table
+  // Delete record from capx info table.
   EarthCapxInfo::delete($entity->id());
 
-  // delete record from migration map table
+  // Delete record from migration map table.
   $database = \Drupal::database();
   $table = 'migrate_map_earth_capx_importer';
   if ($database->schema()->tableExists($table)) {
@@ -41,14 +40,14 @@ function stanford_earth_capx_entity_delete(EntityInterface $entity) {
  */
 function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
-  // we need to clean up the phones data from the CAP API since it's an
-  // array without keys. This is where we rewrite the array
+  // We need to clean up the phones data from the CAP API since it's an
+  // array without keys. This is where we rewrite the array.
   $phones = $row->getSourceProperty('phone');
   $newphones = [];
   foreach ($phones as $ph) {
     $newphones[] = ['phone' => $ph];
   }
   $row->setSourceProperty('phone', $newphones);
-  return true;
+  return TRUE;
 
 }

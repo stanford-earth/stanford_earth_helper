@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Install, update, and uninstall functions for stanford_earth_capx.
+ */
+
 use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
