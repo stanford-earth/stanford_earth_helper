@@ -1,21 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: kennethsharp1
- * Date: 5/30/18
- * Time: 9:29 PM
- */
 
 namespace Drupal\stanford_earth_capx;
 
 use Drupal\Core\Database;
 use Drupal\migrate\MigrateMessage;
 
-/*
- * Encapsulates an information table for CAP-X Profile imports
+/**
+ * Encapsulates an information table for CAP-X Profile imports.
  */
-class EarthCapxInfo
-{
+class EarthCapxInfo {
 
   const EARTH_CAPX_INFO_INVALID = 0;
   const EARTH_CAPX_INFO_NEW = 1;
@@ -26,15 +19,15 @@ class EarthCapxInfo
   private $sunetid;
   private $etag;
   private $profilePhotoTimestamp;
-  private $entity_id;
+  private $entityId;
   private $profilePhotoFid;
   private $status;
 
   /**
-   * construct object with sunetid parameter;
-   * if already in table, populate other properties.
+   * Construct with sunetid param; if already exists, populate other properties.
    *
-   * @param $su_id
+   * @param string $su_id
+   *   SUNet ID.
    */
   public function __construct($su_id = "") {
     $su_id = (string) $su_id;
@@ -49,7 +42,7 @@ class EarthCapxInfo
       $this->sunetid = $su_id;
       $db = \Drupal::database();
       $result = $db->query("SELECT * FROM {" . self::EARTH_CAPX_INFO_TABLE .
-        "} WHERE sunetid = :sunetid", [ ':sunetid' => $this->sunetid]);
+        "} WHERE sunetid = :sunetid", [':sunetid' => $this->sunetid]);
       foreach ($result as $record) {
         $this->status = self::EARTH_CAPX_INFO_FOUND;
         if (!empty($record->etag)) {
@@ -69,75 +62,96 @@ class EarthCapxInfo
   }
 
   /**
-   * get the photo timestamp from the cap url
+   * Get the photo timestamp from the cap url.
    */
   private function getPhotoTimestamp($photoUrl = "") {
     $photo_ts = '';
     if (!empty($photoUrl) && is_string($photoUrl)) {
-      $ts1 = strpos($photoUrl,"ts=");
-      if ($ts1 !== false) {
-        $ts2 = substr($photoUrl,$ts1);
-        if (strpos($ts2,"&") !== false)  {
-          $photo_ts = substr($ts2,3,strpos($ts2,"&")-3);
-        } else {
-          $photo_ts = substr($ts2,3);
+      $ts1 = strpos($photoUrl, "ts=");
+      if ($ts1 !== FALSE) {
+        $ts2 = substr($photoUrl, $ts1);
+        if (strpos($ts2, "&") !== FALSE) {
+          $photo_ts = substr($ts2, 3, strpos($ts2, "&") - 3);
+        }
+        else {
+          $photo_ts = substr($ts2, 3);
         }
       }
     }
     return $photo_ts;
   }
-  
+
   /**
-   * see if we have an existing and current profile photo_id
-   * if we do, return its fid. if we don't, return false
+   * Get fid for photo_id.
+   *
+   * See if we have an existing and current profile photo_id
+   * if we do, return its fid. if we don't, return false.
+   *
    * @param array $source
+   *   The source row array from the migration source.
    */
-  public function currentProfilePhotoId($source = []) {
+  public function currentProfilePhotoId(array $source = []) {
     if (empty($source['profile_photo']) || empty($this->profilePhotoFid)
       || empty($this->profilePhotoTimestamp)) {
-      return false;
+      return FALSE;
     }
     $photo_ts = $this->getPhotoTimestamp($source['profile_photo']);
     if ($photo_ts == $this->profilePhotoTimestamp) {
       return $this->profilePhotoFid;
-    } else {
-      return false;
+    }
+    else {
+      return FALSE;
     }
   }
-  
+
   /**
-   * return true if profile should be updated because it is new
+   * Check if we should update the profile.
+   *
+   * Return true if profile should be updated because it is new
    * or because the etag has changed.
+   *
    * @param array $source
+   *   The source array from the migration row.
+   * @param int $photoId
+   *   The photoId from the image url in the profile data.
    */
-  public function getOkayToUpdateProfile($source = [], $photoId = 0) {
-    $oktoupdate = false;
+  public function getOkayToUpdateProfile(array $source = [], int $photoId = 0) {
+    $oktoupdate = FALSE;
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
       $this->status == self::EARTH_CAPX_INFO_INVALID ||
       $source['sunetid'] !== $this->sunetid) {
-        $msg->display('Unable to validate new profile information.', 'error');
-    } else if ($this->status == self::EARTH_CAPX_INFO_NEW) {
-      $oktoupdate = true;
-    } else if ($this->status == self::EARTH_CAPX_INFO_FOUND) {
+      $msg->display('Unable to validate new profile information.', 'error');
+    }
+    elseif ($this->status == self::EARTH_CAPX_INFO_NEW) {
+      $oktoupdate = TRUE;
+    }
+    elseif ($this->status == self::EARTH_CAPX_INFO_FOUND) {
       $source_etag = '';
       if (!empty($source['etag'])) {
         $source_etag = $source['etag'];
       }
       if ($this->etag !== $source_etag || $this->profilePhotoFid !== $photoId) {
-        $oktoupdate = true;
+        $oktoupdate = TRUE;
       }
     }
     return $oktoupdate;
   }
-  
+
   /**
-   * update the table with information from the source array and destination id
-   * only do the operation if information has changed
-   * 
+   * Update the table with information about the profile.
+   *
+   * Update the table with information from the source array and destination id
+   * only do the operation if information has changed.
+   *
    * @param array $source
+   *   Source data from migration row.
+   * @param int $entityId
+   *   Entity ID of the profile.
+   * @param int $photo_id
+   *   Photo id number from profile photo URL.
    */
-  public function setInfoRecord($source = array(), $entity_id = 0, $photo_id = 0) {
+  public function setInfoRecord(array $source = [], $entityId = 0, $photo_id = 0) {
     // See if we have valid sunetids.
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
@@ -163,17 +177,17 @@ class EarthCapxInfo
     }
 
     $photo_id = intval($photo_id);
-    
+
     // If existing in table, see if we need to update.
     if ($this->status == self::EARTH_CAPX_INFO_FOUND) {
       if ($this->etag !== $source_etag ||
         $this->profilePhotoTimestamp !== $source_ts ||
         $this->profilePhotoFid !== $photo_id ||
-        $this->entityId != $entity_id) {
+        $this->entityId != $entityId) {
         // The information is different, so delete record and set status = NEW.
         \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-            ->condition('sunetid', $this->sunetid)
-            ->execute();
+          ->condition('sunetid', $this->sunetid)
+          ->execute();
         $this->status = self::EARTH_CAPX_INFO_NEW;
       }
     }
@@ -188,7 +202,7 @@ class EarthCapxInfo
           'sunetid' => $this->sunetid,
           'etag' => $this->etag,
           'photo_timestamp' => $this->profilePhotoTimestamp,
-          'entity_id' => $entity_id,
+          'entityId' => $entityId,
           'profile_photo_id' => $this->profilePhotoFid,
         ])
         ->execute();
@@ -198,18 +212,19 @@ class EarthCapxInfo
   /**
    * Delete a record from the table by entity_id.
    *
-   * @param string $entity_id
+   * @param string $entityId
+   *   Entity ID of profile to be deleted.
    */
-  public static function delete($entity_id = 0) {
-    if ($entity_id > 0) {
+  public static function delete($entityId = 0) {
+    if ($entityId > 0) {
       \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-        ->condition('entity_id', $entity_id)
+        ->condition('entity_id', $entityId)
         ->execute();
     }
   }
 
   /**
-   * the schema for this table to be retrieved by the module hook_schema call
+   * The schema for this table to be retrieved by the module hook_schema call.
    */
   public static function getSchema() {
     return [
