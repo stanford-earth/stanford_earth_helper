@@ -137,13 +137,13 @@ class EarthCapxInfo
    * 
    * @param array $source
    */
-  public function setInfoRecord($source = [], $entity_id = 0, $photo_id = 0) {
-    // see if we have valid sunetids
+  public function setInfoRecord($source = array(), $entity_id = 0, $photo_id = 0) {
+    // See if we have valid sunetids.
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
       $this->status == self::EARTH_CAPX_INFO_INVALID) {
-        $msg->display('Unable to update EarthCapxInfo table. Missing source id.','error');
-        return;
+      $msg->display('Unable to update EarthCapxInfo table. Missing source id.', 'error');
+      return;
     }
     if ($source['sunetid'] !== $this->sunetid) {
       $msg->display('Unable to update EarthCapxInfo table. Mismatched ids: ' .
@@ -151,10 +151,12 @@ class EarthCapxInfo
       return;
     }
 
-    // get the fields from the source array
+    // Get the fields from the source array.
     $source_etag = '';
-    if (!empty($source['etag'])) $source_etag = $source['etag'];
-    
+    if (!empty($source['etag'])) {
+      $source_etag = $source['etag'];
+    }
+
     $source_ts = '';
     if (!empty($source['profile_photo'])) {
       $source_ts = $this->getPhotoTimestamp($source['profile_photo']);
@@ -162,21 +164,21 @@ class EarthCapxInfo
 
     $photo_id = intval($photo_id);
     
-    // if existing in table, see if we need to update
+    // If existing in table, see if we need to update.
     if ($this->status == self::EARTH_CAPX_INFO_FOUND) {
       if ($this->etag !== $source_etag ||
         $this->profilePhotoTimestamp !== $source_ts ||
         $this->profilePhotoFid !== $photo_id ||
         $this->entityId != $entity_id) {
-          // the information is different, so delete record and set status = NEW
-          \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-            ->condition('sunetid',$this->sunetid)
+        // The information is different, so delete record and set status = NEW.
+        \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
+            ->condition('sunetid', $this->sunetid)
             ->execute();
         $this->status = self::EARTH_CAPX_INFO_NEW;
       }
     }
 
-    // now we will insert only if record is truly new or has changed.
+    // Now we will insert only if record is truly new or has changed.
     if ($this->status == self::EARTH_CAPX_INFO_NEW) {
       $this->etag = $source_etag;
       $this->profilePhotoTimestamp = $source_ts;
@@ -194,18 +196,19 @@ class EarthCapxInfo
   }
 
   /**
-   * delete a record from the table by entity_id
-   * @param string $su_id
+   * Delete a record from the table by entity_id.
+   *
+   * @param string $entity_id
    */
   public static function delete($entity_id = 0) {
     if ($entity_id > 0) {
       \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-        ->condition('entity_id',$entity_id)
+        ->condition('entity_id', $entity_id)
         ->execute();
     }
   }
 
-  /*
+  /**
    * the schema for this table to be retrieved by the module hook_schema call
    */
   public static function getSchema() {
@@ -240,10 +243,11 @@ class EarthCapxInfo
             'type' => 'int',
             'not null' => FALSE,
             'description' => "File id of the profile photo already imported",
-          ]
+          ],
         ],
         'primary key' => ['sunetid'],
       ],
     ];
   }
+
 }

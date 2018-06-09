@@ -1,4 +1,3 @@
-uuid: 2200fcc9-747f-4e44-ae0d-b25826759bc3
 langcode: en
 status: true
 dependencies: {  }
@@ -44,11 +43,11 @@ source:
       selector: displayName
     -
       name: last_name
-      label: ‘Last Name’
+      label: 'Last Name'
       selector: names/preferred/lastName
     -
       name: first_name
-      label: ‘First Name’
+      label: 'First Name'
       selector: names/preferred/firstName
     -
       name: short_title
@@ -56,11 +55,11 @@ source:
       selector: shortTitle/title
     -
       name: biosketch
-      label: ‘Biography’
+      label: 'Biography'
       selector: bio/text
     -
       name: email
-      label: ‘Email’
+      label: 'Email'
       selector: primaryContact/email
     -
       name: alias
