@@ -10,10 +10,26 @@ use Drupal\migrate\MigrateMessage;
  */
 class EarthCapxInfo {
 
+  /**
+   * Status constants for the profile information.
+   *
+   * EARTH_CAPX_INFO_INVALID = A profile was presented with no SUNet ID/uid.
+   * EARTH_CAPX_INFO_NEW = A new profile/account will be created.
+   * EARTH_CAPX_INFO_FOUND = An existing profile/account will be updated.
+   *
+   * @var int
+   */
   const EARTH_CAPX_INFO_INVALID = 0;
   const EARTH_CAPX_INFO_NEW = 1;
   const EARTH_CAPX_INFO_FOUND = 2;
 
+  /**
+   * Table name constant for info table.
+   *
+   * EARTH_CAPX_INFO_TABLE = The table added by Drupal hook_schema.
+   *
+   * @var string
+   */
   const EARTH_CAPX_INFO_TABLE = 'migrate_info_earth_capx_importer';
 
   private $sunetid;
@@ -29,8 +45,9 @@ class EarthCapxInfo {
    * @param string $su_id
    *   SUNet ID.
    */
-  public function __construct($su_id = "") {
-    $su_id = (string) $su_id;
+  public function __construct(string $su_id = "") {
+    // $status will get set here depending on whether profile is valid and
+    // whether it is new or already exists in the Drupal system.
     $this->sunetid = "";
     $this->status = self::EARTH_CAPX_INFO_INVALID;
     $this->etag = "";
@@ -116,6 +133,7 @@ class EarthCapxInfo {
    *   The photoId from the image url in the profile data.
    */
   public function getOkayToUpdateProfile(array $source = [], int $photoId = 0) {
+    // Checks $status which was set in the constructor.
     $oktoupdate = FALSE;
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
@@ -152,7 +170,11 @@ class EarthCapxInfo {
    *   Photo id number from profile photo URL.
    */
   public function setInfoRecord(array $source = [], $entityId = 0, $photo_id = 0) {
-    // See if we have valid sunetids.
+    // Function uses $status which was originally set in the constructor.
+    // If the $status is 'invalid', post a message and return.
+    // If the $status is 'new', create a new record.
+    // If the $status is 'found' and nothing has changed, just return.
+    // If the $status is 'found' and values have changed, delete and recreate.
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
       $this->status == self::EARTH_CAPX_INFO_INVALID) {
@@ -198,15 +220,23 @@ class EarthCapxInfo {
       $this->profilePhotoTimestamp = $source_ts;
       $this->profilePhotoFid = $photo_id;
       $this->entityId = $entityId;
-      \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
-        ->fields([
-          'sunetid' => $this->sunetid,
-          'etag' => $this->etag,
-          'photo_timestamp' => $this->profilePhotoTimestamp,
-          'entityId' => $this->entityId,
-          'profile_photo_id' => $this->profilePhotoFid,
-        ])
-        ->execute();
+      try {
+        \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
+          ->fields([
+            'sunetid' => $this->sunetid,
+            'etag' => $this->etag,
+            'photo_timestamp' => $this->profilePhotoTimestamp,
+            'entityId' => $this->entityId,
+            'profile_photo_id' => $this->profilePhotoFid,
+          ])
+          ->execute();
+      }
+      catch (Exception $e) {
+        // Log the exception to watchdog.
+        $m = new MigrateMessage();
+        $m->display(t('Unable to insert new EarthCapxInfo record for @sunet', ['sunet' => $this->sunetid]));
+        \Drupal::logger('type')->error($e->getMessage());
+      }
     }
   }
 

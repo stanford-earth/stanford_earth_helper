@@ -144,6 +144,7 @@ process:
     destination: "@image_file_name"
     alt: !file
     title: alias
+    skip_on_error: true
 destination:
   plugin: 'entity:user'
 migration_dependencies: null

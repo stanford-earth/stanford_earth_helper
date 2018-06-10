@@ -53,7 +53,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     // Check source data in the row against etag and photo info stored in table.
     $okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id);
 
-    // Throw an exception if not okay to skip this record.
+    // If not okay, throw an exception to skip this record.
     if (!$okay) {
       throw new MigrateException(NULL, 0, NULL, 3, 2);
     }
@@ -70,7 +70,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
   public function migratePostRowSave(MigratePostRowSaveEvent $event) {
     // Save CAP API etag and other information so we don't later re-import
     // a profile that has not changed.
-    $source = $event->getRow()->getSource();
+    $row = $event->getRow();
     $destination = 0;
     $destination_ids = $event->getDestinationIdValues();
     if (!empty($destination_ids[0])) {
@@ -79,12 +79,12 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
 
     // Get the fid of the profile photo.
     $photoId = 0;
-    $dest_values = $event->getRow()->getDestinationProperty('field_s_person_image');
+    $dest_values = $row->getDestinationProperty('field_s_person_image');
     if (!empty($dest_values['target_id'])) {
       $photoId = intval($dest_values['target_id']);
     }
-    $info = new EarthCapxInfo((!empty($source['sunetid']) ? $source['sunetid'] : ''));
-    $info->setInfoRecord($source, $destination, $photoId);
+    $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
+    $info->setInfoRecord($row->getSource(), $destination, $photoId);
   }
 
   /**
