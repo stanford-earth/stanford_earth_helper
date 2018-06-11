@@ -245,7 +245,6 @@ class EarthCapxInfo {
    *
    * @param string $entity_id
    *   Entity ID of profile to be deleted.
-   * 
    */
   public static function delete($entity_id = 0) {
     if ($entity_id > 0) {
