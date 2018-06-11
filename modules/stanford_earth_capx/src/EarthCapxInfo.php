@@ -35,7 +35,7 @@ class EarthCapxInfo {
   private $sunetid;
   private $etag;
   private $profilePhotoTimestamp;
-  private $entityId;
+  private $entity_id;
   private $profilePhotoFid;
   private $status;
 
@@ -164,12 +164,12 @@ class EarthCapxInfo {
    *
    * @param array $source
    *   Source data from migration row.
-   * @param int $entityId
+   * @param int $entity_id
    *   Entity ID of the profile.
    * @param int $photo_id
    *   Photo id number from profile photo URL.
    */
-  public function setInfoRecord(array $source = [], $entityId = 0, $photo_id = 0) {
+  public function setInfoRecord(array $source = [], $entity_id = 0, $photo_id = 0) {
     // Function uses $status which was originally set in the constructor.
     // If the $status is 'invalid', post a message and return.
     // If the $status is 'new', create a new record.
@@ -205,7 +205,7 @@ class EarthCapxInfo {
       if ($this->etag !== $source_etag ||
         $this->profilePhotoTimestamp !== $source_ts ||
         $this->profilePhotoFid !== $photo_id ||
-        $this->entityId !== $entityId) {
+        $this->entity_id !== $entity_id) {
         // The information is different, so delete record and set status = NEW.
         \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
           ->condition('sunetid', $this->sunetid)
@@ -219,14 +219,14 @@ class EarthCapxInfo {
       $this->etag = $source_etag;
       $this->profilePhotoTimestamp = $source_ts;
       $this->profilePhotoFid = $photo_id;
-      $this->entityId = $entityId;
+      $this->entity_id = $entity_id;
       try {
         \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
           ->fields([
             'sunetid' => $this->sunetid,
             'etag' => $this->etag,
             'photo_timestamp' => $this->profilePhotoTimestamp,
-            'entityId' => $this->entityId,
+            'entity_id' => $this->entity_id,
             'profile_photo_id' => $this->profilePhotoFid,
           ])
           ->execute();
@@ -243,13 +243,14 @@ class EarthCapxInfo {
   /**
    * Delete a record from the table by entity_id.
    *
-   * @param string $entityId
+   * @param string $entity_id
    *   Entity ID of profile to be deleted.
+   * 
    */
-  public static function delete($entityId = 0) {
-    if ($entityId > 0) {
+  public static function delete($entity_id = 0) {
+    if ($entity_id > 0) {
       \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-        ->condition('entity_id', $entityId)
+        ->condition('entity_id', $entity_id)
         ->execute();
     }
   }
