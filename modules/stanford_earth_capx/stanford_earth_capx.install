@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for stanford_earth_capx.
+ */
+
+use Drupal\stanford_earth_capx\EarthCapxInfo;
+
+/**
+ * Implements hook_schema().
+ */
+function stanford_earth_capx_schema() {
+  return EarthCapxInfo::getSchema();
+}

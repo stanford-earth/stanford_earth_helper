@@ -18,6 +18,12 @@ use Drupal\Core\Entity\EntityInterface;
  * Implements hook_entity_delete().
  */
 function stanford_earth_events_entity_delete(EntityInterface $entity) {
+
+  // only do this for stanford_event content
+  if ($entity->bundle() !== 'stanford_event') {
+    return;
+  }
+
   $database = \Drupal::database();
   /** @var \Drupal\migrate\Plugin\MigrationPluginManager $manager */
   $manager = \Drupal::service('plugin.manager.migration');
