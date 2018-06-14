@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha7
+--------------------------------------------------------------------------------
+_Release Date: 2018-06-14_
+
+- Added configuration admin form for feeds list.
+- Added initial importer for Stanford Profiles (CAP-X).
+
 8.x-1.0-alpha6
 --------------------------------------------------------------------------------  
 _Release Date: 2018-05-17_
