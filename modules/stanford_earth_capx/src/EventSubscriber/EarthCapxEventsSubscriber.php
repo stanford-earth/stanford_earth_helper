@@ -41,6 +41,11 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
    */
   public function migratePreRowSave(MigratePreRowSaveEvent $event) {
 
+    // This event gets thrown for all migrations, so check that first.
+    if ($event->getMigration()->id() !== 'earth_capx_importer') {
+      return;
+    }
+
     // Get the row in question.
     $row = $event->getRow();
     // See if we already have migration information for this profile.
@@ -68,6 +73,12 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
    *   Contains information about the migration source row being saved.
    */
   public function migratePostRowSave(MigratePostRowSaveEvent $event) {
+
+    // This event gets thrown for all migrations, so check that first.
+    if ($event->getMigration()->id() !== 'earth_capx_importer') {
+      return;
+    }
+
     // Save CAP API etag and other information so we don't later re-import
     // a profile that has not changed.
     $row = $event->getRow();
@@ -96,6 +107,12 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
    *   $event Contains information on which profile by user id is deleted.
    */
   public function migratePostRowDelete(MigrateRowDeleteEvent $event) {
+
+    // This event gets thrown for all migrations, so check that first.
+    if ($event->getMigration()->id() !== 'earth_capx_importer') {
+      return;
+    }
+
     $destination_ids = $event->getDestinationIdValues();
     $destination = 0;
     if (!empty($destination_ids['uid'])) {

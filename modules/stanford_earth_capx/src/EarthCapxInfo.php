@@ -45,7 +45,7 @@ class EarthCapxInfo {
    * @param string $su_id
    *   SUNet ID.
    */
-  public function __construct(string $su_id = "") {
+  public function __construct(string $su_id = NULL) {
     // $status will get set here depending on whether profile is valid and
     // whether it is new or already exists in the Drupal system.
     $this->sunetid = "";
