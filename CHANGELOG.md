@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha8
+--------------------------------------------------------------------------------
+_Release Date: 2018-06-15
+
+_ Fixed stanford_earth_capx event listeners running for stanford_earth_event rows.
+_ Fixed stanford_earth_capx hook_migrate_prepare_row from running on event rows.
+
 8.x-1.0-alpha7
 --------------------------------------------------------------------------------
 _Release Date: 2018-06-14_
