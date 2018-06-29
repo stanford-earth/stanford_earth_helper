@@ -49,7 +49,7 @@ source:
     -
       name: field_s_event_more_info
       label: 'More info'
-      selector: link
+      selector: url
     -
       name: field_s_event_public
       label: 'Public event?'
