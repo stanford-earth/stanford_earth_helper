@@ -92,6 +92,7 @@ source:
     source_base_path: 'http://events.stanford.edu/'
     file_destination: 'public://stanford-event/importer/'
 process:
+  feed_url: stanford_earth_events_feed_url
   status: constants/status
   type: constants/type
   title: title
@@ -123,5 +124,10 @@ process:
   field_s_event_public/value: field_s_event_public
   field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
+  field_feed_url:
+    plugin: entity_generate
+    source: feed_url
+    default_values:
+      description: Default description
 destination:
   plugin: 'entity:node'
