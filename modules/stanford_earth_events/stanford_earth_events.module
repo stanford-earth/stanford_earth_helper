@@ -151,6 +151,7 @@ function stanford_earth_events_execute_migration(MigrationInterface $migration, 
  * Implements hook_migrate_prepare_row().
  */
 function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+ /*
   $plugin = $source->getDataParserPlugin();
   $url = null;
   if (get_class($plugin) === 'Drupal\stanford_earth_events\Plugin\migrate_plus\data_parser\EarthSimpleXml') {
@@ -162,5 +163,6 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
   if (!empty($url)) {
     $row->setSourceProperty('events_feed',$url);
   }
+ */
   return TRUE;
 }

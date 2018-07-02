@@ -10,7 +10,7 @@ migration_tags: null
 migration_group: earth_events
 label: 'Events importer'
 source:
-  plugin: url
+  plugin: earth_url
   data_fetcher_plugin: file
   urls:
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=266'
