@@ -1,3 +1,4 @@
+uuid: 35b465b1-369c-4ec2-9a13-b4649b833415
 langcode: en
 status: true
 dependencies: {  }
@@ -33,7 +34,7 @@ source:
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=2077'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=266&bookmarked'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=530'
-  data_parser_plugin: simple_xml
+  data_parser_plugin: earth_simple_xml
   item_selector: /EventList/Event
   fields:
     -
@@ -92,7 +93,6 @@ source:
     source_base_path: 'http://events.stanford.edu/'
     file_destination: 'public://stanford-event/importer/'
 process:
-  feed_url: stanford_earth_events_feed_url
   status: constants/status
   type: constants/type
   title: title
@@ -126,7 +126,12 @@ process:
   field_s_event_where/value: field_s_event_where
   field_feed_url:
     plugin: entity_generate
-    source: feed_url
+    source: events_feed
+    value_key: name
+    bundle_key: vid
+    bundle: events_feeds
+    entity_type: taxonomy_term
+    ignore_case: true
     default_values:
       description: Default description
 destination:
