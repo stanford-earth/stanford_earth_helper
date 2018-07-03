@@ -1,4 +1,3 @@
-uuid: 35b465b1-369c-4ec2-9a13-b4649b833415
 langcode: en
 status: true
 dependencies: {  }
@@ -10,7 +9,7 @@ migration_tags: null
 migration_group: earth_events
 label: 'Events importer'
 source:
-  plugin: earth_url
+  plugin: stanford_earth_url
   data_fetcher_plugin: file
   urls:
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=266'
@@ -34,7 +33,7 @@ source:
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=2077'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=266&bookmarked'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=530'
-  data_parser_plugin: earth_simple_xml
+  data_parser_plugin: stanford_earth_simple_xml
   item_selector: /EventList/Event
   fields:
     -
@@ -124,15 +123,13 @@ process:
   field_s_event_public/value: field_s_event_public
   field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
-  field_feed_url:
-    plugin: entity_generate
-    source: events_feed
+  field_s_event_feed_url:
+    plugin: entity_lookup
+    source: stanford_earth_feed_url
     value_key: name
     bundle_key: vid
-    bundle: events_feeds
+    bundle: stanford_earth_event_feeds
     entity_type: taxonomy_term
     ignore_case: true
-    default_values:
-      description: Default description
 destination:
   plugin: 'entity:node'

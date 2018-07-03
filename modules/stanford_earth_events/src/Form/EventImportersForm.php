@@ -129,9 +129,9 @@ class EventImportersForm extends ConfigFormBase {
     foreach (array_merge($listed, $unlisted) as $name) {
       $properties = [
         'name' => $name,
-        'vid' => 'events_feeds',
+        'vid' => 'stanford_earth_event_feeds',
         ];
-      $terms = \Drupal::entityManager()
+      $terms = \Drupal::entityTypeManager()
         ->getStorage('taxonomy_term')
         ->loadByProperties($properties);
       if (empty($terms)) {
@@ -145,7 +145,8 @@ class EventImportersForm extends ConfigFormBase {
         if (!empty($title)) {
           $properties['description'] = $title;
         }
-        $entity = \Drupal::entityManager()->getStorage('taxonomy_term')->create($properties);
+        $entity = \Drupal::entityTypeManager()->
+          getStorage('taxonomy_term')->create($properties);
         $entity->save();
       }
     }
