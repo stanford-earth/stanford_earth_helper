@@ -126,6 +126,30 @@ class EventImportersForm extends ConfigFormBase {
       ->set('source.urls', array_filter($listed))
       ->save();
 
+    foreach (array_merge($listed, $unlisted) as $name) {
+      $properties = [
+        'name' => $name,
+        'vid' => 'events_feeds',
+        ];
+      $terms = \Drupal::entityManager()
+        ->getStorage('taxonomy_term')
+        ->loadByProperties($properties);
+      if (empty($terms)) {
+        $title = '';
+        $contents = file_get_contents($name);
+        $xml = simplexml_load_string($contents);
+        $title_attr = $xml->xpath('title');
+        if (!empty($title_attr)) {
+          $title = $title_attr[0]->__toString();
+        }
+        if (!empty($title)) {
+          $properties['description'] = $title;
+        }
+        $entity = \Drupal::entityManager()->getStorage('taxonomy_term')->create($properties);
+        $entity->save();
+      }
+    }
+
     // Clear out all caches to ensure the config gets picked up.
     drupal_flush_all_caches();
 
