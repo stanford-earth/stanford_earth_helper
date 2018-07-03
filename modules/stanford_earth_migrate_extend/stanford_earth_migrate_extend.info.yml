@@ -1,0 +1,9 @@
+name: 'Stanford Earth Migrate Extend'
+type: module
+description: 'Extends Url, SimpleXml and Json classes from migrate_plus'
+core: 8.x
+package: Stanford
+version: 8.x-1.0-dev
+dependencies:
+  - migrate
+  - migrate_plus
