@@ -19,7 +19,7 @@ class StanfordEarthFeedUrl extends ProcessPluginBase {
    * {@inheritdoc}
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    return $value;
+    return $row->getSourceProperty('current_feed_url');
   }
   
 }
