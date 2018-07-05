@@ -12,7 +12,7 @@ use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
  *   title = @Translation("Stanford Earth JSON")
  * )
  */
-class StanfordEarthSimpleXml extends Json {
+class StanfordEarthJson extends Json {
 
   protected $activeUrl;
 
