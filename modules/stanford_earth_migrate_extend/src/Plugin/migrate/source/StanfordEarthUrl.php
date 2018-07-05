@@ -39,9 +39,9 @@ class StanfordEarthUrl extends Url {
 
       $row_data = $this->getIterator()->current() + $this->configuration;
 
-      // start new code - ksharp - 2018-07-03
+      // Start new code - ksharp - 2018-07-03.
       $plugin = $this->getDataParserPlugin();
-      $curUrl = null;
+      $curUrl = NULL;
       if (get_class($plugin) === 'Drupal\stanford_earth_migrate_extend\Plugin\migrate_plus\data_parser\StanfordEarthSimpleXml') {
         $activeUrl = $plugin->getActiveUrl();
         if (!empty($activeUrl) && !empty($row_data['urls'][$activeUrl])) {
@@ -51,8 +51,8 @@ class StanfordEarthUrl extends Url {
       if (!empty($curUrl)) {
         $row_data['current_feed_url'] = $curUrl;
       }
-      // end new code - ksharp
-      
+      // End new code - ksharp.
+      //
       $this->fetchNextRow();
       $row = new Row($row_data, $this->migration->getSourcePlugin()
         ->getIds(), $this->migration->getDestinationIds());
@@ -90,5 +90,5 @@ class StanfordEarthUrl extends Url {
       }
     }
   }
-  
+
 }

@@ -14,12 +14,12 @@ use Drupal\migrate\Row;
  * )
  */
 class StanfordEarthFeedUrl extends ProcessPluginBase {
-  
+
   /**
    * {@inheritdoc}
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     return $row->getSourceProperty('current_feed_url');
   }
-  
+
 }

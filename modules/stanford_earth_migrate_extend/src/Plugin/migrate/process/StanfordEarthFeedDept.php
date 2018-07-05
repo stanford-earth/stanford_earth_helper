@@ -14,12 +14,12 @@ use Drupal\migrate\Row;
  * )
  */
 class StanfordEarthFeedDept extends ProcessPluginBase {
-  
+
   /**
    * {@inheritdoc}
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
-    $department = null;
+    $department = NULL;
     $properties = [
       'name' => $row->getSourceProperty('current_feed_url'),
       'vid' => 'stanford_earth_event_feeds',
@@ -28,21 +28,27 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
       ->getStorage('taxonomy_term')
       ->loadByProperties($properties);
     if (!empty($terms)) {
-      foreach ($terms as $tid => $term) {
+      foreach ($terms as $term) {
         $description = $term->description->value;
-        if (strpos($description, 'energy resources engineering')!== FALSE) {
+        if (strpos($description, 'energy resources engineering') !== FALSE) {
           $department = "Energy Resources Engineering";
-        } else if (strpos($description, "emmett") !== FALSE) {
+        }
+        elseif (strpos($description, "emmett") !== FALSE) {
           $department = "Emmett Interdisciplinary Program in Environment & Resources";
-        } else if (strpos($description, 'earth system science') !== FALSE) {
+        }
+        elseif (strpos($description, 'earth system science') !== FALSE) {
           $department = "Earth System Science";
-        } else if (strpos($description, 'geophysics') !== FALSE) {
+        }
+        elseif (strpos($description, 'geophysics') !== FALSE) {
           $department = "Geophysics";
-        } else if (strpos($description, 'earth systems program') !== FALSE) {
+        }
+        elseif (strpos($description, 'earth systems program') !== FALSE) {
           $department = "Earth Systems Program";
-        } else if (strpos($description, 'geological science') !== FALSE) {
+        }
+        elseif (strpos($description, 'geological science') !== FALSE) {
           $department = "Geological Sciences";
-        } else if (strpos($description, 'sustainability') !== FALSE) {
+        }
+        elseif (strpos($description, 'sustainability') !== FALSE) {
           $department = "Sustainability Science and Practice";
         }
         break;
@@ -50,5 +56,5 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
     }
     return $department;
   }
-  
+
 }

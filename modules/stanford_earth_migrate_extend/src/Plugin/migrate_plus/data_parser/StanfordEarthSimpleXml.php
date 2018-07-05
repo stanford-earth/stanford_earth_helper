@@ -17,12 +17,8 @@ class StanfordEarthSimpleXml extends SimpleXml {
   protected $activeUrl;
 
   /**
-   * {@inheritdoc}
+   * Return the protected activeUrl index into the urls array.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-  }
-
   public function getActiveUrl() {
     return $this->activeUrl;
   }
