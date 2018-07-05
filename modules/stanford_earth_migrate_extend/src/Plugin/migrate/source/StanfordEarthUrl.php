@@ -40,9 +40,10 @@ class StanfordEarthUrl extends Url {
       $row_data = $this->getIterator()->current() + $this->configuration;
 
       // Start new code - ksharp - 2018-07-03.
+      // We need to know the URL from which the current row is gotten.
       $plugin = $this->getDataParserPlugin();
       $curUrl = NULL;
-      if (get_class($plugin) === 'Drupal\stanford_earth_migrate_extend\Plugin\migrate_plus\data_parser\StanfordEarthSimpleXml') {
+      if (method_exists($plugin, "getActiveUrl")) {
         $activeUrl = $plugin->getActiveUrl();
         if (!empty($activeUrl) && !empty($row_data['urls'][$activeUrl])) {
           $curUrl = $row_data['urls'][$activeUrl];
