@@ -9,7 +9,7 @@ migration_tags: null
 migration_group: earth_events
 label: 'Events importer'
 source:
-  plugin: url
+  plugin: stanford_earth_url
   data_fetcher_plugin: file
   urls:
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=266'
@@ -33,7 +33,7 @@ source:
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=2077'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=266&bookmarked'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=530'
-  data_parser_plugin: simple_xml
+  data_parser_plugin: stanford_earth_simple_xml
   item_selector: /EventList/Event
   fields:
     -
@@ -63,7 +63,7 @@ source:
     -
       name: field_s_event_more_info
       label: 'More info'
-      selector: link
+      selector: url
     -
       name: field_s_event_public
       label: 'Public event?'
@@ -92,6 +92,10 @@ source:
     source_base_path: 'http://events.stanford.edu/'
     file_destination: 'public://stanford-event/importer/'
 process:
+  feed_urls:
+    plugin: stanford_earth_feed_url
+  feed_dept:
+    plugin: stanford_earth_feed_dept
   status: constants/status
   type: constants/type
   title: title
@@ -123,5 +127,21 @@ process:
   field_s_event_public/value: field_s_event_public
   field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
+  field_s_event_feed_url:
+    plugin: entity_lookup
+    source: "@feed_urls"
+    value_key: name
+    bundle_key: vid
+    bundle: stanford_earth_event_feeds
+    entity_type: taxonomy_term
+    ignore_case: true
+  field_s_event_department:
+    plugin: entity_lookup
+    source: "@feed_dept"
+    value_key: name
+    bundle_key: vid
+    bundle: department_program
+    entity_type: taxonomy_term
+    ignore_case: true
 destination:
   plugin: 'entity:node'
