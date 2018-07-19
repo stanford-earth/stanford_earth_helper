@@ -1,5 +1,13 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha9
+--------------------------------------------------------------------------------
+_Release Date: 2018-07-18
+
+_ Fixed Events import to display proper "more info" link.
+_ Tag imported events with appropriate department/program.
+_ Added support for next version which will track Profile import workgroups.
+
 8.x-1.0-alpha8
 --------------------------------------------------------------------------------
 _Release Date: 2018-06-15
