@@ -51,10 +51,6 @@ source:
       label: 'More info'
       selector: url
     -
-      name: field_s_event_public
-      label: 'Public event?'
-      selector: status
-    -
       name: field_s_event_tags
       label: Tags
       selector: Keywords/tag
@@ -66,6 +62,14 @@ source:
       name: field_s_event_where
       label: Location
       selector: locationText
+    -
+      name: field_event_date_end_time
+      label: 'End Date'
+      selector: isoEventEndDate
+    -
+      name: field_sponsor
+      label: 'Sponsor'
+      selector: sponsor
   ids:
     guid:
       type: string
@@ -102,6 +106,18 @@ process:
       from_format: U
       to_format: 'Y-m-d\TH:i:s'
       timezone: 'Etc/GMT'
+  field_event_date_end_time/value:
+    -
+      plugin: format_date
+      source: field_event_date_end_time
+      from_format: 'Y-m-d H:i:s O'
+      to_format: U
+      timezone: 'Etc/GMT'
+    -
+      plugin: format_date
+      from_format: U
+      to_format: 'Y-m-d\TH:i:s'
+      timezone: 'Etc/GMT'
   field_s_event_image:
     plugin: image_import
     source: field_s_event_image
@@ -112,7 +128,7 @@ process:
     skip_on_missing_source: true
   field_s_event_more_info/uri: field_s_event_more_info
   field_s_event_more_info/title: title
-  field_s_event_public/value: field_s_event_public
+  field_s_event_public/value: constants/promote
   field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
   field_s_event_feed_url:
@@ -131,5 +147,7 @@ process:
     bundle: department_program
     entity_type: taxonomy_term
     ignore_case: true
+  field_sponsor: field_sponsor
 destination:
   plugin: 'entity:node'
+
