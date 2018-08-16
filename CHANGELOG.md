@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha10
+--------------------------------------------------------------------------------
+_Release Date: 2018-08-16
+
+_ Updated event migration configurations per EARTH-831
+_ Fixed event migration problem on first URL in array (index 0).
+
 8.x-1.0-alpha9
 --------------------------------------------------------------------------------
 _Release Date: 2018-07-18
