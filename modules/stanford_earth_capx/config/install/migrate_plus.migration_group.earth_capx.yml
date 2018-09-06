@@ -6,4 +6,150 @@ label: Profiles
 description: 'Earth Profiles (CAP) Importer.'
 source_type: null
 module: null
-shared_configuration: null
+shared_configuration:
+  langcode: en
+  status: true
+  dependencies: {  }
+  class: null
+  field_plugin_method: null
+  cck_plugin_method: null
+  migration_tags: null
+  source:
+    plugin: url
+    data_fetcher_plugin: http
+    data_parser_plugin: json
+    authentication:
+      plugin: oauth2
+      base_uri: 'https://authz.stanford.edu'
+      token_url: /oauth/token
+      grant_type: client_credentials
+      client_id: earth-sciences
+      client_secret: to-be-replaced-by-real-secret
+    headers:
+      Accept: 'application/json; charset=utf-8'
+      Content-Type: application/json
+    constants:
+      status: 1
+      basic_html: basic_html
+      file_destination: 'public://'
+      file_extension: '.jpg'
+      image_alt_value: 'profile photo'
+      password_length: 55
+    item_selector: values
+    fields:
+      -
+        name: sunetid
+        label: sunetid
+        selector: uid
+      -
+        name: display_name
+        label: 'Display Name'
+        selector: displayName
+      -
+        name: last_name
+        label: 'Last Name'
+        selector: names/preferred/lastName
+      -
+        name: first_name
+        label: 'First Name'
+        selector: names/preferred/firstName
+      -
+        name: short_title
+        label: 'CAP Short Title'
+        selector: shortTitle/title
+      -
+        name: biosketch
+        label: 'Biography'
+        selector: bio/text
+      -
+        name: email
+        label: 'Email'
+        selector: primaryContact/email
+      -
+        name: alias
+        label: 'Alias'
+        selector: alias
+      -
+        name: profile_photo
+        label: 'Profile Photo'
+        selector: profilePhotos/bigger/url
+      -
+        name: appointments
+        label: 'Administrative Appointments'
+        selector: longTitle/label/text
+      -
+        name: links
+        label: 'Internet Links'
+        selector: internetLinks
+      -
+        name: phone
+        label: 'Phone Numbers'
+        selector: primaryContact/phoneNumbers
+      -
+        name: office
+        label: 'Office Locations'
+        selector: contacts
+      -
+        name: etag
+        label: 'CAP API Etag'
+        selector: meta/etag
+    ids:
+      sunetid:
+        type: string
+  process:
+    name: sunetid
+    mail: email
+    init: email
+    pass:
+      plugin: callback
+      callable: user_password
+      source: constants/password_length
+    status: constants/status
+    field_s_person_display_name: display_name
+    field_s_person_email: email
+    field_s_person_subtitle: short_title
+    field_s_person_last_name: last_name
+    field_s_person_first_name: first_name
+    field_s_person_bio/value:
+      -
+        plugin: get
+        source: biosketch
+      -
+        plugin: default_value
+        default_value: ""
+    field_s_person_bio/format: constants/basic_html
+    field_s_person_alias: alias
+    field_s_person_academic_appt: appointments
+    field_s_person_links:
+      plugin: sub_process
+      source: links
+      process:
+        uri: url
+        title: label/text
+    field_s_person_phone:
+      plugin: sub_process
+      source: phone
+      process:
+        value: phone
+    field_s_person_office:
+      plugin: sub_process
+      source: office
+      process:
+        value: address
+    image_file_name:
+      plugin: concat
+      source:
+        -  constants/file_destination
+        -  alias
+        -  constants/file_extension
+    field_s_person_image:
+      plugin: stanford_earth_cap_profile_image
+      source: profile_photo
+      destination: "@image_file_name"
+      alt: !file
+      title: alias
+      skip_on_error: true
+  destination:
+    plugin: 'entity:user'
+  migration_dependencies: null
+

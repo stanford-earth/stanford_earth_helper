@@ -68,7 +68,7 @@ class EarthCapxImportersForm extends ConfigFormBase {
 
     $form['workgroups'] = [
       '#type' => 'textarea',
-      '#title' => $this->t('Workgroups for whom Stanford Profiles are imported'),
+      '#title' => $this->t('Workgroups for which Stanford Profiles are imported'),
       '#default_value' => $wg_values,
       '#description' => $this->t("Enter one workgroup per line"),
       '#rows' => 30,
@@ -142,14 +142,29 @@ class EarthCapxImportersForm extends ConfigFormBase {
     // Actually do the save of the new configuration.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
-
     // Save the new configuration.
     $this->configFactory->getEditable('stanford.earth.capx.workgroups')
       ->set('stanford_earth_capx_workgroups', $wgs)
       ->save();
 
+    // delete the old migrations
+    $eMigrations = $this->configFactory->listAll('migrate_plus.migration.capx');
+    foreach ($eMigrations as $eMigration) {
+      $this->configFactory->getEditable($eMigration)->delete();
+    }
+
     $allTermId = $this->updateTerms('people_search_terms','All Stanford People');
     foreach ($wgs as $wg) {
+      // create migration config
+      $wg_cfg = str_replace(':', '.', $wg);
+      $config = $this->configFactory->getEditable('migrate_plus.migration.earth.capx.' . $wg_cfg);
+      $config->set('id', 'capx_' . $wg);
+      $config->set('migration_group', 'earth_capx');
+      $config->set('label', '\'Profiles for ' . $wg . '\'');
+      $config->set('source.urls', ['\'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000\'']);
+      $config->save();
+
+      // update taxonomy
       $dept = '';
       $ptype = [];
       $wgtest = explode(":", $wg);
