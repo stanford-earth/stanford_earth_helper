@@ -1,0 +1,7 @@
+stanford_earth_capx.importers:
+  path: '/admin/config/people/capx_workgroups'
+  defaults:
+    _title: 'Stanford Profile Workgroups for Import'
+    _form: '\Drupal\stanford_earth_capx\Form\EarthCapxImportersForm'
+  requirements:
+    _permission: 'access administration pages'

@@ -35,7 +35,7 @@ class EarthCapxInfo {
   private $sunetid;
   private $etag;
   private $profilePhotoTimestamp;
-  private $entity_id;
+  private $entityId;
   private $profilePhotoFid;
   private $status;
 
@@ -205,7 +205,7 @@ class EarthCapxInfo {
       if ($this->etag !== $source_etag ||
         $this->profilePhotoTimestamp !== $source_ts ||
         $this->profilePhotoFid !== $photo_id ||
-        $this->entity_id !== $entity_id) {
+        $this->entityId !== $entity_id) {
         // The information is different, so delete record and set status = NEW.
         \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
           ->condition('sunetid', $this->sunetid)
@@ -219,7 +219,7 @@ class EarthCapxInfo {
       $this->etag = $source_etag;
       $this->profilePhotoTimestamp = $source_ts;
       $this->profilePhotoFid = $photo_id;
-      $this->entity_id = $entity_id;
+      $this->entityId = $entity_id;
       try {
         \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
           ->fields([
@@ -251,6 +251,18 @@ class EarthCapxInfo {
       \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
         ->condition('entity_id', $entity_id)
         ->execute();
+    }
+  }
+
+  /**
+   * Return true if this is a new profile import.
+   */
+  public function isNew() {
+    if ($this->status == self::EARTH_CAPX_INFO_NEW) {
+      return TRUE;
+    }
+    else {
+      return FALSE;
     }
   }
 

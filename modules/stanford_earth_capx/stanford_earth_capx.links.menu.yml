@@ -1,0 +1,6 @@
+stanford_earth_capx.importers:
+  title: Stanford Profiles Importer Settings
+  route_name: stanford_earth_capx.importers
+  parent: user.admin_index
+  description: 'Configure Stanford Profile workgroups.'
+  weight: 0

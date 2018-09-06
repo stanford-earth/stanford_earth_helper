@@ -45,7 +45,7 @@ class StanfordEarthUrl extends Url {
       $curUrl = NULL;
       if (method_exists($plugin, "getActiveUrl")) {
         $activeUrl = $plugin->getActiveUrl();
-        if (!empty($row_data['urls'][$activeUrl])) {
+        if (!empty($activeUrl) && !empty($row_data['urls'][$activeUrl])) {
           $curUrl = $row_data['urls'][$activeUrl];
         }
       }
