@@ -152,4 +152,9 @@ shared_configuration:
   destination:
     plugin: 'entity:user'
   migration_dependencies: null
+workgroups:
+  - earthsci:eess-faculty-regular
+  - earthsci:ere-faculty-regular
+  - earthsci:ges-faculty-regular
+  - earthsci:geophysics-faculty-regular
 

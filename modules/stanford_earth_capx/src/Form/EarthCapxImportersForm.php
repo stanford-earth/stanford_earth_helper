@@ -51,7 +51,7 @@ class EarthCapxImportersForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'stanford.earth.capx.workgroups',
+      'migrate_plus.migration_group.earth_capx',
     ];
   }
 
@@ -61,7 +61,7 @@ class EarthCapxImportersForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
 
     // Create a one field form for editing the list of workgroups for profiles.
-    $wgs = $this->config('stanford.earth.capx.workgroups')->get('stanford_earth_capx_workgroups');
+    $wgs = $this->config('migrate_plus.migration_group.earth_capx')->get('workgroups');
 
     // Fetch their current values.
     $wg_values = is_array($wgs) ? implode($wgs, PHP_EOL) : $wgs;
@@ -143,12 +143,13 @@ class EarthCapxImportersForm extends ConfigFormBase {
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
     // Save the new configuration.
-    $this->configFactory->getEditable('stanford.earth.capx.workgroups')
-      ->set('stanford_earth_capx_workgroups', $wgs)
+    $this->configFactory->getEditable('migrate_plus.migration_group.earth_capx')
+      ->set('workgroups', $wgs)
       ->save();
 
     // delete the old migrations
-    $eMigrations = $this->configFactory->listAll('migrate_plus.migration.capx');
+    $this->configFactory->getEditable('migrate_plus.migration.earth_capx_importer')->delete();
+    $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth.capx');
     foreach ($eMigrations as $eMigration) {
       $this->configFactory->getEditable($eMigration)->delete();
     }
@@ -158,7 +159,7 @@ class EarthCapxImportersForm extends ConfigFormBase {
       // create migration config
       $wg_cfg = str_replace(':', '.', $wg);
       $config = $this->configFactory->getEditable('migrate_plus.migration.earth.capx.' . $wg_cfg);
-      $config->set('id', 'capx_' . $wg);
+      $config->set('id', 'capx.' . $wg);
       $config->set('migration_group', 'earth_capx');
       $config->set('label', '\'Profiles for ' . $wg . '\'');
       $config->set('source.urls', ['\'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000\'']);
