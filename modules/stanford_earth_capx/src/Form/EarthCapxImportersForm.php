@@ -158,11 +158,12 @@ class EarthCapxImportersForm extends ConfigFormBase {
     foreach ($wgs as $wg) {
       // create migration config
       $wg_cfg = str_replace(':', '.', $wg);
+      $config = $this->configFactory->
       $config = $this->configFactory->getEditable('migrate_plus.migration.earth.capx.' . $wg_cfg);
       $config->set('id', 'capx.' . $wg);
       $config->set('migration_group', 'earth_capx');
-      $config->set('label', '\'Profiles for ' . $wg . '\'');
-      $config->set('source.urls', ['\'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000\'']);
+      $config->set('label', 'Profiles for ' . $wg );
+      $config->set('source.urls', ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000']);
       $config->save();
 
       // update taxonomy
