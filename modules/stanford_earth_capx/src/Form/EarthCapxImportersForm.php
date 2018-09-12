@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Serialization\Yaml;
 
 /**
  * ListedEventsForm description.
@@ -142,7 +143,7 @@ class EarthCapxImportersForm extends ConfigFormBase {
     // Actually do the save of the new configuration.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
-    // Save the new configuration.
+    //// Save the new configuration.
     $this->configFactory->getEditable('migrate_plus.migration_group.earth_capx')
       ->set('workgroups', $wgs)
       ->save();
@@ -157,14 +158,13 @@ class EarthCapxImportersForm extends ConfigFormBase {
     $allTermId = $this->updateTerms('people_search_terms','All Stanford People');
     foreach ($wgs as $wg) {
       // create migration config
-      $wg_cfg = str_replace(':', '.', $wg);
-      $config = $this->configFactory->
-      $config = $this->configFactory->getEditable('migrate_plus.migration.earth.capx.' . $wg_cfg);
-      $config->set('id', 'capx.' . $wg);
-      $config->set('migration_group', 'earth_capx');
-      $config->set('label', 'Profiles for ' . $wg );
-      $config->set('source.urls', ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000']);
-      $config->save();
+      $fp = drupal_get_path('module','stanford_earth_capx');
+      $fp_array = Yaml::decode(file_get_contents($fp . '/stanford_earth_capx.template.yml'));
+      $random_id = random_int(0,10000); // base64_encode(random_bytes(6));
+      $fp_array['id'] = $fp_array['id'] . '_' . strval($random_id);
+      $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000'];
+      $config = $this->configFactory->getEditable($fp_array['id']);
+      $config->setData($fp_array)->save();
 
       // update taxonomy
       $dept = '';

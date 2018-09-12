@@ -22,11 +22,6 @@ source:
     file_extension: '.jpg'
     image_alt_value: 'profile photo'
     password_length: 55
-  urls:
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:eess-faculty-regular&ps=1000'
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:ere-faculty-regular&ps=1000'
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:geophysics-faculty-regular&ps=1000'
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:ges-faculty-regular&ps=1000'
   item_selector: values
   fields:
     -

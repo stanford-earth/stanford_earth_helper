@@ -43,7 +43,8 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   // We need to clean up the phones data from the CAP API since it's an
   // array without keys. This is where we rewrite the array.
   // This hook gets called for every migration so check that it's the CAP-X one.
-  if ($migration->id() === 'earth_capx_importer') {
+  if (substr($migration->id(),0,19) === 'earth_capx_importer') {
+  //if ($migration->id() === 'earth_capx_importer') {
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
     foreach ($phones as $ph) {
