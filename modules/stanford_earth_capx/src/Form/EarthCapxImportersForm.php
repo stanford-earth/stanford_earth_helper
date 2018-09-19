@@ -4,14 +4,25 @@ namespace Drupal\stanford_earth_capx\Form;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\ConfigFormBase;
+use Drupal\config\Form\ConfigSingleImportForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Serialization\Yaml;
+use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Config\StorageInterface;
+use Drupal\Core\Render\RendererInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Drupal\Core\Config\ConfigManagerInterface;
+use Drupal\Core\Lock\LockBackendInterface;
+use Drupal\Core\Config\TypedConfigManagerInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Extension\ModuleInstallerInterface;
+use Drupal\Core\Extension\ThemeHandlerInterface;
 
 /**
  * ListedEventsForm description.
  */
-class EarthCapxImportersForm extends ConfigFormBase {
+class EarthCapxImportersForm extends ConfigSingleImportForm {
 
   /**
    * EntityTypeManager service.
@@ -23,12 +34,38 @@ class EarthCapxImportersForm extends ConfigFormBase {
   /**
    * EventImportersForm constructor.
    *
+   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   *   The entity manager.
+   * @param \Drupal\Core\Config\StorageInterface $config_storage
+   *   The config storage.
+   * @param \Drupal\Core\Render\RendererInterface $renderer
+   *   The renderer service.
+   * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
+   *   The event dispatcher used to notify subscribers of config import events.
+   * @param \Drupal\Core\Config\ConfigManagerInterface $config_manager
+   *   The configuration manager.
+   * @param \Drupal\Core\Lock\LockBackendInterface $lock
+   *   The lock backend to ensure multiple imports do not occur at the same time.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typed_config
+   *   The typed configuration manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
+   * @param \Drupal\Core\Extension\ModuleInstallerInterface $module_installer
+   *   The module installer.
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $theme_handler
+   *   The theme handler.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The EntityTypeManager service.
    */
-  public function __construct(EntityTypeManager $entityTypeManager) {
-
+  public function __construct(EntityManagerInterface $entity_manager, StorageInterface $config_storage,
+                              RendererInterface $renderer, EventDispatcherInterface $event_dispatcher,
+                              ConfigManagerInterface $config_manager, LockBackendInterface $lock,
+                              TypedConfigManagerInterface $typed_config, ModuleHandlerInterface $module_handler,
+                              ModuleInstallerInterface $module_installer, ThemeHandlerInterface $theme_handler,
+                              EntityTypeManager $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
+    parent::__construct($entity_manager, $config_storage, $renderer, $event_dispatcher, $config_manager, $lock,
+                              $typed_config, $module_handler, $module_installer, $theme_handler);
   }
 
   /**
@@ -36,6 +73,16 @@ class EarthCapxImportersForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('entity.manager'),
+      $container->get('config.storage'),
+      $container->get('renderer'),
+      $container->get('event_dispatcher'),
+      $container->get('config.manager'),
+      $container->get('lock.persistent'),
+      $container->get('config.typed'),
+      $container->get('module_handler'),
+      $container->get('module_installer'),
+      $container->get('theme_handler'),
       $container->get('entity_type.manager')
     );
   }
@@ -61,11 +108,28 @@ class EarthCapxImportersForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
+    $form = parent::buildForm($form, $form_state);
+    // When this is the confirmation step fall through to the confirmation form.
+    if ($this->data) {
+      return $form;
+    }
+
     // Create a one field form for editing the list of workgroups for profiles.
     $wgs = $this->config('migrate_plus.migration_group.earth_capx')->get('workgroups');
 
     // Fetch their current values.
     $wg_values = is_array($wgs) ? implode($wgs, PHP_EOL) : $wgs;
+
+    // Read the raw data for this config name, encode it, and display it.
+    $template = $this->configStorage->read('migrate_plus.migration.earth_capx_template');
+    $template['migration_group'] = 'earth_capx';
+    if (!empty($template['uuid'])) {
+      unset($template['uuid']);
+    }
+    $form['import']['#default_value'] = Yaml::encode($template);
+    $form['config_type']['#default_value'] = 'migration';
+    $form['config_type']['#disabled'] = true;
+    $form['advanced']['custom_entity_id']['#disabled'] = true;
 
     $form['workgroups'] = [
       '#type' => 'textarea',
@@ -75,7 +139,7 @@ class EarthCapxImportersForm extends ConfigFormBase {
       '#rows' => 30,
     ];
 
-    return parent::buildForm($form, $form_state);
+    return $form; //parent::buildForm($form, $form_state);
   }
 
   /**
@@ -149,23 +213,55 @@ class EarthCapxImportersForm extends ConfigFormBase {
       ->save();
 
     // delete the old migrations
-    $this->configFactory->getEditable('migrate_plus.migration.earth_capx_importer')->delete();
-    $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth.capx');
+    //$this->configFactory->getEditable('migrate_plus.migration.earth_capx_importer')->delete();
+    $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth.capx_import');
     foreach ($eMigrations as $eMigration) {
       $this->configFactory->getEditable($eMigration)->delete();
     }
 
     $allTermId = $this->updateTerms('people_search_terms','All Stanford People');
+    $fp_array = Yaml::decode($form_state->getValue('import'));
+    $batch = [
+      'operations' => [],
+      'finished' => [ConfigSync::class, 'finishBatch'],
+      'title' => $this->t('Importing configuration'),
+      'init_message' => $this->t('Starting configuration import.'),
+      'progress_message' => $this->t('Completed @current step of @total.'),
+      'error_message' => $this->t('Configuration import has encountered an error.'),
+    ];
     foreach ($wgs as $wg) {
       // create migration config
-      $fp = drupal_get_path('module','stanford_earth_capx');
-      $fp_array = Yaml::decode(file_get_contents($fp . '/stanford_earth_capx.template.yml'));
+      //$fp = drupal_get_path('module','stanford_earth_capx');
+      //$fp_array = Yaml::decode($form_state->getValue('import'));
       $random_id = random_int(0,10000); // base64_encode(random_bytes(6));
-      $fp_array['id'] = $fp_array['id'] . '_' . strval($random_id);
+      $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
       $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000'];
-      $config = $this->configFactory->getEditable($fp_array['id']);
-      $config->setData($fp_array)->save();
+      $fp_array['label'] = 'Profiles for ' . $wg;
+      $form_state->setValue('import', Yaml::encode($fp_array));
+      parent::validateForm($form, $form_state);
 
+      $config_importer = $form_state->get('config_importer');
+      $config_importer->import();
+      /*
+      if ($config_importer->alreadyImporting()) {
+        drupal_set_message($this->t('Another request may be importing configuration already.'), 'error');
+      }
+      else {
+        try {
+          $sync_steps = $config_importer->initialize();
+          foreach ($sync_steps as $sync_step) {
+            $batch['operations'][] = [[ConfigSync::class, 'processBatch'], [$config_importer, $sync_step]];
+          }
+        }
+        catch (ConfigImporterException $e) {
+          // There are validation errors.
+          drupal_set_message($this->t('The configuration import failed for the following reasons:'), 'error');
+          foreach ($config_importer->getErrors() as $message) {
+            drupal_set_message($message, 'error');
+          }
+        }
+      }
+      */
       // update taxonomy
       $dept = '';
       $ptype = [];
@@ -229,11 +325,12 @@ class EarthCapxImportersForm extends ConfigFormBase {
         drupal_set_message('Invalid workgroup name ' . $wg . ' could not be processed.');
       }
     }
+    // batch_set($batch);
 
     // Clear out all caches to ensure the config gets picked up.
-    drupal_flush_all_caches();
+    //drupal_flush_all_caches();
 
-    parent::submitForm($form, $form_state);
+    //parent::submitForm($form, $form_state);
   }
 
 }
