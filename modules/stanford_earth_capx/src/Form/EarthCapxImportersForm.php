@@ -221,14 +221,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
 
     $allTermId = $this->updateTerms('people_search_terms','All Stanford People');
     $fp_array = Yaml::decode($form_state->getValue('import'));
-    $batch = [
-      'operations' => [],
-      'finished' => [ConfigSync::class, 'finishBatch'],
-      'title' => $this->t('Importing configuration'),
-      'init_message' => $this->t('Starting configuration import.'),
-      'progress_message' => $this->t('Completed @current step of @total.'),
-      'error_message' => $this->t('Configuration import has encountered an error.'),
-    ];
     foreach ($wgs as $wg) {
       // create migration config
       //$fp = drupal_get_path('module','stanford_earth_capx');
@@ -242,26 +234,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
 
       $config_importer = $form_state->get('config_importer');
       $config_importer->import();
-      /*
-      if ($config_importer->alreadyImporting()) {
-        drupal_set_message($this->t('Another request may be importing configuration already.'), 'error');
-      }
-      else {
-        try {
-          $sync_steps = $config_importer->initialize();
-          foreach ($sync_steps as $sync_step) {
-            $batch['operations'][] = [[ConfigSync::class, 'processBatch'], [$config_importer, $sync_step]];
-          }
-        }
-        catch (ConfigImporterException $e) {
-          // There are validation errors.
-          drupal_set_message($this->t('The configuration import failed for the following reasons:'), 'error');
-          foreach ($config_importer->getErrors() as $message) {
-            drupal_set_message($message, 'error');
-          }
-        }
-      }
-      */
+
       // update taxonomy
       $dept = '';
       $ptype = [];
@@ -325,7 +298,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         drupal_set_message('Invalid workgroup name ' . $wg . ' could not be processed.');
       }
     }
-    // batch_set($batch);
 
     // Clear out all caches to ensure the config gets picked up.
     //drupal_flush_all_caches();

@@ -5,3 +5,12 @@ stanford_earth_capx.importers:
     _form: '\Drupal\stanford_earth_capx\Form\EarthCapxImportersForm'
   requirements:
     _permission: 'access administration pages'
+stanford_earth_capx.update_all:
+  path: '/admin/config/people/capx_update_all'
+  defaults:
+    _title: 'Update all profiles'
+    _controller: '\Drupal\stanford_earth_capx\Controller\StanfordEarthCapxController::updateAll'
+
+  requirements:
+    _permission: 'access administration pages'
+
