@@ -47,8 +47,11 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   //if ($migration->id() === 'earth_capx_importer') {
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
-    foreach ($phones as $ph) {
-      $newphones[] = ['phone' => $ph];
+    if (!empty($phones) && is_array($phones)) {
+      $newphones = [];
+      foreach ($phones as $ph) {
+        $newphones[] = ['phone' => $ph];
+      }
     }
     $row->setSourceProperty('phone', $newphones);
   }

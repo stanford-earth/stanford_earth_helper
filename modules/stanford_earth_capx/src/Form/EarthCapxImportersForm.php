@@ -147,17 +147,34 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
+    $fp_array_original = Yaml::decode($form_state->getValue('import'));
+
     // Validate that the urls are in good format and no extra whitespace has
     // been added.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
 
     // Check for empty lines and valid urls on listed events.
-    foreach ($wgs as $v) {
+    foreach ($wgs as $wg) {
       // No empty lines.
-      if (empty($v)) {
+      if (empty($wg)) {
         $form_state->setErrorByName('workgroups', $this->t('Cannot have empty lines'));
+        return;
       }
+      /*
+      } else {
+        foreach ($wgs as $wg) {
+          $fp_array = $fp_array_original;
+          $random_id = random_int(0, 10000);
+          $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
+          $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000'];
+          $fp_array['label'] = 'Profiles for ' . $wg;
+          $form_state->setValue('import', Yaml::encode($fp_array));
+          parent::validateForm($form, $form_state);
+        }
+        $form_state->setValue('import', Yaml::encode($fp_array_original));
+      }
+      */
     }
   }
 
@@ -214,7 +231,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
 
     // delete the old migrations
     //$this->configFactory->getEditable('migrate_plus.migration.earth_capx_importer')->delete();
-    $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth.capx_import');
+    $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth_capx_import');
     foreach ($eMigrations as $eMigration) {
       $this->configFactory->getEditable($eMigration)->delete();
     }

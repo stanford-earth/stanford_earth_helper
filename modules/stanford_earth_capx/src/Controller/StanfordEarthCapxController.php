@@ -5,10 +5,12 @@ namespace Drupal\stanford_earth_capx\Controller;
 use Drupal\Core\Render\HtmlResponse;
 use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate_tools\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
+use Drupal\migrate_tools\MigrateBatchExecutable;
 
 /**
  * Redirect from earth to pangea controller.
@@ -23,17 +25,24 @@ class StanfordEarthCapxController extends ControllerBase {
         $eMigrations = \Drupal::configFactory()->listAll('migrate_plus.migration.earth_capx_import');
 
         foreach ($eMigrations as $eMigration) {
-            print 'importing '.$eMigration . '</br>';
-            //$migration = new Migration([$eMigration],'migration');
+            \Drupal::logger('type')->info('importing '.$eMigration);
+            $migration = Migration::load(substr($eMigration,strpos($eMigration,'earth')));
+            $mp = \Drupal::getContainer()->get('plugin.manager.migration');
+            $migration_plugin = $mp->createInstance($migration->id(), $migration->toArray());
+            $migrateMessage = new MigrateMessage();
+            $options = [
+              'limit' => 0,
+              'update' => 1,
+              'force' => 0,
+            ];
+
+            $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
+            $executable->batchImport();
+
             //$migration = Migration::load($eMigration);
             //$executable = new MigrateExecutable($migration, $log, ['update' => true]);
             //$executable->import();
         }
-        //$response = new TrustedRedirectResponse('\user');
-        \Drupal::service('page_cache_kill_switch')->trigger();
-        //$response->send();
-        $response = new HtmlResponse('Done!');
-        return $response;
-
+        return batch_process('/');
     }
 }
