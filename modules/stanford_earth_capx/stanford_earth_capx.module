@@ -59,6 +59,7 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
       $sunetuser = user_load_by_name($sunetid);
       if (!empty($sunetuser)) {
         $row->setSourceProperty('uid', intval($sunetuser->id()));
+        $row->setDestinationProperty('uid', intval($sunetuser->id()));
       }
     }
   }
