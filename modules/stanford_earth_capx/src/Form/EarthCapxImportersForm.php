@@ -221,6 +221,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
+    $save_max_exec = ini_get('max_execution_time');
+    ini_set('max_execution_time', 240);
     // Actually do the save of the new configuration.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
@@ -317,8 +319,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
 
     // Clear out all caches to ensure the config gets picked up.
-    //drupal_flush_all_caches();
-
+    drupal_flush_all_caches();
+    ini_set('max_execution_time', $save_max_exec);
     //parent::submitForm($form, $form_state);
   }
 
