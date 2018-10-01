@@ -31,6 +31,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    */
   protected $entityTypeManager;
 
+  private $wg_term_match;
+
   /**
    * EventImportersForm constructor.
    *
@@ -161,74 +163,29 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $form_state->setErrorByName('workgroups', $this->t('Cannot have empty lines'));
         return;
       }
-      /*
-      } else {
-        foreach ($wgs as $wg) {
-          $fp_array = $fp_array_original;
-          $random_id = random_int(0, 10000);
-          $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
-          $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000'];
-          $fp_array['label'] = 'Profiles for ' . $wg;
-          $form_state->setValue('import', Yaml::encode($fp_array));
-          parent::validateForm($form, $form_state);
-        }
-        $form_state->setValue('import', Yaml::encode($fp_array_original));
-      }
-      */
     }
   }
 
   /**
-   * Look for a taxonomy term, create if necessary, and return its tid.
+   * Return an array of people search terms from workgroup name
    *
-   * @param string $vocabulary
-   *   Taxonomy vocabulary to look in.
-   * @param string $term
-   *   Taxonomy term to look for in the vocabulary.
+   * @param string $department
+   *   Department acronym from workgroup; if null, terms for person type only.
+   * @param string $ptype
+   *   People Type from workgroup; if null, terms for department only.
+   * @param string $psubtype
+   *   People Sub-Type from workgroup; may be null.
    *
-   * @return string
-   *   Term id (tid) of term or FALSE if not found and uncreated.
+   * @return array
+   *   Array of search terms; empty array if both $department and $ptype NULL.
    */
-  private function updateTerms($vocabulary, $term, $parent = NULL) {
-    $properties = [
-      'name' => $term,
-      'vid' => $vocabulary,
-    ];
-  //  if (!empty($parent)) {
-  //    $properties['parent'] = $parent;
-  //  }
-    $terms = $this->entityTypeManager
-      ->getStorage('taxonomy_term')
-      ->loadByProperties($properties);
-    $termid = FALSE;
-    if (empty($terms)) {
-      $entity = $this->entityTypeManager
-        ->getStorage('taxonomy_term')->create($properties);
-      $entity->save();
-      $termid = $entity->id();
+  private function getTermNames($department = NULL, $ptype = NULL, $psubtype = NULL) {
+    if (empty($department) && empty($ptype)) {
+      return [];
     }
-    else {
-      foreach ($terms as $key => $value) {
-        $termid = strval($key);
-        break;
-      }
-    }
-    return $termid;
-  }
-
-  /**
-   * Return a corrected, capitalized department/program acronym from wg name
-   *
-   * @param string $wg_department
-   *   Department acronym from workgroup.
-   *
-   * @return string
-   *   Correct acronym for department/program or empty string if unknown.
-   */
-  private function fixDepartmentName($wg_department)
-  {
+    $terms[] = 'All People';
     $dept = '';
-    switch ($wg_department) {
+    switch ($department) {
       case 'ere':
         $dept = 'ERE';
         break;
@@ -251,11 +208,60 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $dept = 'SUSTAINABILITY';
         break;
     }
-    return $dept;
+    if (!empty($dept)) {
+      $terms[] = 'All ' . $dept;
+    }
+    if (!empty($ptype)) {
+      $terms[] = 'All ' . ucfirst($ptype);
+      if (!empty($psubtype)) {
+        $terms[] = 'All ' . ucfirst($psubtype) . ' ' . ucfirst($ptype);
+      }
+      if (!empty($dept)) {
+        $terms[] = $dept . ' ' . ucfirst($ptype);
+        if (!empty($psubtype)) {
+          $terms[] = $dept . ' ' . ucfirst($psubtype) . ' ' . ucfirst($ptype);
+        }
+      }
+    }
+    return $terms;
   }
 
-  private function updateSearchTerms($wg, $terms) {
-
+  /**
+   * Look for a taxonomy term and create if necessary; create term linking wg.
+   *
+   * @param array $terms
+   *   Taxonomy terms to look for in people_search_terms.
+   * @param string $wg
+   *   Create or update a workgroup term with the matching search terms.
+   *
+   */
+  private function updateSearchTerms($terms, $wg = NULL) {
+    $termids = [];
+    foreach ($terms as $term) {
+      $properties = [
+        'vid' => 'people_search_terms',
+        'name' => $term,
+      ];
+      $terms = $this->entityTypeManager
+        ->getStorage('taxonomy_term')
+        ->loadByProperties($properties);
+      $termid = FALSE;
+      if (empty($terms)) {
+        $entity = $this->entityTypeManager
+          ->getStorage('taxonomy_term')->create($properties);
+        $entity->save();
+        $termid = $entity->id();
+      }
+      else {
+        foreach ($terms as $key => $value) {
+          $termid = strval($key);
+          break;
+        }
+      }
+      if ($termid) {
+        $termids[] = $termid;
+      }
+    }
   }
 
   /**
@@ -280,13 +286,45 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $this->configFactory->getEditable($eMigration)->delete();
     }
 
-    $allTermId = $this->updateTerms('people_search_terms','All Stanford People');
+    $this->wg_term_match = [];
+
+    // make sure we have generic search terms for departments
+    $wg_depts = ['eiper', 'esys', 'ere', 'ess', 'geophysics', 'ges', 'ssp'];
+    foreach ($wg_depts as $wg_dept) {
+      $terms = $this->getTermNames($wg_dept);
+      if ($terms) {
+        $this->updateSearchTerms($terms);
+      }
+    }
+    // make sure we have generic search terms for faculty
+    foreach (['regular', 'emeritus', 'affiliated'] as $psubtype) {
+      $terms = $this->getTermNames(NULL, 'faculty', $psubtype);
+      if ($terms) {
+        $this->updateSearchTerms($terms);
+      }
+    }
+    // make sure we have generic search terms for postdocs
+    $terms = $this->getTermNames(NULL, 'postdocs');
+    $this->updateSearchTerms($terms);
+    // make sure we have generic search terms for students
+    foreach (['graduate', 'undergraduate'] as $psubtype) {
+      $terms = $this->getTermNames(NULL, 'students', $psubtype);
+      if ($terms) {
+        $this->updateSearchTerms($terms);
+      }
+    }
+    // make sure we have generic search terms for staff
+    foreach (['admin', 'research', 'teaching'] as $psubtype) {
+      $terms = $this->getTermNames(NULL, 'staff', $psubtype);
+      if ($terms) {
+        $this->updateSearchTerms($terms);
+      }
+    }
+
     $fp_array = Yaml::decode($form_state->getValue('import'));
     foreach ($wgs as $wg) {
       // create migration config
-      //$fp = drupal_get_path('module','stanford_earth_capx');
-      //$fp_array = Yaml::decode($form_state->getValue('import'));
-      $random_id = random_int(0,10000); // base64_encode(random_bytes(6));
+      $random_id = random_int(0,10000);
       $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
       $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg . '&ps=1000'];
       $fp_array['label'] = 'Profiles for ' . $wg;
@@ -296,99 +334,38 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $config_importer = $form_state->get('config_importer');
       $config_importer->import();
 
-      // update taxonomy
-      $terms = [];
+      // update taxonomy with search terms for this workgroup
       $wg_parts = explode(':', $wg);
       if ($wg_parts[0] === 'earthsci' && count($wg_parts) > 1) {
-        $terms[] = 'All People';
         $wg_parts_str = $wg_parts[1];
         if ($wg_parts_str === 'ssp-staff') {
           $wg_parts_str = 'ssp-staff-admin';
         }
         $wg_terms = explode('-', $wg_parts_str, 3);
         if (in_array($wg_terms[0], ['eess', 'ere', 'ges', 'geophysics', 'eiper', 'esys', 'ssp'])) {
-          $dept = $this->fixDepartmentName($wg_terms[0]);
-          $terms[] = $dept;
+          $ptype = NULL;
+          $psubtype = NULL;
           if (count($wg_terms) > 1) {
-            $terms[] = $wg_terms[1];
-            $terms[] = $dept . ' ' . ucfirst($wg_terms[1]);
-          }
-          if (count($wg_terms) > 2) {
-            $type2 = ucfirst($wg_terms[2]);
-            if ($type2 === 'Regulars') {
-              $type2 = 'Regular';
-            } else if ($type2 == 'Graduate-phd') {
-              $type2 = 'Graduate';
-            } else if ($type2 == 'Advisors') {
-              $type2 = 'Affiliated';
+            $ptype = $wg_terms[1];
+            if (count($wg_terms) > 2) {
+              $psubtype = $wg_terms[2];
+              if ($psubtype === 'regulars') {
+                $psubtype = 'regular';
+              }
+              else if ($psubtype === 'graduate-phd') {
+                $psubtype = 'graduate';
+              }
+              else if ($psubtype === 'advisors') {
+                $psubtype = 'affiliated';
+              }
             }
-            $terms[] = ucfirst($wg_terms[1]) . ' ' . $type2;
-            $terms[] = $dept . ' ' . ucfirst($wg_terms[1]) . ' ' . $type2;
+          }
+          $terms = $this->getTermNames($wg_terms[0], $ptype, $psubtype);
+          if ($terms) {
+            $this->updateSearchTerms($terms, $wg);
           }
         }
-        $this->updateSearchTerms($wg, $terms);
       }
-
-      /*
-      // update taxonomy
-      $dept = '';
-      $ptype = [];
-      $wgtest = explode(":", $wg);
-      if ($wgtest[0] === "earthsci" && count($wgtest) > 1) {
-        $dtype = explode("-", $wgtest[1]);
-        if (count($dtype) > 1) {
-          if ($dtype[0] === 'deans' && $dtype[1] === 'office' && count($dtype) == 3) {
-            $dept = "Dean's Office";
-            if ($dtype[2] === 'staff') {
-              $ptype = ['staff', 'admin'];
-            }
-            elseif ($dtype[2] === 'faculty') {
-              $ptype = ['faculty', 'regular'];
-            }
-          }
-          elseif ($dtype[0] === 'ssp' || $dtype[0] === 'changeleadership'
-            || $dtype[0] === 'sustainleadership') {
-          }
-          else {
-            foreach ($dtype as $key => $value) {
-              if ($key == 0) {
-                switch ($value) {
-                  case 'ere':
-                    $dept = 'Energy Resources Engineering';
-                    break;
-                  case 'eess':
-                    $dept = 'Earth System Science';
-                    break;
-                  case 'esys':
-                    $dept = 'Earth Systems Program';
-                    break;
-                  case 'eiper':
-                    $dept = 'E-IPER Program';
-                    break;
-                  case 'ges':
-                    $dept = 'Geological Sciences';
-                    break;
-                  case 'geophysics':
-                    $dept = 'Geophysics';
-                    break;
-                  default:
-                    $dept = '';
-                }
-              }
-              else {
-                $ptype[] = $value;
-              }
-            }
-          }
-        }
-        if (!empty($dept) && !empty($ptype)) {
-          $termids = [$allTermId];
-          $deptid = $this->updateTerms('people_search_terms',$dept,$allTermId);
-          if (!empty($deptid) && !in_array($deptid,$termids)) {
-            $termids[] = $deptid;
-          }
-        }
-      } */
       else {
         drupal_set_message('Invalid workgroup name ' . $wg . ' could not be processed.');
       }
@@ -397,7 +374,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // Clear out all caches to ensure the config gets picked up.
     drupal_flush_all_caches();
     ini_set('max_execution_time', $save_max_exec);
-    //parent::submitForm($form, $form_state);
   }
 
 }
