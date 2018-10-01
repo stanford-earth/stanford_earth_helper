@@ -217,6 +217,48 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
   }
 
   /**
+   * Return a corrected, capitalized department/program acronym from wg name
+   *
+   * @param string $wg_department
+   *   Department acronym from workgroup.
+   *
+   * @return string
+   *   Correct acronym for department/program or empty string if unknown.
+   */
+  private function fixDepartmentName($wg_department)
+  {
+    $dept = '';
+    switch ($wg_department) {
+      case 'ere':
+        $dept = 'ERE';
+        break;
+      case 'eess':
+        $dept = 'ESS';
+        break;
+      case 'ges':
+        $dept = 'GS';
+        break;
+      case 'geophysics':
+        $dept = 'GEOPHYSICS';
+        break;
+      case 'eiper':
+        $dept = 'E-IPER';
+        break;
+      case 'esys':
+        $dept = 'EARTH SYSTEMS';
+        break;
+      case 'ssp':
+        $dept = 'SUSTAINABILITY';
+        break;
+    }
+    return $dept;
+  }
+
+  private function updateSearchTerms($wg, $terms) {
+
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
@@ -254,6 +296,40 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $config_importer = $form_state->get('config_importer');
       $config_importer->import();
 
+      // update taxonomy
+      $terms = [];
+      $wg_parts = explode(':', $wg);
+      if ($wg_parts[0] === 'earthsci' && count($wg_parts) > 1) {
+        $terms[] = 'All People';
+        $wg_parts_str = $wg_parts[1];
+        if ($wg_parts_str === 'ssp-staff') {
+          $wg_parts_str = 'ssp-staff-admin';
+        }
+        $wg_terms = explode('-', $wg_parts_str, 3);
+        if (in_array($wg_terms[0], ['eess', 'ere', 'ges', 'geophysics', 'eiper', 'esys', 'ssp'])) {
+          $dept = $this->fixDepartmentName($wg_terms[0]);
+          $terms[] = $dept;
+          if (count($wg_terms) > 1) {
+            $terms[] = $wg_terms[1];
+            $terms[] = $dept . ' ' . ucfirst($wg_terms[1]);
+          }
+          if (count($wg_terms) > 2) {
+            $type2 = ucfirst($wg_terms[2]);
+            if ($type2 === 'Regulars') {
+              $type2 = 'Regular';
+            } else if ($type2 == 'Graduate-phd') {
+              $type2 = 'Graduate';
+            } else if ($type2 == 'Advisors') {
+              $type2 = 'Affiliated';
+            }
+            $terms[] = ucfirst($wg_terms[1]) . ' ' . $type2;
+            $terms[] = $dept . ' ' . ucfirst($wg_terms[1]) . ' ' . $type2;
+          }
+        }
+        $this->updateSearchTerms($wg, $terms);
+      }
+
+      /*
       // update taxonomy
       $dept = '';
       $ptype = [];
@@ -312,7 +388,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
             $termids[] = $deptid;
           }
         }
-      }
+      } */
       else {
         drupal_set_message('Invalid workgroup name ' . $wg . ' could not be processed.');
       }
