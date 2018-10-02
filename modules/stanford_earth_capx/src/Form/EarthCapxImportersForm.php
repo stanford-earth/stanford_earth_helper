@@ -18,6 +18,7 @@ use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
+use Drupal\taxonomy\Entity;
 
 /**
  * ListedEventsForm description.
@@ -259,7 +260,28 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         }
       }
       if ($termid) {
-        $termids[] = $termid;
+        $termids[] = ['target_id' => $termid];
+      }
+    }
+    if (!empty($wg) && !empty($termids)) {
+      $properties = [
+        'vid' => 'profile_workgroups',
+        'name' => $wg,
+      ];
+      $wg_terms = $this->entityTypeManager
+        ->getStorage('taxonomy_term')
+        ->loadByProperties($properties);
+      if (empty($wg_terms)) {
+        $entity = $this->entityTypeManager
+          ->getStorage('taxonomy_term')->create($properties);
+        //$entity->save();
+        $entity->set('field_people_search_terms', ['x-default' => $termids]);
+        $entity->save();
+      }
+      else {
+        $entity = reset($wg_terms); //->referencedEntities();
+        $entity->getEntityType()->set('field_people_search_terms', ['x-default' => $termids]);
+        $entity->save();
       }
     }
   }
