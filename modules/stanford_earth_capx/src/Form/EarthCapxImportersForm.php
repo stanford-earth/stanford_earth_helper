@@ -19,6 +19,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\taxonomy\Entity;
+//use Drupal\taxonomy\Entity\Term;
 
 /**
  * ListedEventsForm description.
@@ -260,7 +261,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         }
       }
       if ($termid) {
-        $termids[] = ['target_id' => $termid];
+        $termids[] = ['target_id' => strval($termid)];
       }
     }
     if (!empty($wg) && !empty($termids)) {
@@ -274,15 +275,12 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       if (empty($wg_terms)) {
         $entity = $this->entityTypeManager
           ->getStorage('taxonomy_term')->create($properties);
-        //$entity->save();
-        $entity->set('field_people_search_terms', ['x-default' => $termids]);
-        $entity->save();
       }
       else {
-        $entity = reset($wg_terms); //->referencedEntities();
-        $entity->getEntityType()->set('field_people_search_terms', ['x-default' => $termids]);
-        $entity->save();
+        $entity = reset($wg_terms);
       }
+      $entity->field_people_search_terms = $termids;
+      $entity->save();
     }
   }
 
