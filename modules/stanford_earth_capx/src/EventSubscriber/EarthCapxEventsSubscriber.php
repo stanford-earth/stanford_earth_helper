@@ -42,7 +42,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
   public function migratePreRowSave(MigratePreRowSaveEvent $event) {
 
     // This event gets thrown for all migrations, so check that first.
-    if ($event->getMigration()->id() !== 'earth_capx_importer') {
+    if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== 0) {
       return;
     }
 
@@ -89,7 +89,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
   public function migratePostRowSave(MigratePostRowSaveEvent $event) {
 
     // This event gets thrown for all migrations, so check that first.
-    if ($event->getMigration()->id() !== 'earth_capx_importer') {
+    if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== 0) {
       return;
     }
 
@@ -123,7 +123,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
   public function migratePostRowDelete(MigrateRowDeleteEvent $event) {
 
     // This event gets thrown for all migrations, so check that first.
-    if ($event->getMigration()->id() !== 'earth_capx_importer') {
+    if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== 0) {
       return;
     }
 

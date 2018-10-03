@@ -3,7 +3,6 @@
 namespace Drupal\stanford_earth_capx\Form;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Form\ConfigFormBase;
 use Drupal\config\Form\ConfigSingleImportForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManager;
@@ -19,7 +18,6 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\taxonomy\Entity;
-//use Drupal\taxonomy\Entity\Term;
 
 /**
  * ListedEventsForm description.
@@ -32,8 +30,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @var \Drupal\Core\Entity\EntityTypeManager
    */
   protected $entityTypeManager;
-
-  private $wg_term_match;
 
   /**
    * EventImportersForm constructor.
@@ -306,8 +302,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $this->configFactory->getEditable($eMigration)->delete();
     }
 
-    $this->wg_term_match = [];
-
     // make sure we have generic search terms for departments
     $wg_depts = ['eiper', 'esys', 'ere', 'ess', 'geophysics', 'ges', 'ssp'];
     foreach ($wg_depts as $wg_dept) {
@@ -323,6 +317,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $this->updateSearchTerms($terms);
       }
     }
+
+    /*
     // make sure we have generic search terms for postdocs
     $terms = $this->getTermNames(NULL, 'postdocs');
     $this->updateSearchTerms($terms);
@@ -340,7 +336,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $this->updateSearchTerms($terms);
       }
     }
-
+    */
+    
     $fp_array = Yaml::decode($form_state->getValue('import'));
     foreach ($wgs as $wg) {
       // create migration config
