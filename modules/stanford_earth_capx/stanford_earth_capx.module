@@ -54,12 +54,40 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
       }
     }
     $row->setSourceProperty('phone', $newphones);
+
+    // if the user account already exists, set its id in the row data.
     $sunetid = $row->getSourceProperty('sunetid');
     if (!empty($sunetid)) {
+      $entityid = 0;
       $sunetuser = user_load_by_name($sunetid);
       if (!empty($sunetuser)) {
-        $row->setSourceProperty('uid', intval($sunetuser->id()));
-        $row->setDestinationProperty('uid', intval($sunetuser->id()));
+        $entityid = intval($sunetuser->id());
+        $row->setSourceProperty('uid', $entityid);
+        $row->setDestinationProperty('uid', $entityid);
+      }
+
+      $urls = $row->getSourceProperty('urls');
+      if (!empty($urls)) {
+        $start = strpos($urls[0],'earthsci:');
+        $end = strpos($urls[0],'&');
+        $wg = '';
+        if ($start !== FALSE && $end !== FALSE) {
+          $wg = substr($urls[0], $start, ($end - $start));
+        }
+        if (!empty($wg)) {
+          $properties = [
+            'vid' => 'profile_workgroups',
+            'name' => $wg,
+          ];
+          $wg_terms = \Drupal::entityTypeManager()
+            ->getStorage('taxonomy_term')
+            ->loadByProperties($properties);
+          if (!empty($wg_terms)) {
+            $entity = reset($wg_terms);
+            $search_terms = $entity->field_people_search_terms->getValue();
+            $xyz = 1;
+          }
+        }
       }
     }
   }
