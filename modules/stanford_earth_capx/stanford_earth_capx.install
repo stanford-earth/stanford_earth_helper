@@ -5,11 +5,58 @@
  * Install, update, and uninstall functions for stanford_earth_capx.
  */
 
+use Drupal\Core\Database\Database;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
+
+/**
+ * Return search terms schema for module install and update
+ */
+function _stanford_earth_capx_search_table() {
+  return [
+      'description' => "Stanford Cap-X Profile Search Term Info",
+      'fields' => [
+        'sunetid' => [
+          'type' => 'varchar',
+          'length' => 8,
+          'not null' => TRUE,
+          'description' => "SUNetID for this account and profile",
+        ],
+        'entity_id' => [
+          'type' => 'int',
+          'not null' => FALSE,
+          'description' => "Entity id to which the profile was imported",
+        ],
+        'workgroup_list' => [
+          'type' => 'text',
+          'not null' => FALSE,
+          'size' => 'big',
+          'description' => 'Workgroups in which this profile is found',
+        ],
+        'search_terms' => [
+          'type' => 'text',
+          'not null' => FALSE,
+          'size' => 'big',
+          'description' => 'Search terms by which this profile can be found',
+        ],
+      ],
+      'primary key' => ['sunetid'],
+  ];
+}
 
 /**
  * Implements hook_schema().
  */
 function stanford_earth_capx_schema() {
-  return EarthCapxInfo::getSchema();
+  $capxinfo = EarthCapxInfo::getSchema();
+  $search_terms = ['migrate_info_earth_capx_search_terms' => _stanford_earth_capx_search_table()];
+  return array_merge($capxinfo, $search_terms);
+}
+
+/**
+ * Add new fields to schema
+ */
+function stanford_earth_capx_update_8100() {
+  $search_terms = _stanford_earth_capx_search_table();
+  $schema = Database::getConnection()->schema();
+  $schema->createTable('migrate_info_earth_capx_search_terms', $search_terms);
 }

@@ -38,6 +38,8 @@ class EarthCapxInfo {
   private $entityId;
   private $profilePhotoFid;
   private $status;
+  private $workgroup_list;
+  private $search_terms;
 
   /**
    * Construct with sunetid param; if already exists, populate other properties.
@@ -54,6 +56,8 @@ class EarthCapxInfo {
     $this->profilePhotoTimestamp = "";
     $this->entity_id = 0;
     $this->profilePhotoFid = 0;
+    $this->workgroup_list = [];
+    $this->search_terms = [];
     if (!empty($su_id)) {
       $this->status = self::EARTH_CAPX_INFO_NEW;
       $this->sunetid = $su_id;
@@ -73,6 +77,12 @@ class EarthCapxInfo {
         }
         if (!empty($record->profile_photo_id)) {
           $this->profilePhotoFid = intval($record->profile_photo_id);
+        }
+        if (!empty($record->workgroup_list)) {
+          $this->workgroup_list = unserialize($record->workgroup_list);
+        }
+        if (!empty($record->search_terms)) {
+          $this->search_terms = unserialize($record->search_terms);
         }
       }
     }
