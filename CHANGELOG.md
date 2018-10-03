@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha11
+--------------------------------------------------------------------------------
+_Release Date: 2018-10-03
+
+_ Updated cap-x migrations with all faculty workgroups.
+_ Creates taxonomies for people search.
+
 8.x-1.0-alpha10
 --------------------------------------------------------------------------------
 _Release Date: 2018-08-16
