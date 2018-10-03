@@ -66,6 +66,8 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
         $row->setDestinationProperty('uid', $entityid);
       }
 
+      /*
+      // update search terms table
       $urls = $row->getSourceProperty('urls');
       if (!empty($urls)) {
         $start = strpos($urls[0],'earthsci:');
@@ -85,10 +87,20 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
           if (!empty($wg_terms)) {
             $entity = reset($wg_terms);
             $search_terms = $entity->field_people_search_terms->getValue();
-            $xyz = 1;
+
+            $acct_entityid = 0;
+            $wg_list = [];
+            $search_terms_list = [];
+            $db = \Drupal::database();
+            $result = $db->query("SELECT * FROM " .
+              "{migrate_info_earth_capx_search_terms} WHERE " .
+              "sunetid = :sunetid", [':sunetid' => $sunetid]);
+            foreach ($result as $record) {
+            }
           }
         }
       }
+      */
     }
   }
   return TRUE;
