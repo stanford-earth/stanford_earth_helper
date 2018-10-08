@@ -45,6 +45,11 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   // This hook gets called for every migration so check that it's the CAP-X one.
   if (substr($migration->id(),0,19) === 'earth_capx_importer') {
   //if ($migration->id() === 'earth_capx_importer') {
+    $email_test = $row->getSourceProperty("email");
+    if (empty($email_test)) {
+      $row->setSourceProperty('email', $row->getSourceProperty('sunetid') .
+        '@stanford.edu');
+    }
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
     if (!empty($phones) && is_array($phones)) {
