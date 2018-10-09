@@ -10,6 +10,7 @@ use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
+use Drupal\user\Entity\User;
 
 /**
  * Implements hook_entity_delete().
@@ -63,12 +64,15 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
     // if the user account already exists, set its id in the row data.
     $sunetid = $row->getSourceProperty('sunetid');
     if (!empty($sunetid)) {
-      $entityid = 0;
+
       $sunetuser = user_load_by_name($sunetid);
       if (!empty($sunetuser)) {
         $entityid = intval($sunetuser->id());
         $row->setSourceProperty('uid', $entityid);
         $row->setDestinationProperty('uid', $entityid);
+        if (empty($sunetuser->getEmail())) {
+          $row->setSourceProperty('updateemail', 1);
+        }
       }
 
       /*

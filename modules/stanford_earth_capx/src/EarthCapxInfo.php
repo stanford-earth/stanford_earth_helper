@@ -52,7 +52,7 @@ class EarthCapxInfo {
     $this->status = self::EARTH_CAPX_INFO_INVALID;
     $this->etag = "";
     $this->profilePhotoTimestamp = "";
-    $this->entity_id = 0;
+    $this->entityId = 0;
     $this->profilePhotoFid = 0;
     if (!empty($su_id)) {
       $this->status = self::EARTH_CAPX_INFO_NEW;
@@ -69,7 +69,7 @@ class EarthCapxInfo {
           $this->profilePhotoTimestamp = $record->photo_timestamp;
         }
         if (!empty($record->entity_id)) {
-          $this->entity_id = intval($record->entity_id);
+          $this->entityId = intval($record->entity_id);
         }
         if (!empty($record->profile_photo_id)) {
           $this->profilePhotoFid = intval($record->profile_photo_id);
@@ -134,9 +134,6 @@ class EarthCapxInfo {
    */
   public function getOkayToUpdateProfile(array $source = [], int $photoId = 0) {
     // Checks $status which was set in the constructor.
-      if ($this->sunetid == 'banny') {
-          $xyz = 1;
-      }
     $oktoupdate = FALSE;
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
@@ -155,19 +152,21 @@ class EarthCapxInfo {
       if ($this->etag !== $source_etag || $this->profilePhotoFid !== $photoId) {
         $oktoupdate = TRUE;
       }
-      if (!oktoupdate && empty($this->entity_id)) {
+      if (!$oktoupdate && empty($this->entityId)) {
           $oktoupdate = TRUE;
       }
-      if (!$oktoupdate && !empty($this->entity_id)) {
-          $user_acct = \Drupal\user\Entity\User::load($this->entity_id);
-          if (!empty($user_acct) && empty($user_acct->getEmail())) {
-              $oktoupdate = TRUE;
-          }
+      if (!$oktoupdate && !empty($source['updateemail'])) {
+        $oktoupdate = TRUE;
       }
+      //if (!$oktoupdate && !empty($this->entity_id)) {
+      //    $user_acct = \Drupal\user\Entity\User::load($this->entity_id);
+      //    if (!empty($user_acct) && empty($user_acct->getEmail())) {
+      //        $oktoupdate = TRUE;
+      //    }
+      //}
     }
     return $oktoupdate;
   }
-
   /**
    * Update the table with information about the profile.
    *
@@ -238,7 +237,7 @@ class EarthCapxInfo {
             'sunetid' => $this->sunetid,
             'etag' => $this->etag,
             'photo_timestamp' => $this->profilePhotoTimestamp,
-            'entity_id' => $this->entity_id,
+            'entity_id' => $this->entityId,
             'profile_photo_id' => $this->profilePhotoFid,
           ])
           ->execute();

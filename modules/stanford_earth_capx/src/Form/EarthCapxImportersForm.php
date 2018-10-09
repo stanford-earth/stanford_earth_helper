@@ -309,20 +309,17 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       ->save();
 
     // delete the old migrations
-    //$this->configFactory->getEditable('migrate_plus.migration.earth_capx_importer')->delete();
     $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth_capx_import');
     foreach ($eMigrations as $eMigration) {
       $this->configFactory->getEditable($eMigration)->delete();
     }
 
-    $tables = $this->db->schema()->findTables('migrate_map_earth_capx_importer_%');
+    // delete the old migration map and message tables
+    $tables = array_merge($this->db->schema()->findTables('migrate_map_earth_capx_importer%'),
+      $this->db->schema()->findTables('migrate_message_earth_capx_importer%'));
     foreach ($tables as $key => $table) {
         $this->db->schema()->dropTable($table);
     }
-      $tables = $this->db->schema()->findTables('migrate_message_earth_capx_importer_%');
-      foreach ($tables as $key => $table) {
-          $this->db->schema()->dropTable($table);
-      }
 
     // make sure we have generic search terms for departments
     $wg_depts = ['eiper', 'esys', 'ere', 'ess', 'geophysics', 'ges', 'ssp'];
