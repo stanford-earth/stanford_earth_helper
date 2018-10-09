@@ -155,6 +155,9 @@ class EarthCapxInfo {
       if ($this->etag !== $source_etag || $this->profilePhotoFid !== $photoId) {
         $oktoupdate = TRUE;
       }
+      if (!oktoupdate && empty($this->entity_id)) {
+          $oktoupdate = TRUE;
+      }
       if (!$oktoupdate && !empty($this->entity_id)) {
           $user_acct = \Drupal\user\Entity\User::load($this->entity_id);
           if (!empty($user_acct) && empty($user_acct->getEmail())) {
