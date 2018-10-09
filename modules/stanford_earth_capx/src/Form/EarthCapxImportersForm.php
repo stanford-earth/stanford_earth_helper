@@ -18,6 +18,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\taxonomy\Entity;
+use Drupal\Core\Database;
 
 /**
  * ListedEventsForm description.
@@ -30,6 +31,13 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @var \Drupal\Core\Entity\EntityTypeManager
    */
   protected $entityTypeManager;
+
+  /**
+   * Database.
+   *
+   * @var \Drupal\Core\Database
+   */
+  protected $db;
 
   /**
    * EventImportersForm constructor.
@@ -56,14 +64,17 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    *   The theme handler.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The EntityTypeManager service.
+   * @param \Drupal\Core\Database $db
+   *   The core Database object
    */
   public function __construct(EntityManagerInterface $entity_manager, StorageInterface $config_storage,
                               RendererInterface $renderer, EventDispatcherInterface $event_dispatcher,
                               ConfigManagerInterface $config_manager, LockBackendInterface $lock,
                               TypedConfigManagerInterface $typed_config, ModuleHandlerInterface $module_handler,
                               ModuleInstallerInterface $module_installer, ThemeHandlerInterface $theme_handler,
-                              EntityTypeManager $entityTypeManager) {
+                              EntityTypeManager $entityTypeManager, Database $db) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->db = $db;
     parent::__construct($entity_manager, $config_storage, $renderer, $event_dispatcher, $config_manager, $lock,
                               $typed_config, $module_handler, $module_installer, $theme_handler);
   }
@@ -83,7 +94,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $container->get('module_handler'),
       $container->get('module_installer'),
       $container->get('theme_handler'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('database')
     );
   }
 
