@@ -71,9 +71,9 @@ source:
       label: 'Sponsor'
       selector: sponsor
     -
-      name field_mapurl 
+      name: field_mapurl 
       label: 'MapURL'
-       selector: mapUrl 
+      selector: mapUrl 
   ids:
     guid:
       type: string
