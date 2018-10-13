@@ -84,6 +84,10 @@ source:
       name: field_sponsor
       label: 'Sponsor'
       selector: sponsor
+    -
+      name field_mapurl
+      label: 'MapURL'
+      selector: mapUrl
   ids:
     guid:
       type: string
@@ -95,6 +99,7 @@ source:
     minimal_html: minimal_html
     source_base_path: 'http://events.stanford.edu/'
     file_destination: 'public://stanford-event/importer/'
+    view_map: 'View map'
 process:
   feed_urls:
     plugin: stanford_earth_feed_url
@@ -136,10 +141,12 @@ process:
     destination: constants/file_destination
     uid: 0
     title: title
-    alt: ''
+    alt: !file
     skip_on_missing_source: true
   field_s_event_more_info/uri: field_s_event_more_info
   field_s_event_more_info/title: title
+  field_mapurl/uri: field_mapurl
+  field_mapurl/title: constants/view_map
   field_s_event_public/value: constants/status
   field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
@@ -162,4 +169,5 @@ process:
   field_sponsor: field_sponsor
 destination:
   plugin: 'entity:node'
+migration_dependencies: null
 
