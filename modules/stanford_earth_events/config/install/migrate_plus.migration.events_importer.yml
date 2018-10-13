@@ -12,6 +12,7 @@ source:
   plugin: stanford_earth_url
   data_fetcher_plugin: file
   urls:
+    - 'http://events.stanford.edu/xml/drupal/v2.php?organization=102'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=266'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=1299'
     - 'http://events.stanford.edu/xml/drupal/v2.php?organization=1577'
@@ -49,6 +50,10 @@ source:
       label: Description
       selector: description
     -
+      name: field_s_event_admission
+      label: Admission
+      selector: admissionDescription
+    -
       name: field_s_event_audience
       label: Audience
       selector: audiences
@@ -70,7 +75,7 @@ source:
       selector: Keywords/tag
     -
       name: field_s_event_when
-      label: 'When'
+      label: When
       selector: eventDate
     -
       name: field_s_event_where
@@ -82,12 +87,20 @@ source:
       selector: isoEventEndDate
     -
       name: field_sponsor
-      label: 'Sponsor'
+      label: Sponsor
       selector: sponsor
     -
       name: field_mapurl
-      label: 'MapURL'
+      label: MapURL
       selector: mapUrl
+    -
+      name: field_contact_email
+      label: 'Contact Email'
+      selector: contactEmail
+    -
+      name: field_contact_phone
+      label: 'Contact Phone'
+      selector: contactPhone
   ids:
     guid:
       type: string
@@ -110,6 +123,8 @@ process:
   title: title
   field_s_event_description/value: field_s_event_description
   field_s_event_description/format: constants/basic_html
+  field_s_event_admission/value: field_s_event_admission
+  field_s_event_admission/format: constants/basic_html
   field_s_event_audience/value: field_s_event_audience
   field_s_event_date/value:
     -
@@ -117,31 +132,31 @@ process:
       source: field_s_event_date
       from_format: 'Y-m-d H:i:s O'
       to_format: U
-      timezone: 'Etc/GMT'
+      timezone: Etc/GMT
     -
       plugin: format_date
       from_format: U
       to_format: 'Y-m-d\TH:i:s'
-      timezone: 'Etc/GMT'
+      timezone: Etc/GMT
   field_event_date_end_time/value:
     -
       plugin: format_date
       source: field_event_date_end_time
       from_format: 'Y-m-d H:i:s O'
       to_format: U
-      timezone: 'Etc/GMT'
+      timezone: Etc/GMT
     -
       plugin: format_date
       from_format: U
       to_format: 'Y-m-d\TH:i:s'
-      timezone: 'Etc/GMT'
+      timezone: Etc/GMT
   field_s_event_image:
     plugin: image_import
     source: field_s_event_image
     destination: constants/file_destination
     uid: 0
     title: title
-    alt: !file
+    alt: '!file'
     skip_on_missing_source: true
   field_s_event_more_info/uri: field_s_event_more_info
   field_s_event_more_info/title: title
@@ -152,7 +167,7 @@ process:
   field_s_event_where/value: field_s_event_where
   field_s_event_feed_url:
     plugin: entity_lookup
-    source: "@feed_urls"
+    source: '@feed_urls'
     value_key: name
     bundle_key: vid
     bundle: stanford_earth_event_feeds
@@ -160,14 +175,15 @@ process:
     ignore_case: true
   field_s_event_department:
     plugin: entity_lookup
-    source: "@feed_dept"
+    source: '@feed_dept'
     value_key: name
     bundle_key: vid
     bundle: department_program
     entity_type: taxonomy_term
     ignore_case: true
   field_sponsor: field_sponsor
+  field_contact_email: field_contact_email
+  field_contact_phone: field_contact_phone
 destination:
   plugin: 'entity:node'
 migration_dependencies: null
-
