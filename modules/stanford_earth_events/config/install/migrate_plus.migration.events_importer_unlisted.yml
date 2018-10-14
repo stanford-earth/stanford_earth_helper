@@ -91,6 +91,7 @@ source:
       type: string
   constants:
     status: 1
+    promote: 0
     type: stanford_event
     timezone: 25200
     basic_html: basic_html
@@ -105,6 +106,7 @@ process:
     plugin: stanford_earth_feed_dept
   status: constants/status
   type: constants/type
+  promote: constants/promote
   title: title
   field_s_event_description/value: field_s_event_description
   field_s_event_description/format: constants/basic_html
@@ -147,7 +149,7 @@ process:
   field_s_event_more_info/title: title
   field_mapurl/uri: field_mapurl
   field_mapurl/title: constants/view_map
-  field_s_event_public/value: constants/status
+  field_s_event_public/value: constants/promote
   field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
   field_s_event_feed_url:
