@@ -31,6 +31,23 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     ];
   }
 
+  private function getWorkgroup($event) {
+    $urls = $event->getRow()->getSourceProperty('urls');
+    $wg = '';
+    if (!empty($urls)) {
+      $url = reset($urls);
+      $start = strpos($url,'privGroups=');
+      if ($start !== FALSE) {
+        $end = strpos($url,'&', $start);
+        if ($end !== FALSE) {
+          $start += 11;
+          $wg = substr($url, $start, $end - $start );
+        }
+      }
+    }
+    return $wg;
+  }
+
   /**
    * React to a migrate PRE_ROW_SAVE event.
    *
@@ -46,6 +63,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
       return;
     }
 
+    $wg = $this->getWorkgroup($event);
     // Get the row in question.
     $row = $event->getRow();
     // See if we already have migration information for this profile.
@@ -57,7 +75,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
       $photo_id = $photo_field['target_id'];
     }
     // Check source data in the row against etag and photo info stored in table.
-    $okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id);
+    $okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id, $wg);
 
     // If okay and a first time profile import for an existing SAML login...
     // We need to store a migration id_map record for the user.
@@ -108,8 +126,61 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     if (!empty($dest_values['target_id'])) {
       $photoId = intval($dest_values['target_id']);
     }
+
+    // Get the workgroup from the import event
+    $wg = $this->getWorkgroup($event);
+
     $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
-    $info->setInfoRecord($row->getSource(), $destination, $photoId);
+    $info->setInfoRecord($row->getSource(), $destination, $photoId, $wg);
+
+    // update the person search terms based on the workgroup
+    if (!empty($destination)) {
+
+      if (!empty($wg)) {
+        // next look up the workgroup in the profile_workgroups vocabulary
+        $properties = [
+          'vid' => 'profile_workgroups',
+          'name' => $wg,
+        ];
+        $wg_terms = \Drupal::entityTypeManager()
+          ->getStorage('taxonomy_term')
+          ->loadByProperties($properties);
+
+        // if we find it, record the search terms for the workgroup
+        $term_array = [];
+        if (!empty($wg_terms)) {
+          $entity = reset($wg_terms);
+          $search_terms = $entity->field_people_search_terms;
+          foreach ($search_terms as $search_term) {
+            if ($search_term->entity) {
+              $id = $search_term->entity->id();
+              $term_array[intval($id)] = $id;
+            }
+          }
+        }
+
+        // if we have search terms, load the user account and add them
+        // to the field_profile_search_terms taxonomy reference field
+        if (!empty($term_array)) {
+          $termids = [];
+          $account = \Drupal\user\Entity\User::load($destination);
+          $saved_terms = $account->get('field_profile_search_terms')->getValue();
+          if (!empty($saved_terms)) {
+            foreach ($saved_terms as $saved_term) {
+              $termid = $saved_term['target_id'];
+              $term_array[intval($termid)] = $termid;
+            }
+          }
+          foreach($term_array as $key => $tid) {
+            $termids[] = ['target_id' => $tid];
+          }
+          $account->field_profile_search_terms = $termids;
+          $account->addRole('faculty');
+          $account->save();
+        }
+      }
+    }
+
   }
 
   /**

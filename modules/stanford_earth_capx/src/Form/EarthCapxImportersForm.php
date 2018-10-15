@@ -18,6 +18,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\taxonomy\Entity;
+use Drupal\Core\Database\Connection;
 
 /**
  * ListedEventsForm description.
@@ -30,6 +31,13 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @var \Drupal\Core\Entity\EntityTypeManager
    */
   protected $entityTypeManager;
+
+  /**
+   * Database connection.
+   *
+   * @var \Drupal\Core\Database\Connection
+   */
+  protected $db;
 
   /**
    * EventImportersForm constructor.
@@ -56,15 +64,19 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    *   The theme handler.
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The EntityTypeManager service.
+   * @param \Drupal\Core\Database\Connection $db
+   *   The core Database object
    */
   public function __construct(EntityManagerInterface $entity_manager, StorageInterface $config_storage,
                               RendererInterface $renderer, EventDispatcherInterface $event_dispatcher,
                               ConfigManagerInterface $config_manager, LockBackendInterface $lock,
                               TypedConfigManagerInterface $typed_config, ModuleHandlerInterface $module_handler,
                               ModuleInstallerInterface $module_installer, ThemeHandlerInterface $theme_handler,
-                              EntityTypeManager $entityTypeManager) {
+                              EntityTypeManager $entityTypeManager, Connection $db) {
     $this->entityTypeManager = $entityTypeManager;
-    parent::__construct($entity_manager, $config_storage, $renderer, $event_dispatcher, $config_manager, $lock,
+    $this->db = $db;
+
+      parent::__construct($entity_manager, $config_storage, $renderer, $event_dispatcher, $config_manager, $lock,
                               $typed_config, $module_handler, $module_installer, $theme_handler);
   }
 
@@ -83,7 +95,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $container->get('module_handler'),
       $container->get('module_installer'),
       $container->get('theme_handler'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('database')
     );
   }
 
@@ -296,10 +309,16 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       ->save();
 
     // delete the old migrations
-    //$this->configFactory->getEditable('migrate_plus.migration.earth_capx_importer')->delete();
     $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth_capx_import');
     foreach ($eMigrations as $eMigration) {
       $this->configFactory->getEditable($eMigration)->delete();
+    }
+
+    // delete the old migration map and message tables
+    $tables = array_merge($this->db->schema()->findTables('migrate_map_earth_capx_importer%'),
+      $this->db->schema()->findTables('migrate_message_earth_capx_importer%'));
+    foreach ($tables as $key => $table) {
+        $this->db->schema()->dropTable($table);
     }
 
     // make sure we have generic search terms for departments
@@ -393,6 +412,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // Clear out all caches to ensure the config gets picked up.
     drupal_flush_all_caches();
     ini_set('max_execution_time', $save_max_exec);
+    drupal_set_message('Processing complete.');
   }
 
 }

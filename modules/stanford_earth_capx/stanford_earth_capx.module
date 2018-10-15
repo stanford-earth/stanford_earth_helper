@@ -10,6 +10,7 @@ use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
+use Drupal\user\Entity\User;
 
 /**
  * Implements hook_entity_delete().
@@ -45,6 +46,11 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   // This hook gets called for every migration so check that it's the CAP-X one.
   if (substr($migration->id(),0,19) === 'earth_capx_importer') {
   //if ($migration->id() === 'earth_capx_importer') {
+    $email_test = $row->getSourceProperty("email");
+    if (empty($email_test)) {
+      $row->setSourceProperty('email', $row->getSourceProperty('sunetid') .
+        '@stanford.edu');
+    }
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
     if (!empty($phones) && is_array($phones)) {
@@ -58,12 +64,15 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
     // if the user account already exists, set its id in the row data.
     $sunetid = $row->getSourceProperty('sunetid');
     if (!empty($sunetid)) {
-      $entityid = 0;
+
       $sunetuser = user_load_by_name($sunetid);
       if (!empty($sunetuser)) {
         $entityid = intval($sunetuser->id());
         $row->setSourceProperty('uid', $entityid);
         $row->setDestinationProperty('uid', $entityid);
+        if (empty($sunetuser->getEmail())) {
+          $row->setSourceProperty('updateemail', 1);
+        }
       }
 
       /*
