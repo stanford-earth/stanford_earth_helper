@@ -60,3 +60,17 @@ function stanford_earth_capx_update_8100() {
   $schema = Database::getConnection()->schema();
   $schema->createTable('migrate_info_earth_capx_search_terms', $search_terms);
 }
+
+/**
+ * Add workgroup list to info table
+ */
+function stanford_earth_capx_update_8101() {
+  $schema = Database::getConnection()->schema();
+  $spec = [
+    'type' => 'text',
+    'not null' => FALSE,
+    'size' => 'big',
+    'description' => 'Workgroups in which this profile is found',
+  ];
+  $schema->addField(EarthCapxInfo::EARTH_CAPX_INFO_TABLE, 'workgroup_list', $spec);
+}

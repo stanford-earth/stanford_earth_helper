@@ -38,6 +38,7 @@ class EarthCapxInfo {
   private $entityId;
   private $profilePhotoFid;
   private $status;
+  private $workgroups;
 
   /**
    * Construct with sunetid param; if already exists, populate other properties.
@@ -54,6 +55,7 @@ class EarthCapxInfo {
     $this->profilePhotoTimestamp = "";
     $this->entityId = 0;
     $this->profilePhotoFid = 0;
+    $this->workgroups = [];
     if (!empty($su_id)) {
       $this->status = self::EARTH_CAPX_INFO_NEW;
       $this->sunetid = $su_id;
@@ -73,6 +75,9 @@ class EarthCapxInfo {
         }
         if (!empty($record->profile_photo_id)) {
           $this->profilePhotoFid = intval($record->profile_photo_id);
+        }
+        if (!empty($record->workgroup_list)) {
+          $this->workgroups = unserialize($record->workgroup_list);
         }
       }
     }
@@ -132,7 +137,7 @@ class EarthCapxInfo {
    * @param int $photoId
    *   The photoId from the image url in the profile data.
    */
-  public function getOkayToUpdateProfile(array $source = [], int $photoId = 0) {
+  public function getOkayToUpdateProfile(array $source = [], int $photoId = 0, $wg = null) {
     // Checks $status which was set in the constructor.
     $oktoupdate = FALSE;
     $msg = new MigrateMessage();
@@ -158,12 +163,9 @@ class EarthCapxInfo {
       if (!$oktoupdate && !empty($source['updateemail'])) {
         $oktoupdate = TRUE;
       }
-      //if (!$oktoupdate && !empty($this->entity_id)) {
-      //    $user_acct = \Drupal\user\Entity\User::load($this->entity_id);
-      //    if (!empty($user_acct) && empty($user_acct->getEmail())) {
-      //        $oktoupdate = TRUE;
-      //    }
-      //}
+      if (!$oktoupdate && !empty($wg) && !in_array($wg, $this->workgroups)) {
+        $oktoupdate = TRUE;
+      }
     }
     return $oktoupdate;
   }
@@ -180,7 +182,7 @@ class EarthCapxInfo {
    * @param int $photo_id
    *   Photo id number from profile photo URL.
    */
-  public function setInfoRecord(array $source = [], $entity_id = 0, $photo_id = 0) {
+  public function setInfoRecord(array $source = [], $entity_id = 0, $photo_id = 0, $wg = null) {
     // Function uses $status which was originally set in the constructor.
     // If the $status is 'invalid', post a message and return.
     // If the $status is 'new', create a new record.
@@ -211,12 +213,21 @@ class EarthCapxInfo {
 
     $photo_id = intval($photo_id);
 
+    // add the workgroup if not null and not already in array
+    $wg_changed = FALSE;
+    $wgs = $this->workgroups;
+    if (!empty($wg) && !in_array($wg, $wgs)) {
+      $wgs[] = $wg;
+      $wg_changed = TRUE;
+    }
+
     // If existing in table, see if we need to update.
     if ($this->status == self::EARTH_CAPX_INFO_FOUND) {
       if ($this->etag !== $source_etag ||
         $this->profilePhotoTimestamp !== $source_ts ||
         $this->profilePhotoFid !== $photo_id ||
-        $this->entityId !== $entity_id) {
+        $this->entityId !== $entity_id ||
+        $wg_changed) {
         // The information is different, so delete record and set status = NEW.
         \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
           ->condition('sunetid', $this->sunetid)
@@ -231,6 +242,7 @@ class EarthCapxInfo {
       $this->profilePhotoTimestamp = $source_ts;
       $this->profilePhotoFid = $photo_id;
       $this->entityId = $entity_id;
+      $this->workgroups = $wgs;
       try {
         \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
           ->fields([
@@ -239,6 +251,7 @@ class EarthCapxInfo {
             'photo_timestamp' => $this->profilePhotoTimestamp,
             'entity_id' => $this->entityId,
             'profile_photo_id' => $this->profilePhotoFid,
+            'workgroup_list' => serialize($this->workgroups),
           ])
           ->execute();
       }
@@ -312,6 +325,12 @@ class EarthCapxInfo {
             'type' => 'int',
             'not null' => FALSE,
             'description' => "File id of the profile photo already imported",
+          ],
+          'workgroup_list' => [
+            'type' => 'text',
+            'not null' => FALSE,
+            'size' => 'big',
+            'description' => 'Workgroups in which this profile is found',
           ],
         ],
         'primary key' => ['sunetid'],

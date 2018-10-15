@@ -412,6 +412,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // Clear out all caches to ensure the config gets picked up.
     drupal_flush_all_caches();
     ini_set('max_execution_time', $save_max_exec);
+    drupal_set_message('Processing complete.');
   }
 
 }
