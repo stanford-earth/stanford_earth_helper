@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha12
+--------------------------------------------------------------------------------
+_Release Date: 2018-10-15
+
+_ Add fields contact phone, contact email, admission info, & map_url to events.
+_ Add workgroup tracking and better SAML-account integration to profiles.
+
 8.x-1.0-alpha11
 --------------------------------------------------------------------------------
 _Release Date: 2018-10-03
