@@ -298,8 +298,10 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
+    // give as much time as needed to run this.
     $save_max_exec = ini_get('max_execution_time');
-    ini_set('max_execution_time', 240);
+    set_time_limit(0);
+    
     // Actually do the save of the new configuration.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
@@ -336,11 +338,13 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $this->updateSearchTerms($terms);
       }
     }
-
-    /*
+    
     // make sure we have generic search terms for postdocs
     $terms = $this->getTermNames(NULL, 'postdocs');
-    $this->updateSearchTerms($terms);
+    if ($terms) {
+      $this->updateSearchTerms($terms);
+    }
+    
     // make sure we have generic search terms for students
     foreach (['graduate', 'undergraduate'] as $psubtype) {
       $terms = $this->getTermNames(NULL, 'students', $psubtype);
@@ -355,7 +359,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $this->updateSearchTerms($terms);
       }
     }
-    */
     
     $fp_array = Yaml::decode($form_state->getValue('import'));
     foreach ($wgs as $wg) {
@@ -411,7 +414,9 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
 
     // Clear out all caches to ensure the config gets picked up.
     drupal_flush_all_caches();
-    ini_set('max_execution_time', $save_max_exec);
+    
+    // restore the sysstem time limit.
+    set_time_limit($save_max_exec);
     drupal_set_message('Processing complete.');
   }
 

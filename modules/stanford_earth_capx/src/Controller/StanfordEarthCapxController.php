@@ -35,14 +35,22 @@ class StanfordEarthCapxController extends ControllerBase {
               'update' => 1,
               'force' => 0,
             ];
-
             $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
             $executable->batchImport();
-
-            //$migration = Migration::load($eMigration);
-            //$executable = new MigrateExecutable($migration, $log, ['update' => true]);
-            //$executable->import();
         }
         return batch_process('/');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function updateNames() {
+        // this only needs to be run once and then will be removed from code.
+        $query = \Drupal::database()->query("UPDATE users_field_data, " .
+          "authmap SET users_field_data.name = authmap.authname WHERE " .
+          "users_field_data.uid = authmap.uid");
+        $result = $query->execute();
+        return HtmlResponse::create('done');
+
     }
 }
