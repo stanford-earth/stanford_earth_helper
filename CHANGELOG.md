@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha13
+--------------------------------------------------------------------------------
+_Release Date: 2018-10-17
+
+_Allow more time in capx submodule for process of creating migrations per wg.
+_One time fix for existing Drupal account names.
+
 8.x-1.0-alpha12
 --------------------------------------------------------------------------------
 _Release Date: 2018-10-15
