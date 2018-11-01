@@ -46,6 +46,17 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   // This hook gets called for every migration so check that it's the CAP-X one.
   if (substr($migration->id(),0,19) === 'earth_capx_importer') {
   //if ($migration->id() === 'earth_capx_importer') {
+
+      $profile_photo = $row->getSourceProperty('profile_photo');
+      if (!empty($profile_photo) && strpos($profile_photo,'350x350') !== FALSE) {
+          if (substr($profile_photo,0, 49) ==
+            'https://cap.stanford.edu/cap-api/api/profiles/v1/') {
+              $row->setSourceProperty('profile_photo',
+                  'https://profiles.stanford.edu/proxy/api/cap/profiles/' .
+                    substr($profile_photo,49));
+          }
+      }
+
     $email_test = $row->getSourceProperty("email");
     if (empty($email_test)) {
       $row->setSourceProperty('email', $row->getSourceProperty('sunetid') .
