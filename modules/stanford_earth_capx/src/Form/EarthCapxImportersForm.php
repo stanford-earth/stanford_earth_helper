@@ -197,6 +197,9 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $terms[] = 'All People';
     $dept = '';
     switch ($department) {
+      case 'deans':
+        $dept = 'DEAN\'S OFFICE';
+        break;
       case 'ere':
         $dept = 'ERE';
         break;
@@ -324,7 +327,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
 
     // make sure we have generic search terms for departments
-    $wg_depts = ['eiper', 'esys', 'ere', 'ess', 'geophysics', 'ges', 'ssp'];
+    $wg_depts = ['deans', 'eiper', 'esys', 'ere', 'ess', 'geophysics', 'ges', 'ssp'];
     foreach ($wg_depts as $wg_dept) {
       $terms = $this->getTermNames($wg_dept);
       if ($terms) {
@@ -381,9 +384,13 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $wg_parts_str = $wg_parts[1];
         if ($wg_parts_str === 'ssp-staff') {
           $wg_parts_str = 'ssp-staff-admin';
+        } else if ($wg_parts_str === 'deans-office-staff') {
+          $wg_parts_str = 'deans-staff-admin';
+        } else if ($wg_parts_str == 'deans-office-faculty') {
+          $wg_parts_str = 'deans-faculty-affiliated';
         }
         $wg_terms = explode('-', $wg_parts_str, 3);
-        if (in_array($wg_terms[0], ['eess', 'ere', 'ges', 'geophysics', 'eiper', 'esys', 'ssp'])) {
+        if (in_array($wg_terms[0], ['deans', 'eess', 'ere', 'ges', 'geophysics', 'eiper', 'esys', 'ssp'])) {
           $ptype = NULL;
           $psubtype = NULL;
           if (count($wg_terms) > 1) {

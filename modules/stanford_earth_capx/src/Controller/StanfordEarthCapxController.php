@@ -41,16 +41,4 @@ class StanfordEarthCapxController extends ControllerBase {
         return batch_process('/');
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function updateNames() {
-        // this only needs to be run once and then will be removed from code.
-        $query = \Drupal::database()->query("UPDATE users_field_data, " .
-          "authmap SET users_field_data.name = authmap.authname WHERE " .
-          "users_field_data.uid = authmap.uid");
-        $result = $query->execute();
-        return HtmlResponse::create('done');
-
-    }
 }

@@ -115,3 +115,31 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   return TRUE;
 
 }
+
+
+/**
+ * Implements hook_batch_alter().
+ */
+function stanford_earth_capx_batch_alter(&$batch) {
+  foreach ($batch['sets'] as $key => $set) {
+    $op_array = reset($set['operations']);
+    $migration_id = reset($op_array[1]);
+    if (strpos($migration_id, 'earth_capx_importer_') !== FALSE) {
+      if (empty($set['sandbox'])) {
+        $batch['sets'][$key]['sandbox'] = [
+          'total' => 200, 'counter' => 0, 'batch_limit' => 200, 'operation' => 1,
+        ];
+      }
+      if (empty($set['results'])) {
+        $batch['sets'][$key]['results'][$migration_id] = [
+          '@numitems' => 0,
+          '@created' => 0,
+          '@updated' => 0,
+          '@failures' => 0,
+          '@ignored' => 0,
+          '@name' => $migration_id,
+        ];
+      }
+    }
+  }
+}
