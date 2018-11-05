@@ -21,12 +21,7 @@ source:
     file_destination: 'public://'
     file_extension: '.jpg'
     image_alt_value: 'profile photo'
-    password_length: 55
   urls:
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:eess-faculty-regular&ps=1000'
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:ere-faculty-regular&ps=1000'
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:geophysics-faculty-regular&ps=1000'
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=earthsci:ges-faculty-regular&ps=1000'
   item_selector: values
   fields:
     -
@@ -64,7 +59,7 @@ source:
     -
       name: profile_photo
       label: 'Profile Photo'
-      selector: profilePhotos/bigger/url
+      selector: profilePhotos/square/url
     -
       name: appointments
       label: 'Administrative Appointments'
@@ -92,10 +87,6 @@ process:
   name: sunetid
   mail: email
   init: email
-  pass:
-    plugin: callback
-    callable: user_password
-    source: constants/password_length
   status: constants/status
   field_s_person_display_name: display_name
   field_s_person_email: email
