@@ -1,5 +1,13 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha14
+--------------------------------------------------------------------------------
+_Release Date: 2018-11-05
+
+_Remove one-time fix for Drupal account names.
+_Change capx profile image from 'bigger' to 'square'.
+_Make batch processing of capx import more efficient.
+
 8.x-1.0-alpha13
 --------------------------------------------------------------------------------
 _Release Date: 2018-10-17
