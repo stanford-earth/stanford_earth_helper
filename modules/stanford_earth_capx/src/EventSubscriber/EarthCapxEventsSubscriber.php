@@ -159,11 +159,17 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
           }
         }
 
+        $account = \Drupal\user\Entity\User::load($destination);
+        if (empty($account->getPassword())) {
+          $account->setPassword(user_password());
+          $account->save();
+        }
+
         // if we have search terms, load the user account and add them
         // to the field_profile_search_terms taxonomy reference field
         if (!empty($term_array)) {
           $termids = [];
-          $account = \Drupal\user\Entity\User::load($destination);
+          // $account = \Drupal\user\Entity\User::load($destination);
           $saved_terms = $account->get('field_profile_search_terms')->getValue();
           if (!empty($saved_terms)) {
             foreach ($saved_terms as $saved_term) {
@@ -175,7 +181,11 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
             $termids[] = ['target_id' => $tid];
           }
           $account->field_profile_search_terms = $termids;
-          $account->addRole('faculty');
+          if (strpos($wg,'faculty') !== FALSE) {
+            $account->addRole('faculty');
+          } else {
+            $account->addRole('staff');
+          }
           $account->save();
         }
       }
