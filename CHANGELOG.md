@@ -1,4 +1,9 @@
 # Stanford Earth Helper
+8.x-1.0-alpha15
+--------------------------------------------------------------------------------
+_Release Date: 2018-11-07
+
+_Added option to refresh *all* profile images on capx_update_all, even if current.
 
 8.x-1.0-alpha14
 --------------------------------------------------------------------------------
