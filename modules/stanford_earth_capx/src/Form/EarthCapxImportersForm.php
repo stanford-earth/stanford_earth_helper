@@ -19,6 +19,8 @@ use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\taxonomy\Entity;
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Batch\BatchBuilder;
+use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
  * ListedEventsForm description.
@@ -303,7 +305,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
 
     // give as much time as needed to run this.
     $save_max_exec = ini_get('max_execution_time');
-    set_time_limit(0);
+    //set_time_limit(0);
     
     // Actually do the save of the new configuration.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
@@ -364,19 +366,23 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
     
     $fp_array = Yaml::decode($form_state->getValue('import'));
+    $create_callable = array($this, '_earth_capx_create_wg_migration');
+    $batch_builder = new BatchBuilder();
+    $batch_builder->setTitle(t('Create Profile Migrations'));
+    $batch_builder->setInitMessage(t('Creating profile import migrations for each requested workgroup.'));
     foreach ($wgs as $wg) {
-      // create migration config
-      $random_id = random_int(0,10000);
-      $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
-      $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
-        '&ps=1000&whitelist=displayName,shortTitle,bio,primaryContact,profilePhotos,' .
-        'longTitle,internetLinks,contacts,meta,titles'];
-      $fp_array['label'] = 'Profiles for ' . $wg;
-      $form_state->setValue('import', Yaml::encode($fp_array));
-      parent::validateForm($form, $form_state);
-
-      $config_importer = $form_state->get('config_importer');
-      $config_importer->import();
+      // create migration configuration in batch mode
+      $batch_builder->addOperation(
+        [
+          $this,
+          '_earth_capx_create_wg_migration',
+        ],
+        [
+          $form,
+          $form_state,
+          $wg,
+          $fp_array,
+        ]);
 
       // update taxonomy with search terms for this workgroup
       $wg_parts = explode(':', $wg);
@@ -419,12 +425,21 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       }
     }
 
-    // Clear out all caches to ensure the config gets picked up.
-    drupal_flush_all_caches();
-    
-    // restore the sysstem time limit.
-    set_time_limit($save_max_exec);
-    drupal_set_message('Processing complete.');
+    batch_set($batch_builder->toArray());
   }
 
+  public function _earth_capx_create_wg_migration(array &$form, FormStateInterface $form_state, $wg, $fp_array) {
+    // create migration config
+    $random_id = random_int(0,10000);
+    $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
+    $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
+      '&ps=1000&whitelist=displayName,shortTitle,bio,primaryContact,profilePhotos,' .
+      'longTitle,internetLinks,contacts,meta,titles'];
+    $fp_array['label'] = 'Profiles for ' . $wg;
+    $form_state->setValue('import', Yaml::encode($fp_array));
+    parent::validateForm($form, $form_state);
+    $config_importer = $form_state->get('config_importer');
+    $config_importer->import();
+    drupal_set_message('Profile import for workgroup '. $wg . ' configured.');
+  }
 }
