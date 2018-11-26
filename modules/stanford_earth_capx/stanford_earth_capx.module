@@ -46,11 +46,16 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   // This hook gets called for every migration so check that it's the CAP-X one.
   if (substr($migration->id(),0,19) === 'earth_capx_importer') {
 
+    set_time_limit(30);
     $email_test = $row->getSourceProperty("email");
+    \Drupal::logger('type')->debug('import: '.$email_test);
     if (empty($email_test)) {
       $row->setSourceProperty('email', $row->getSourceProperty('sunetid') .
         '@stanford.edu');
     }
+
+    \Drupal::logger('type')->debug('import: '.$row->getSourceProperty('sunetid'));
+
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
     if (!empty($phones) && is_array($phones)) {

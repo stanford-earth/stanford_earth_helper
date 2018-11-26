@@ -11,6 +11,7 @@ use Drupal\migrate_tools\MigrateExecutable;
 use Drupal\migrate\MigrateMessage;
 use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate_tools\MigrateBatchExecutable;
+use Drupal\Core\Batch\BatchBuilder;
 
 /**
  * Redirect from earth to pangea controller.
@@ -30,7 +31,29 @@ class StanfordEarthCapxController extends ControllerBase {
       ->listAll('migrate_plus.migration.earth_capx_import');
 
     foreach ($eMigrations as $eMigration) {
-      \Drupal::logger('type')->info('importing ' . $eMigration);
+      //$create_callable = array($this, '_earth_capx_create_wg_migration');
+      $batch_builder = new BatchBuilder();
+      $batch_builder->setTitle(t('Import Profiles'));
+      $batch_builder->setInitMessage(t('Importing profiles one workgroup at a time.'));
+      $batch_builder->addOperation(
+            '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
+          [
+            substr($eMigration, strpos($eMigration, 'earth')),
+            [
+                'limit' => 0,
+                'update' => 1,
+                'force' => 0.
+            ],
+          ]);
+      batch_set($batch_builder->toArray());
+/*
+
+      $eMigrations = \Drupal::configFactory()
+      ->listAll('migrate_plus.migration.earth_capx_import');
+
+    foreach ($eMigrations as $eMigration) {
+      \Drupal::logger('type')->debug($eMigration . ' import');
+      // \Drupal::logger('type')->info('importing ' . $eMigration);
       $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
       $mp = \Drupal::getContainer()->get('plugin.manager.migration');
       $migration_plugin = $mp->createInstance($migration->id(), $migration->toArray());
@@ -42,7 +65,9 @@ class StanfordEarthCapxController extends ControllerBase {
       ];
       $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
       $executable->batchImport();
+*/
     }
+    //set_time_limit(0);
     return batch_process('/');
   }
 

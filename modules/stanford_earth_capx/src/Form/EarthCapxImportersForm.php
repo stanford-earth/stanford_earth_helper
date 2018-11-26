@@ -366,7 +366,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
     
     $fp_array = Yaml::decode($form_state->getValue('import'));
-    $create_callable = array($this, '_earth_capx_create_wg_migration');
+    //$create_callable = array($this, '_earth_capx_create_wg_migration');
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle(t('Create Profile Migrations'));
     $batch_builder->setInitMessage(t('Creating profile import migrations for each requested workgroup.'));
@@ -432,9 +432,11 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // create migration config
     $random_id = random_int(0,10000);
     $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
-    $fp_array['source']['urls'] = ['https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
-      '&ps=1000&whitelist=displayName,shortTitle,bio,primaryContact,profilePhotos,' .
-      'longTitle,internetLinks,contacts,meta,titles'];
+    $fp_array['source']['urls'] = [
+      'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
+      '&ps=1000&whitelist=displayName,shortTitle,bio,primaryContact,' .
+      'profilePhotos,longTitle,internetLinks,contacts,meta,titles'
+    ];
     $fp_array['label'] = 'Profiles for ' . $wg;
     $form_state->setValue('import', Yaml::encode($fp_array));
     parent::validateForm($form, $form_state);
