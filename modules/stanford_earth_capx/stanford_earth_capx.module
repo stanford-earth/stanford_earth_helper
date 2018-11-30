@@ -47,6 +47,38 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   if (substr($migration->id(),0,19) === 'earth_capx_importer') {
 
     set_time_limit(30);
+
+    $wg = '';
+    $urls = $row->getSourceProperty('urls');
+    if (!empty($urls)) {
+      $start = strpos($urls[0], 'earthsci:');
+      $end = strpos($urls[0], '&');
+      if ($start !== FALSE && $end !== FALSE) {
+        $wg = substr($urls[0], $start, ($end - $start));
+      }
+    }
+    $sunetid = $row->getSourceProperty("sunetid");
+    $affiliations = $row->getSourceProperty("affiliations");
+    foreach ($affiliations as $affil_name => $affil_value) {
+      if ($affil_value) {
+        try {
+          \Drupal::database()->insert('migrate_info_earth_capx_search_terms')
+            ->fields([
+              'sunetid' => $sunetid,
+              'workgroup_list' => $wg,
+              'search_terms' => $affil_name,
+            ])
+            ->execute();
+        }
+        catch (Exception $e) {
+          // Log the exception to watchdog.
+          //$m = new MigrateMessage();
+          //$m->display(t('Unable to insert new test record for @sunet', ['sunet' => $this->sunetid]));
+          \Drupal::logger('type')->error($e->getMessage());
+        }
+      }
+    }
+    
     $email_test = $row->getSourceProperty("email");
     \Drupal::logger('type')->debug('import: '.$email_test);
     if (empty($email_test)) {
