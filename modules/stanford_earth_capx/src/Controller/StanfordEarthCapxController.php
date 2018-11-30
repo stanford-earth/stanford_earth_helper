@@ -30,11 +30,12 @@ class StanfordEarthCapxController extends ControllerBase {
     $eMigrations = \Drupal::configFactory()
       ->listAll('migrate_plus.migration.earth_capx_import');
 
-    foreach ($eMigrations as $eMigration) {
+    foreach ($eMigrations as $key => $eMigration) {
       //$create_callable = array($this, '_earth_capx_create_wg_migration');
       $batch_builder = new BatchBuilder();
       $batch_builder->setTitle(t('Import Profiles'));
-      $batch_builder->setInitMessage(t('Importing profiles one workgroup at a time.'));
+      $batch_builder->setInitMessage(t('Preparing import.'));
+      $batch_builder->setProgressMessage("Importing " . $key . " of " . count($eMigrations));
       $batch_builder->addOperation(
             '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
           [
