@@ -183,8 +183,10 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
           $account->field_profile_search_terms = $termids;
           if (strpos($wg,'faculty') !== FALSE) {
             $account->addRole('faculty');
-          } else {
+          } else if (strpos($wg, 'staff') !== FALSE) {
             $account->addRole('staff');
+          } else if (strpos($wg, 'student') !== FALSE) {
+              $account->addRole('student');
           }
           $account->save();
         }
