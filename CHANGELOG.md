@@ -1,4 +1,11 @@
 # Stanford Earth Helper
+8.x-1.0-alpha16
+--------------------------------------------------------------------------------
+_Release Date: 2018-12-04
+
+_Updates CAP-X config form to use batch API to create migration for each workgroup.
+_Mucks with migrate_tools batch migration to make fewer calls to API.
+
 8.x-1.0-alpha15
 --------------------------------------------------------------------------------
 _Release Date: 2018-11-07
