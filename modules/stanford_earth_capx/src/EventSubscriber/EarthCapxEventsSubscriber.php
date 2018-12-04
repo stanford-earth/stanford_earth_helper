@@ -186,7 +186,9 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
           } else if (strpos($wg, 'staff') !== FALSE) {
             $account->addRole('staff');
           } else if (strpos($wg, 'student') !== FALSE) {
-              $account->addRole('student');
+            $account->addRole('student');
+          } else if (strpos($wg, 'postdoc') !== FALSE) {
+            $account->addRole('student');
           }
           $account->save();
         }
