@@ -2,6 +2,7 @@
 
 namespace Drupal\stanford_earth_capx\EventSubscriber;
 
+use Drupal\migrate\Event\MigrateRollbackEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\Event\MigrateEvents;
@@ -9,6 +10,7 @@ use Drupal\migrate\Event\MigratePreRowSaveEvent;
 use Drupal\migrate\Event\MigratePostRowSaveEvent;
 use Drupal\migrate\Event\MigrateRowDeleteEvent;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Class EntityTypeSubscriber.
@@ -28,7 +30,19 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
       MigrateEvents::PRE_ROW_SAVE => 'migratePreRowSave',
       MigrateEvents::POST_ROW_SAVE => 'migratePostRowSave',
       MigrateEvents::POST_ROW_DELETE => 'migratePostRowDelete',
+      MigrateEvents::PRE_ROLLBACK => 'migratePreRollback',
     ];
+  }
+
+  public function migratePreRollback(MigrateRollbackEvent $event) {
+
+    // This event gets thrown for all migrations, so check that first.
+    if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== FALSE) {
+      drupal_set_message('You may not roll back a profiles migration!');
+      throw new HttpException('403','You may not roll back a profiles migration, buddy!');
+      //throw new MigrateException('You can not roll back a profiles migration.', 0, NULL, 3, 2);
+    }
+
   }
 
   private function getWorkgroup($event) {

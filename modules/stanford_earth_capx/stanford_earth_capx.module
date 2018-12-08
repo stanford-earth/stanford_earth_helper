@@ -10,7 +10,6 @@ use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
-use Drupal\user\Entity\User;
 
 /**
  * Implements hook_entity_delete().
@@ -33,7 +32,6 @@ function stanford_earth_capx_entity_delete(EntityInterface $entity) {
       ->condition('destid1', $entity->id())
       ->execute();
   }
-
 }
 
 /**
@@ -44,51 +42,14 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   // We need to clean up the phones data from the CAP API since it's an
   // array without keys. This is where we rewrite the array.
   // This hook gets called for every migration so check that it's the CAP-X one.
-  if (substr($migration->id(),0,19) === 'earth_capx_importer') {
+  if (substr($migration->id(), 0, 19) === 'earth_capx_importer') {
 
     set_time_limit(30);
-
-    /*
-    $wg = '';
-    $urls = $row->getSourceProperty('urls');
-    if (!empty($urls)) {
-      $start = strpos($urls[0], 'earthsci:');
-      $end = strpos($urls[0], '&');
-      if ($start !== FALSE && $end !== FALSE) {
-        $wg = substr($urls[0], $start, ($end - $start));
-      }
-    }
-    $sunetid = $row->getSourceProperty("sunetid");
-    $affiliations = $row->getSourceProperty("affiliations");
-    foreach ($affiliations as $affil_name => $affil_value) {
-      if ($affil_value) {
-        try {
-          \Drupal::database()->insert('migrate_info_earth_capx_search_terms')
-            ->fields([
-              'sunetid' => $sunetid,
-              'workgroup_list' => $wg,
-              'search_terms' => $affil_name,
-            ])
-            ->execute();
-        }
-        catch (Exception $e) {
-          // Log the exception to watchdog.
-          //$m = new MigrateMessage();
-          //$m->display(t('Unable to insert new test record for @sunet', ['sunet' => $this->sunetid]));
-          \Drupal::logger('type')->error($e->getMessage());
-        }
-      }
-    }
-    */
-    
     $email_test = $row->getSourceProperty("email");
-    \Drupal::logger('type')->debug('import: '.$email_test);
     if (empty($email_test)) {
       $row->setSourceProperty('email', $row->getSourceProperty('sunetid') .
         '@stanford.edu');
     }
-
-    \Drupal::logger('type')->debug('import: '.$row->getSourceProperty('sunetid'));
 
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
@@ -100,7 +61,7 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
     }
     $row->setSourceProperty('phone', $newphones);
 
-    // if the user account already exists, set its id in the row data.
+    // If the user account already exists, set its id in the row data.
     $sunetid = $row->getSourceProperty('sunetid');
     if (!empty($sunetid)) {
 
@@ -113,48 +74,11 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
           $row->setSourceProperty('updateemail', 1);
         }
       }
-
-      /*
-      // update search terms table
-      $urls = $row->getSourceProperty('urls');
-      if (!empty($urls)) {
-        $start = strpos($urls[0],'earthsci:');
-        $end = strpos($urls[0],'&');
-        $wg = '';
-        if ($start !== FALSE && $end !== FALSE) {
-          $wg = substr($urls[0], $start, ($end - $start));
-        }
-        if (!empty($wg)) {
-          $properties = [
-            'vid' => 'profile_workgroups',
-            'name' => $wg,
-          ];
-          $wg_terms = \Drupal::entityTypeManager()
-            ->getStorage('taxonomy_term')
-            ->loadByProperties($properties);
-          if (!empty($wg_terms)) {
-            $entity = reset($wg_terms);
-            $search_terms = $entity->field_people_search_terms->getValue();
-
-            $acct_entityid = 0;
-            $wg_list = [];
-            $search_terms_list = [];
-            $db = \Drupal::database();
-            $result = $db->query("SELECT * FROM " .
-              "{migrate_info_earth_capx_search_terms} WHERE " .
-              "sunetid = :sunetid", [':sunetid' => $sunetid]);
-            foreach ($result as $record) {
-            }
-          }
-        }
-      }
-      */
     }
   }
   return TRUE;
 
 }
-
 
 /**
  * Implements hook_batch_alter().
@@ -168,7 +92,10 @@ function stanford_earth_capx_batch_alter(&$batch) {
       strpos($migration_id, 'earth_capx_importer_') !== FALSE) {
       if (empty($set['sandbox'])) {
         $batch['sets'][$key]['sandbox'] = [
-          'total' => 200, 'counter' => 0, 'batch_limit' => 200, 'operation' => 1,
+          'total' => 200,
+          'counter' => 0,
+          'batch_limit' => 200,
+          'operation' => 1,
         ];
       }
       if (empty($set['results'])) {
