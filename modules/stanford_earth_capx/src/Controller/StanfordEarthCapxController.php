@@ -24,7 +24,8 @@ class StanfordEarthCapxController extends ControllerBase {
   public function updateAll($refresh) {
 
     if ($refresh) {
-      \Drupal::database()->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0")->execute();
+      \Drupal::database()->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, workgroup_list=''")->execute();
+      \Drupal::database()->query("DELETE FROM {user__field_profile_search_terms}")->execute();
     }
 
     $eMigrations = \Drupal::configFactory()
