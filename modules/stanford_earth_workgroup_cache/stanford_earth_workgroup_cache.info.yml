@@ -1,0 +1,9 @@
+name: 'Stanford Earth Workgroup Cache'
+type: module
+description: 'Store workgroup memberships in the cache for accounts & profiles.'
+core: 8.x
+package: Stanford
+version: 8.x-1.0-dev
+dependencies:
+  - migrate
+  - migrate_plus

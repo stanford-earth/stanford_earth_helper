@@ -1,0 +1,4 @@
+services:
+  stanford_earth_workgroup_services.http_client.contents:
+    parent: http_client_manager.client_base
+    arguments: ['stanford_earth_workgroup_services.contents']
