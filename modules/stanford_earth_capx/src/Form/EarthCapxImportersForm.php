@@ -370,7 +370,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle(t('Create Profile Migrations'));
     $batch_builder->setInitMessage(t('Creating profile import migrations for each requested workgroup.'));
-    foreach ($wgs as $wg) {
+    foreach ($wgs as $wg_idx => $wg) {
       // create migration configuration in batch mode
       $batch_builder->addOperation(
         [
@@ -382,6 +382,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
           $form_state,
           $wg,
           $fp_array,
+          $wg_idx,
         ]);
 
       // update taxonomy with search terms for this workgroup
@@ -428,13 +429,13 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     batch_set($batch_builder->toArray());
   }
 
-  public function _earth_capx_create_wg_migration(array &$form, FormStateInterface $form_state, $wg, $fp_array) {
+  public function _earth_capx_create_wg_migration(array &$form, FormStateInterface $form_state, $wg, $fp_array, $wg_idx) {
     // create migration config
-    $random_id = random_int(0,10000);
-    $fp_array['id'] = 'earth_capx_importer_' . strval($random_id);
+    // $random_id = random_int(0,10000);
+    $fp_array['id'] = 'earth_capx_importer_' . str_pad(strval($wg_idx),3, "0", STR_PAD_LEFT );
     $fp_array['source']['urls'] = [
       'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
-      '&ps=100&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,' .
+      '&ps=1000&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,' .
       'profilePhotos,longTitle,internetLinks,contacts,meta,titles'
     ];
     $fp_array['label'] = 'Profiles for ' . $wg;
