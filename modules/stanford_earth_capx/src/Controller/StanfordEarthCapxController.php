@@ -31,45 +31,26 @@ class StanfordEarthCapxController extends ControllerBase {
     $eMigrations = \Drupal::configFactory()
       ->listAll('migrate_plus.migration.earth_capx_import');
 
-    foreach ($eMigrations as $key => $eMigration) {
-      //$create_callable = array($this, '_earth_capx_create_wg_migration');
       $batch_builder = new BatchBuilder();
-      $batch_builder->setTitle(t('Import Profiles'));
-      $batch_builder->setInitMessage(t('Preparing import.'));
-      $batch_builder->setProgressMessage("Importing " . $key . " of " . count($eMigrations));
-      $batch_builder->addOperation(
-            '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
-          [
-            substr($eMigration, strpos($eMigration, 'earth')),
-            [
-                'limit' => 0,
-                'update' => 1,
-                'force' => 0.
-            ],
-          ]);
+      //$batch_builder->setTitle(t('Import Profiles'));
+
+      foreach ($eMigrations as $key => $eMigration) {
+          $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
+          $mp = \Drupal::getContainer()->get('plugin.manager.migration');
+          $migration_plugin = $mp->createInstance($migration->id(), $migration->toArray());
+          $migration_plugin->getIdMap()->prepareUpdate();
+          $batch_builder->addOperation(
+              '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
+              [
+                  substr($eMigration, strpos($eMigration, 'earth')),
+                  [
+                      'limit' => 0,
+                      'update' => 1,
+                      'force' => 0.
+                  ],
+              ]);
+      }
       batch_set($batch_builder->toArray());
-/*
-
-      $eMigrations = \Drupal::configFactory()
-      ->listAll('migrate_plus.migration.earth_capx_import');
-
-    foreach ($eMigrations as $eMigration) {
-      \Drupal::logger('type')->debug($eMigration . ' import');
-      // \Drupal::logger('type')->info('importing ' . $eMigration);
-      $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
-      $mp = \Drupal::getContainer()->get('plugin.manager.migration');
-      $migration_plugin = $mp->createInstance($migration->id(), $migration->toArray());
-      $migrateMessage = new MigrateMessage();
-      $options = [
-        'limit' => 0,
-        'update' => 1,
-        'force' => 0,
-      ];
-      $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
-      $executable->batchImport();
-*/
-    }
-    //set_time_limit(0);
     return batch_process('/');
   }
 
