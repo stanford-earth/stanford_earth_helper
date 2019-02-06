@@ -32,7 +32,7 @@ class StanfordEarthCapxController extends ControllerBase {
       ->listAll('migrate_plus.migration.earth_capx_import');
 
       $batch_builder = new BatchBuilder();
-      //$batch_builder->setTitle(t('Import Profiles'));
+      $batch_builder->setTitle(t('Import Profiles'));
 
       foreach ($eMigrations as $key => $eMigration) {
           $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
