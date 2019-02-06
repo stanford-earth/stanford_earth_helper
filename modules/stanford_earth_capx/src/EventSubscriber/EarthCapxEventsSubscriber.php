@@ -182,6 +182,12 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
         // if we have search terms, load the user account and add them
         // to the field_profile_search_terms taxonomy reference field
         if (!empty($term_array)) {
+          if ($wg !== 'earthsci:ere-faculty-regular' &&
+            $wg !== 'earthsci:eess-faculty-regular' &&
+            $wg !== 'earthsci:ges-faculty-regular' &&
+            $wg !== 'earthsci:geophysics-faculty-regular') {
+
+          }
           $termids = [];
           // $account = \Drupal\user\Entity\User::load($destination);
           $saved_terms = $account->get('field_profile_search_terms')->getValue();
@@ -190,6 +196,12 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
               $termid = $saved_term['target_id'];
               $term_array[intval($termid)] = $termid;
             }
+          }
+          if ($wg !== 'earthsci:ere-faculty-regular' &&
+            $wg !== 'earthsci:eess-faculty-regular' &&
+            $wg !== 'earthsci:ges-faculty-regular' &&
+            $wg !== 'earthsci:geophysics-faculty-regular') {
+
           }
           foreach($term_array as $key => $tid) {
             $termids[] = ['target_id' => $tid];

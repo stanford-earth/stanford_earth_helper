@@ -31,26 +31,36 @@ class StanfordEarthCapxController extends ControllerBase {
     $eMigrations = \Drupal::configFactory()
       ->listAll('migrate_plus.migration.earth_capx_import');
 
-      $batch_builder = new BatchBuilder();
-      $batch_builder->setTitle(t('Import Profiles'));
+    $batch_builder = new BatchBuilder();
+    $batch_builder->setTitle(t('Import Profiles'));
 
-      foreach ($eMigrations as $key => $eMigration) {
-          $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
-          $mp = \Drupal::getContainer()->get('plugin.manager.migration');
-          $migration_plugin = $mp->createInstance($migration->id(), $migration->toArray());
-          $migration_plugin->getIdMap()->prepareUpdate();
-          $batch_builder->addOperation(
-              '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
-              [
-                  substr($eMigration, strpos($eMigration, 'earth')),
-                  [
-                      'limit' => 0,
-                      'update' => 1,
-                      'force' => 0.
-                  ],
-              ]);
-      }
-      batch_set($batch_builder->toArray());
+    foreach ($eMigrations as $key => $eMigration) {
+      $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
+      $mp = \Drupal::getContainer()->get('plugin.manager.migration');
+      $migration_plugin = $mp->createInstance($migration->id(), $migration->toArray());
+      $migration_plugin->getIdMap()->prepareUpdate();
+      $context = [
+        'sandbox' => [
+          'total' => 200,
+          'counter' => 0,
+          'batch_limit' => 200,
+          'operation' => 1,
+        ],
+      ];
+      $batch_builder->addOperation(
+        '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
+        [
+          substr($eMigration, strpos($eMigration, 'earth')),
+          [
+            'limit' => 0,
+            'update' => 1,
+            'force' => 0.
+          ],
+          $context,
+        ]
+      );
+    }
+    batch_set($batch_builder->toArray());
     return batch_process('/');
   }
 

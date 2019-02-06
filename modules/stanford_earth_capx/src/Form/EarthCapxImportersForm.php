@@ -252,6 +252,14 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    *
    */
   private function updateSearchTerms($terms, $wg = NULL) {
+    // only allow department regular faculty to be "all regular faculty"
+    if ($wg === 'earthsci:esys-faculty-regulars' ||
+        $wg === 'earthsci:eiper-faculty-regulars' ||
+        $wg === 'earthsci:ssp-faculty-regular') {
+          if ($key = array_search('All Regular Faculty', $terms)) {
+            unset($terms[$key]);
+          }
+    }
     $termids = [];
     foreach ($terms as $term) {
       $properties = [
