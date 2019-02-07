@@ -45,11 +45,13 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   if (substr($migration->id(), 0, 19) === 'earth_capx_importer') {
 
     set_time_limit(30);
-    $email_test = $row->getSourceProperty("email");
+      /*
+      $email_test = $row->getSourceProperty("email");
     if (empty($email_test)) {
       $row->setSourceProperty('email', $row->getSourceProperty('sunetid') .
         '@stanford.edu');
     }
+      */
 
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
