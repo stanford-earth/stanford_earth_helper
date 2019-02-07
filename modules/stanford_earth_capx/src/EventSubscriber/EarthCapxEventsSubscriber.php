@@ -82,9 +82,6 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     $row = $event->getRow();
     // See if we already have migration information for this profile.
     $sunetid = $row->getSourceProperty('sunetid');
-    if ($sunetid == 'arrigo') {
-      $xyz  = 1;
-    }
     $info = new EarthCapxInfo($sunetid);
     $photo_id = 0;
     $photo_field = $row->getDestinationProperty('field_s_person_image');
@@ -177,9 +174,6 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
         }
 
         $account = \Drupal\user\Entity\User::load($destination);
-        if ($account->getUsername() == 'arrigo') {
-          $xyz = 1;
-        }
         if (empty($account->getPassword())) {
           $account->setPassword(user_password());
           $account->save();
@@ -205,8 +199,8 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
             $wg !== 'earthsci:ges-faculty-regular' &&
             $wg !== 'earthsci:geophysics-faculty-regular' &&
             strpos($wg, 'faculty') !== FALSE) {
-              $all_reg_tid = 0;
-              $all_affil_tid = 0;
+              $all_reg_tid = -1;
+              $all_affil_tid = -1;
               $props = [
                 'vid' => 'people_search_terms',
                 'name' => 'All Regular Faculty',
@@ -226,9 +220,9 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
                   $all_affil_tid = intval($entity_f2->id());
                 }
               }
-              if ($all_reg_tid > 0 && $all_affil_tid > 0) {
-                $found_reg = 0;
-                $found_affil = 0;
+              if ($all_reg_tid > -1 && $all_affil_tid > -1) {
+                $found_reg = -1;
+                $found_affil = -1;
                 foreach ($termids as $fackey => $facterm) {
                   if (intval($facterm['target_id']) == $all_reg_tid ) {
                     $found_reg = $fackey;
@@ -236,7 +230,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
                     $found_affil = $fackey;
                   }
                 }
-                if ($found_reg > 0 && $found_affil > 0) {
+                if ($found_reg > -1 && $found_affil > 1) {
                   unset($termids[$found_affil]);
                 }
               }
