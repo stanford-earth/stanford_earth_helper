@@ -1,4 +1,11 @@
 # Stanford Earth Helper
+
+8.x-1.0-alpha17
+--------------------------------------------------------------------------------
+_Release Date: 2019-02-06
+
+_Updates to improve batch processing and manage regular faculty vs associate.
+
 8.x-1.0-alpha16
 --------------------------------------------------------------------------------
 _Release Date: 2018-12-04
