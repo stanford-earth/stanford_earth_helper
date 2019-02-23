@@ -1,6 +1,0 @@
-stanford_earth_workgroup_cache.config:
-  title: Stanford Workgroup Cache Settings
-  route_name: stanford_earth_workgroup_cache.admin_settings_form
-  parent: user.admin_index
-  description: 'Configure Stanford Workgroups API access.'
-  weight: 0

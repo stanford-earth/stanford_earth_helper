@@ -200,32 +200,32 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $dept = '';
     switch ($department) {
       case 'deans':
-        $dept = 'DEAN\'S OFFICE';
+        $dept = 'Dean\'s Office';
         break;
       case 'ere':
-        $dept = 'ERE';
+        $dept = 'Energy Resources Engineering';
         break;
       case 'eess':
-        $dept = 'ESS';
+        $dept = 'Earth System Science';
         break;
       case 'ges':
-        $dept = 'GS';
+        $dept = 'Geological Sciences';
         break;
       case 'geophysics':
-        $dept = 'GEOPHYSICS';
+        $dept = 'Geophysics';
         break;
       case 'eiper':
-        $dept = 'E-IPER';
+        $dept = 'E-IPER Program';
         break;
       case 'esys':
-        $dept = 'EARTH SYSTEMS';
+        $dept = 'Earth Systems Program';
         break;
       case 'ssp':
-        $dept = 'SUSTAINABILITY';
+        $dept = 'Change Leadership for Sustainability';
         break;
     }
     if (!empty($dept)) {
-      $terms[] = 'All ' . $dept;
+      $terms[] = $dept; //'All ' . $dept;
     }
     if (!empty($ptype)) {
       $terms[] = 'All ' . ucfirst($ptype);
@@ -252,6 +252,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    *
    */
   private function updateSearchTerms($terms, $wg = NULL) {
+
     // only allow department regular faculty to be "all regular faculty"
     if ($wg === 'earthsci:esys-faculty-regulars' ||
         $wg === 'earthsci:eiper-faculty-regulars' ||
@@ -345,7 +346,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       }
     }
     // make sure we have generic search terms for faculty
-    foreach (['regular', 'emeritus', 'affiliated'] as $psubtype) {
+    foreach (['regular', 'emeritus', 'associated'] as $psubtype) {
       $terms = $this->getTermNames(NULL, 'faculty', $psubtype);
       if ($terms) {
         $this->updateSearchTerms($terms);
@@ -374,7 +375,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
     
     $fp_array = Yaml::decode($form_state->getValue('import'));
-    //$create_callable = array($this, '_earth_capx_create_wg_migration');
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle(t('Create Profile Migrations'));
     $batch_builder->setInitMessage(t('Creating profile import migrations for each requested workgroup.'));
@@ -418,8 +418,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
               else if ($psubtype === 'graduate-phd') {
                 $psubtype = 'graduate';
               }
-              else if ($psubtype === 'advisors') {
-                $psubtype = 'affiliated';
+              else if ($psubtype === 'advisors' || $psubtype === 'affiliated') {
+                $psubtype = 'associated';
               }
             }
           }
