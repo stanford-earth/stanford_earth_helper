@@ -11,7 +11,7 @@ label: 'Stanford Profiles '
 source:
   plugin: url
   data_fetcher_plugin: http
-  data_parser_plugin: json
+  data_parser_plugin: stanford_earth_capx_json
   headers:
     Accept: 'application/json; charset=utf-8'
     Content-Type: application/json
