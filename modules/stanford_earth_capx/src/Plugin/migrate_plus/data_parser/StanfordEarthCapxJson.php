@@ -28,12 +28,13 @@ class StanfordEarthCapxJson extends Json {
    * @throws \GuzzleHttp\Exception\RequestException
    */
   protected function getSourceData($url) {
+    $curUrl = $url;
     $continue = TRUE;
     $source_data_out = [];
     while ($continue) {
       $continue = FALSE;
 
-      $response = $this->getDataFetcherPlugin()->getResponseContent($url);
+      $response = $this->getDataFetcherPlugin()->getResponseContent($curUrl);
 
       // Convert objects to associative arrays.
       $source_data = json_decode($response, TRUE);
@@ -48,8 +49,27 @@ class StanfordEarthCapxJson extends Json {
       if (isset($source_data['page']) && intval($source_data['page']) > 0 &&
         isset($source_data['totalPages']) &&
         intval($source_data['totalPages']) > intval($source_data['page'])) {
-        $nextPage = intval($source_data['page']) + 1;
-        $url .= '&p=' . $nextPage;
+        $nextPage = 'p=' . strval(intval($source_data['page']) + 1);
+        if (strpos($curUrl, '?') === FALSE) {
+          $curUrl .= '?' . $nextPage;
+        } else {
+          $cut1 = strpos($curUrl, '?p=');
+          if ($cut1 === FALSE) {
+            $cut1 = strpos($curUrl, '&p=');
+          }
+          if ($cut1 === FALSE) {
+            $curUrl .= '&' . $nextPage;
+          } else {
+            // $cut1 is ?p= or &p= location
+            $cut2 = strpos($curUrl, '&', $cut1);
+            if ($cut2 === FALSE) {
+              $curPage = substr($curUrl, intval($cut1) + 1);
+            } else {
+              $curPage = substr($curUrl, (intval($cut1) + 1), intval($cut2) - intval($cut1) - 1);
+            }
+          }
+        }
+        $curUrl .= '&p=' . $nextPage;
         $continue = TRUE;
       }
 

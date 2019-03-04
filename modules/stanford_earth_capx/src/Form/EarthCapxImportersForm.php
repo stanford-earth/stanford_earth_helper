@@ -261,6 +261,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
             unset($terms[$key]);
           }
     }
+
+    // find term existing in People Search Terms vocabulary or create it.
     $termids = [];
     foreach ($terms as $term) {
       $properties = [
@@ -271,22 +273,27 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         ->getStorage('taxonomy_term')
         ->loadByProperties($properties);
       $termid = FALSE;
+      // if term is not found, create it and get its term id.
       if (empty($terms)) {
         $entity = $this->entityTypeManager
           ->getStorage('taxonomy_term')->create($properties);
         $entity->save();
         $termid = $entity->id();
       }
+      // if the term is found, it should be only once, but get last one in array
       else {
         foreach ($terms as $key => $value) {
           $termid = strval($key);
           break;
         }
       }
+      // if we found or created a term, save its id to $termids array.
       if ($termid) {
         $termids[] = ['target_id' => strval($termid)];
       }
     }
+
+    // if we have a workgroup and a termid, save to profile_workgroups vocab.
     if (!empty($wg) && !empty($termids)) {
       $properties = [
         'vid' => 'profile_workgroups',
@@ -295,6 +302,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $wg_terms = $this->entityTypeManager
         ->getStorage('taxonomy_term')
         ->loadByProperties($properties);
+      // find or create a term for the workgroup.
       if (empty($wg_terms)) {
         $entity = $this->entityTypeManager
           ->getStorage('taxonomy_term')->create($properties);
@@ -302,6 +310,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       else {
         $entity = reset($wg_terms);
       }
+      // add the profile search term id to the workgroup term
       $entity->field_people_search_terms = $termids;
       $entity->save();
     }
@@ -313,7 +322,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
     // give as much time as needed to run this.
-    $save_max_exec = ini_get('max_execution_time');
+    //$save_max_exec = ini_get('max_execution_time');
     //set_time_limit(0);
     
     // Actually do the save of the new configuration.
@@ -400,6 +409,14 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         if ($wg_parts_str === 'ssp-staff') {
           $wg_parts_str = 'ssp-staff-admin';
         } else if ($wg_parts_str === 'deans-office-staff') {
+          $wg_parts_str = 'deans-staff';
+        } else if ($wg_parts_str === 'deans-comms-staff') {
+          $wg_parts_str = 'deans-staff-comms';
+        } else if ($wg_parts_str === 'deans-office-finance') {
+          $wg_parts_str = 'deans-staff-finance';
+        } else if ($wg_parts_str === 'deans-office-it') {
+          $wg_parts_str = 'deans-staff-it';
+        } else if ($wg_parts_str === 'deans-office-admins') {
           $wg_parts_str = 'deans-staff-admin';
         } else if ($wg_parts_str == 'deans-office-faculty') {
           $wg_parts_str = 'deans-faculty-affiliated';
@@ -441,11 +458,12 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // create migration config
     // $random_id = random_int(0,10000);
     $fp_array['id'] = 'earth_capx_importer_' . str_pad(strval($wg_idx),3, "0", STR_PAD_LEFT );
-    $fp_array['source']['urls'] = [
-      'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
-      '&ps=1000&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,' .
-      'profilePhotos,longTitle,internetLinks,contacts,meta,titles'
-    ];
+    for ($i = 1; $i < 2; $i++) {
+      $fp_array['source']['urls'][] =
+        'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
+        '&ps=100&p=' . $i . '&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,' .
+        'profilePhotos,longTitle,internetLinks,contacts,meta,titles';
+    }
     $fp_array['label'] = 'Profiles for ' . $wg;
     $form_state->setValue('import', Yaml::encode($fp_array));
     parent::validateForm($form, $form_state);
