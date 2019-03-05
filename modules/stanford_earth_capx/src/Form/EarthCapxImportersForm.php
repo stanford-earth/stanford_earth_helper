@@ -150,7 +150,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       '#type' => 'textarea',
       '#title' => $this->t('Workgroups for which Stanford Profiles are imported'),
       '#default_value' => $wg_values,
-      '#description' => $this->t("Enter one workgroup per line"),
+      '#description' => $this->t("Enter one workgroup per line. Department Regular Factory workgroups should go first."),
       '#rows' => 30,
     ];
 
@@ -383,16 +383,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       }
     }
 
-    // Build a list of current Profiles Workgroups terms
-    $wg_term_list = [];
-    $wg_terms_temp = $this->entityTypeManager
-      ->getStorage('taxonomy_term')
-      ->loadByProperties(['vid' => 'profile_workgroups']);
-    foreach ($wg_terms_temp as $tid_temp => $wg_term_temp) {
-      $wg_term_list[$tid_temp] = $wg_term_temp->getName();
-      //$this->entityTypeManager->getStorage('taxonomy_term')->delete($wg_term);
-    }
-
     $fp_array = Yaml::decode($form_state->getValue('import'));
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle(t('Create Profile Migrations'));
@@ -460,7 +450,14 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         drupal_set_message('Invalid workgroup name ' . $wg . ' could not be processed.');
       }
     }
-
+    $batch_builder->addOperation(
+      [
+        $this,
+        '_earth_capx_delete_unused_workgroup_taxonomy_terms',
+      ],
+      [
+        $wgs,
+      ]);
     batch_set($batch_builder->toArray());
   }
 
@@ -479,5 +476,34 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $config_importer = $form_state->get('config_importer');
     $config_importer->import();
     drupal_set_message('Profile import for workgroup '. $wg . ' configured.');
+  }
+
+  public function _earth_capx_delete_unused_workgroup_taxonomy_terms($wgs) {
+    // Note: this does *not* delete any matching Person Search terms; those
+    // would need to be deleted manually if they are no longer used.
+    //
+    // Build a list of current Profiles Workgroups terms, then delete the
+    // ones not currently specified in the form.
+    $wg_term_list = [];
+    $taxonomy_storage = $this->entityTypeManager
+      ->getStorage('taxonomy_term');
+    // get all of our workgroup terms
+    $wg_terms = $taxonomy_storage
+      ->loadByProperties(['vid' => 'profile_workgroups']);
+    // for each term, get its name and put in array for quick searching
+    foreach ($wg_terms as $wg_tid => $wg_term) {
+      $wg_term_list[$wg_tid] = $wg_term->getName();
+    }
+    // if a workgroup from our form is in the list of terms,
+    // delete it from the list; the remaining terms will be the list
+    // of terms no longer used and so can be deleted.
+    foreach ($wgs as $wg) {
+      $key = array_search($wg, $wg_term_list);
+      if ($key !== FALSE)  {
+        unset($wg_terms[$key]);
+      }
+    }
+    // delete the remaining terms
+    $taxonomy_storage->delete($wg_terms);
   }
 }
