@@ -382,7 +382,17 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $this->updateSearchTerms($terms);
       }
     }
-    
+
+    // Build a list of current Profiles Workgroups terms
+    $wg_term_list = [];
+    $wg_terms_temp = $this->entityTypeManager
+      ->getStorage('taxonomy_term')
+      ->loadByProperties(['vid' => 'profile_workgroups']);
+    foreach ($wg_terms_temp as $tid_temp => $wg_term_temp) {
+      $wg_term_list[$tid_temp] = $wg_term_temp->getName();
+      //$this->entityTypeManager->getStorage('taxonomy_term')->delete($wg_term);
+    }
+
     $fp_array = Yaml::decode($form_state->getValue('import'));
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle(t('Create Profile Migrations'));
@@ -458,12 +468,11 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // create migration config
     // $random_id = random_int(0,10000);
     $fp_array['id'] = 'earth_capx_importer_' . str_pad(strval($wg_idx),3, "0", STR_PAD_LEFT );
-    for ($i = 1; $i < 2; $i++) {
-      $fp_array['source']['urls'][] =
+    $fp_array['source']['urls'] = [
         'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
-        '&ps=100&p=' . $i . '&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,' .
-        'profilePhotos,longTitle,internetLinks,contacts,meta,titles';
-    }
+        '&ps=100&p=1&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,' .
+        'profilePhotos,longTitle,internetLinks,contacts,meta,titles'
+    ];
     $fp_array['label'] = 'Profiles for ' . $wg;
     $form_state->setValue('import', Yaml::encode($fp_array));
     parent::validateForm($form, $form_state);
