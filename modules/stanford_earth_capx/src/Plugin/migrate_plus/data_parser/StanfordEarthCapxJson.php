@@ -61,15 +61,15 @@ class StanfordEarthCapxJson extends Json {
             $curUrl .= '&' . $nextPage;
           } else {
             // $cut1 is ?p= or &p= location
-            $cut2 = strpos($curUrl, '&', $cut1);
+            $cut2 = strpos($curUrl, '&', intval($cut1) + 1);
             if ($cut2 === FALSE) {
               $curPage = substr($curUrl, intval($cut1) + 1);
             } else {
               $curPage = substr($curUrl, (intval($cut1) + 1), intval($cut2) - intval($cut1) - 1);
             }
+            $curUrl = str_replace($curPage, $nextPage, $curUrl);
           }
         }
-        $curUrl .= '&p=' . $nextPage;
         $continue = TRUE;
       }
 
@@ -82,7 +82,11 @@ class StanfordEarthCapxJson extends Json {
         $selectors = explode('/', trim($this->itemSelector, '/'));
         foreach ($selectors as $selector) {
           if (!empty($selector)) {
-            $source_data = $source_data[$selector];
+              if (empty($source_data[$selector])) {
+                  $source_data = [];
+              } else {
+                  $source_data = $source_data[$selector];
+              }
           }
         }
       }
