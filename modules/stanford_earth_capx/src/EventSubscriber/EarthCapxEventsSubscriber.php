@@ -10,6 +10,8 @@ use Drupal\migrate\Event\MigratePreRowSaveEvent;
 use Drupal\migrate\Event\MigratePostRowSaveEvent;
 use Drupal\migrate\Event\MigrateRowDeleteEvent;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\user\Entity\User;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -18,6 +20,47 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
  * @package Drupal\stanford_earth_capx\EventSubscriber
  */
 class EarthCapxEventsSubscriber implements EventSubscriberInterface {
+
+  use StringTranslationTrait;
+
+  /**
+   * Entity Type Manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
+   * User object.
+   *
+   * @var \Drupal\user\Entity\User
+   */
+  protected $user;
+
+  /**
+   * EarthCapxEventsSubscriber constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   *   The EntityTypeManager service.
+   * @param \Drupal\user\Entity\User $user
+   *   The User object to load accounts.
+   */
+  public function __construct(EntityTypeManager $entityTypeManager,
+                              User $user) {
+    $this->entityTypeManager = $entityTypeManager;
+    $this->user = $user;
+
+    parent::__construct();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -34,18 +77,30 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     ];
   }
 
+  /**
+   * Do not allow a Profiles migration rollback.
+   *
+   * @param \Drupal\migrate\Event\MigrateRollbackEvent $event
+   *   Information about the migration source row being processed.
+   */
   public function migratePreRollback(MigrateRollbackEvent $event) {
 
     // This event gets thrown for all migrations, so check that first.
     if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== FALSE) {
-      drupal_set_message('You may not roll back a profiles migration!');
-      throw new HttpException('403', 'You may not roll back a profiles migration, buddy!');
-      //throw new MigrateException('You can not roll back a profiles migration.', 0, NULL, 3, 2);
+      drupal_set_message($this->t('You may not roll back a profiles migration!'));
+      throw new HttpException('403',
+        'You may not roll back a profiles migration, buddy!');
     }
 
   }
 
-  private function getWorkgroup($event) {
+  /**
+   * Get the workgroup name from the source URL.
+   *
+   * @param \Drupal\migrate\Event\MigrateEvents $event
+   *   Information about the migration source row being processed.
+   */
+  private function getWorkgroup(MigrateEvents $event) {
     $urls = $event->getRow()->getSourceProperty('urls');
     $wg = '';
     if (!empty($urls)) {
@@ -141,26 +196,26 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
       $photoId = intval($dest_values['target_id']);
     }
 
-    // Get the workgroup from the import event
+    // Get the workgroup from the import event.
     $wg = $this->getWorkgroup($event);
 
     $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
     $info->setInfoRecord($row->getSource(), $destination, $photoId, $wg);
 
-    // update the person search terms based on the workgroup
+    // Update the person search terms based on the workgroup.
     if (!empty($destination)) {
 
       if (!empty($wg)) {
-        // next look up the workgroup in the profile_workgroups vocabulary
+        // Next look up the workgroup in the profile_workgroups vocabulary.
         $properties = [
           'vid' => 'profile_workgroups',
           'name' => $wg,
         ];
-        $wg_terms = \Drupal::entityTypeManager()
+        $wg_terms = $this->entityTypeManager
           ->getStorage('taxonomy_term')
           ->loadByProperties($properties);
 
-        // if we find it, record the search terms for the workgroup
+        // If we find it, record the search terms for the workgroup.
         $term_array = [];
         if (!empty($wg_terms)) {
           $entity = reset($wg_terms);
@@ -173,17 +228,17 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
           }
         }
 
-        $account = \Drupal\user\Entity\User::load($destination);
+        $account = $this->user::load($destination);
+        // $account = \Drupal\user\Entity\User::load($destination);
         if (empty($account->getPassword())) {
           $account->setPassword(user_password());
           $account->save();
         }
 
-        // if we have search terms, load the user account and add them
-        // to the field_profile_search_terms taxonomy reference field
+        // If we have search terms, load the user account and add them
+        // to the field_profile_search_terms taxonomy reference field.
         if (!empty($term_array)) {
           $termids = [];
-          // $account = \Drupal\user\Entity\User::load($destination);
           $saved_terms = $account->get('field_profile_search_terms')
             ->getValue();
           if (!empty($saved_terms)) {
@@ -192,7 +247,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
               $term_array[intval($termid)] = $termid;
             }
           }
-          foreach ($term_array as $key => $tid) {
+          foreach ($term_array as $tid) {
             $termids[] = ['target_id' => $tid];
           }
           if ($wg !== 'earthsci:ere-faculty-regular' &&
@@ -206,14 +261,14 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
               'vid' => 'people_search_terms',
               'name' => 'All Regular Faculty',
             ];
-            $wg_term_f1 = \Drupal::entityTypeManager()
+            $wg_term_f1 = $this->entityTypeManager
               ->getStorage('taxonomy_term')
               ->loadByProperties($props);
             if (!empty($wg_term_f1)) {
               $entity_f1 = reset($wg_term_f1);
               $all_reg_tid = intval($entity_f1->id());
               $props['name'] = 'All Affiliated Faculty';
-              $wg_term_f2 = \Drupal::entityTypeManager()
+              $wg_term_f2 = $this->entityTypeManager
                 ->getStorage('taxonomy_term')
                 ->loadByProperties($props);
               if (!empty($wg_term_f2)) {

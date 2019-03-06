@@ -4,7 +4,7 @@ stanford_earth_capx.importers:
     _title: 'Stanford Profile Workgroups for Import'
     _form: '\Drupal\stanford_earth_capx\Form\EarthCapxImportersForm'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'administer site configuration'
 stanford_earth_capx.update_all:
   path: '/admin/config/people/capx_update_all/{refresh}'
   defaults:
@@ -12,4 +12,4 @@ stanford_earth_capx.update_all:
     refresh: false
     _controller: '\Drupal\stanford_earth_capx\Controller\StanfordEarthCapxController::updateAll'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'administer site configuration'

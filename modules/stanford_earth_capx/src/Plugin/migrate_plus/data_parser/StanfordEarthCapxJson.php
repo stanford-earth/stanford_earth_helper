@@ -51,7 +51,7 @@ class StanfordEarthCapxJson extends Json {
       $source_data = json_decode($response, TRUE);
 
       // If json_decode() has returned NULL, it might be that the data isn't
-      // valid utf8 - see http://php.net/manual/en/function.json-decode.php#86997.
+      // valid utf8 - see http://php.net/manual/en/function.json-decode.php.
       if (is_null($source_data)) {
         $utf8response = utf8_encode($response);
         $source_data = json_decode($utf8response, TRUE);
@@ -63,19 +63,22 @@ class StanfordEarthCapxJson extends Json {
         $nextPage = 'p=' . strval(intval($source_data['page']) + 1);
         if (strpos($curUrl, '?') === FALSE) {
           $curUrl .= '?' . $nextPage;
-        } else {
+        }
+        else {
           $cut1 = strpos($curUrl, '?p=');
           if ($cut1 === FALSE) {
             $cut1 = strpos($curUrl, '&p=');
           }
           if ($cut1 === FALSE) {
             $curUrl .= '&' . $nextPage;
-          } else {
-            // $cut1 is ?p= or &p= location
+          }
+          else {
+            // $cut1 is ?p= or &p= location.
             $cut2 = strpos($curUrl, '&', intval($cut1) + 1);
             if ($cut2 === FALSE) {
               $curPage = substr($curUrl, intval($cut1) + 1);
-            } else {
+            }
+            else {
               $curPage = substr($curUrl, (intval($cut1) + 1), intval($cut2) - intval($cut1) - 1);
             }
             $curUrl = str_replace($curPage, $nextPage, $curUrl);
@@ -93,25 +96,26 @@ class StanfordEarthCapxJson extends Json {
         $selectors = explode('/', trim($this->itemSelector, '/'));
         foreach ($selectors as $selector) {
           if (!empty($selector)) {
-              if (empty($source_data[$selector])) {
-                  $source_data = [];
-              } else {
-                  $source_data = $source_data[$selector];
-              }
+            if (empty($source_data[$selector])) {
+              $source_data = [];
+            }
+            else {
+              $source_data = $source_data[$selector];
+            }
           }
         }
       }
       $source_data_out = array_merge($source_data_out, $source_data);
     }
 
-    // now we want to get the members of the workgroup from the workgroup API
+    // Now we want to get the members of the workgroup from the workgroup API
     // and see if anyone is missing.
     if (!empty($wg)) {
       $wg_service = \Drupal::service('stanford_earth_workgroups.workgroup');
       $wg_members = $wg_service->getMembers($wg);
       if ($wg_members['status']['member_count'] > 0) {
-        //put our sunets from CAP in an array so easier to search
-        //$wg_cap_members = [];
+        // Put our sunets from CAP in an array so easier to search
+        // $wg_cap_members = [].
         foreach ($source_data_out as $profile) {
           $wg_cap_members[] = $profile['uid'];
         }
@@ -120,9 +124,11 @@ class StanfordEarthCapxJson extends Json {
             if (strpos($name, ',') !== FALSE) {
               $dname = substr($name, strpos($name, ',') + 2) . ' ' .
                 substr($name, 0, strpos($name, ','));
-            } else {
+            }
+            else {
               $dname = $name;
             }
+
             $source_data_out[] = [
               'uid' => $sunet,
               'displayName' => $dname,
@@ -131,7 +137,6 @@ class StanfordEarthCapxJson extends Json {
         }
       }
     }
-
 
     return $source_data_out;
   }
@@ -144,5 +149,3 @@ class StanfordEarthCapxJson extends Json {
   }
 
 }
-
-

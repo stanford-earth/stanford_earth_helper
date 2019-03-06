@@ -2,21 +2,73 @@
 
 namespace Drupal\stanford_earth_capx\Controller;
 
-use Drupal\Core\Render\HtmlResponse;
-use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\migrate\Plugin\MigrationPluginManager;
+use Drupal\migrate\Plugin\MigratePluginManager;
 use Drupal\migrate_plus\Entity\Migration;
-use Drupal\migrate_tools\MigrateExecutable;
-use Drupal\migrate\MigrateMessage;
-use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\migrate_tools\MigrateBatchExecutable;
 use Drupal\Core\Batch\BatchBuilder;
+use Drupal\Core\Database\Connection;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Redirect from earth to pangea controller.
  */
 class StanfordEarthCapxController extends ControllerBase {
+  use StringTranslationTrait;
+
+  /**
+   * Migration plugin manager.
+   *
+   * @var \Drupal\migrate\Plugin\MigratePluginManager
+   *   The migration plugin manager object.
+   */
+  protected $mp;
+
+  /**
+   * Database connection object.
+   *
+   * @var \Drupal\Core\Database\Connection
+   *   The database connection.
+   */
+  protected $db;
+
+  /**
+   * Drupal config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   *   The factory object.
+   */
+  protected $cf;
+
+  /**
+   * StanfordEarthCapxController constructor.
+   *
+   * @param \Drupal\migrate\Plugin\MigratePluginManager $mp
+   *   The migration plugin manager.
+   * @param \Drupal\Core\Database\Connection $db
+   *   The database connection object.
+   * @param \Drupal\Core\Config\ConfigFactory $cf
+   *   The config factory object.
+   */
+  public function __construct(MigratePluginManager $mp,
+                              Connection $db,
+                              ConfigFactory $cf) {
+    $this->mp = $mp;
+    $this->db = $db;
+    $this->cf = $cf;
+    parent::__construct();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('plugin.manager.migration'),
+      $container->get('database'),
+      $container->get('config.factory')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -24,20 +76,20 @@ class StanfordEarthCapxController extends ControllerBase {
   public function updateAll($refresh) {
 
     if ($refresh) {
-      \Drupal::database()->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, workgroup_list=''")->execute();
-      \Drupal::database()->query("DELETE FROM {user__field_profile_search_terms}")->execute();
+      $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, workgroup_list=''")->execute();
+      $this->db->query("DELETE FROM {user__field_profile_search_terms}")->execute();
     }
 
-    $eMigrations = \Drupal::configFactory()
+    $eMigrations = $this->cf
       ->listAll('migrate_plus.migration.earth_capx_import');
 
     $batch_builder = new BatchBuilder();
-    $batch_builder->setTitle(t('Import Profiles'));
+    $batch_builder->setTitle($this->t('Import Profiles'));
 
-    foreach ($eMigrations as $key => $eMigration) {
+    foreach ($eMigrations as $eMigration) {
       $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
-      $mp = \Drupal::getContainer()->get('plugin.manager.migration');
-      $migration_plugin = $mp->createInstance($migration->id(), $migration->toArray());
+      // $mp = \Drupal::getContainer()->get('plugin.manager.migration');
+      $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
       $migration_plugin->getIdMap()->prepareUpdate();
       $context = [
         'sandbox' => [
@@ -54,7 +106,7 @@ class StanfordEarthCapxController extends ControllerBase {
           [
             'limit' => 0,
             'update' => 1,
-            'force' => 0.
+            'force' => 0,
           ],
           $context,
         ]
