@@ -13,4 +13,3 @@ stanford_earth_capx.update_all:
     _controller: '\Drupal\stanford_earth_capx\Controller\StanfordEarthCapxController::updateAll'
   requirements:
     _permission: 'access administration pages'
-

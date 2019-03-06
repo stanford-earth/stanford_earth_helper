@@ -39,7 +39,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     // This event gets thrown for all migrations, so check that first.
     if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== FALSE) {
       drupal_set_message('You may not roll back a profiles migration!');
-      throw new HttpException('403','You may not roll back a profiles migration, buddy!');
+      throw new HttpException('403', 'You may not roll back a profiles migration, buddy!');
       //throw new MigrateException('You can not roll back a profiles migration.', 0, NULL, 3, 2);
     }
 
@@ -50,12 +50,12 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     $wg = '';
     if (!empty($urls)) {
       $url = reset($urls);
-      $start = strpos($url,'privGroups=');
+      $start = strpos($url, 'privGroups=');
       if ($start !== FALSE) {
-        $end = strpos($url,'&', $start);
+        $end = strpos($url, '&', $start);
         if ($end !== FALSE) {
           $start += 11;
-          $wg = substr($url, $start, $end - $start );
+          $wg = substr($url, $start, $end - $start);
         }
       }
     }
@@ -184,14 +184,15 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
         if (!empty($term_array)) {
           $termids = [];
           // $account = \Drupal\user\Entity\User::load($destination);
-          $saved_terms = $account->get('field_profile_search_terms')->getValue();
+          $saved_terms = $account->get('field_profile_search_terms')
+            ->getValue();
           if (!empty($saved_terms)) {
             foreach ($saved_terms as $saved_term) {
               $termid = $saved_term['target_id'];
               $term_array[intval($termid)] = $termid;
             }
           }
-          foreach($term_array as $key => $tid) {
+          foreach ($term_array as $key => $tid) {
             $termids[] = ['target_id' => $tid];
           }
           if ($wg !== 'earthsci:ere-faculty-regular' &&
@@ -199,51 +200,63 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
             $wg !== 'earthsci:ges-faculty-regular' &&
             $wg !== 'earthsci:geophysics-faculty-regular' &&
             strpos($wg, 'faculty') !== FALSE) {
-              $all_reg_tid = -1;
-              $all_affil_tid = -1;
-              $props = [
-                'vid' => 'people_search_terms',
-                'name' => 'All Regular Faculty',
-              ];
-              $wg_term_f1 = \Drupal::entityTypeManager()
+            $all_reg_tid = -1;
+            $all_affil_tid = -1;
+            $props = [
+              'vid' => 'people_search_terms',
+              'name' => 'All Regular Faculty',
+            ];
+            $wg_term_f1 = \Drupal::entityTypeManager()
+              ->getStorage('taxonomy_term')
+              ->loadByProperties($props);
+            if (!empty($wg_term_f1)) {
+              $entity_f1 = reset($wg_term_f1);
+              $all_reg_tid = intval($entity_f1->id());
+              $props['name'] = 'All Affiliated Faculty';
+              $wg_term_f2 = \Drupal::entityTypeManager()
                 ->getStorage('taxonomy_term')
                 ->loadByProperties($props);
-              if (!empty($wg_term_f1)) {
-                $entity_f1 = reset($wg_term_f1);
-                $all_reg_tid = intval($entity_f1->id());
-                $props['name'] = 'All Affiliated Faculty';
-                $wg_term_f2 = \Drupal::entityTypeManager()
-                  ->getStorage('taxonomy_term')
-                  ->loadByProperties($props);
-                if (!empty($wg_term_f2)) {
-                  $entity_f2 = reset($wg_term_f2);
-                  $all_affil_tid = intval($entity_f2->id());
-                }
+              if (!empty($wg_term_f2)) {
+                $entity_f2 = reset($wg_term_f2);
+                $all_affil_tid = intval($entity_f2->id());
               }
-              if ($all_reg_tid > -1 && $all_affil_tid > -1) {
-                $found_reg = -1;
-                $found_affil = -1;
-                foreach ($termids as $fackey => $facterm) {
-                  if (intval($facterm['target_id']) == $all_reg_tid ) {
-                    $found_reg = $fackey;
-                  } else if (intval($facterm['target_id']) == $all_affil_tid) {
+            }
+            if ($all_reg_tid > -1 && $all_affil_tid > -1) {
+              $found_reg = -1;
+              $found_affil = -1;
+              foreach ($termids as $fackey => $facterm) {
+                if (intval($facterm['target_id']) == $all_reg_tid) {
+                  $found_reg = $fackey;
+                }
+                else {
+                  if (intval($facterm['target_id']) == $all_affil_tid) {
                     $found_affil = $fackey;
                   }
                 }
-                if ($found_reg > -1 && $found_affil > 1) {
-                  unset($termids[$found_affil]);
-                }
               }
+              if ($found_reg > -1 && $found_affil > 1) {
+                unset($termids[$found_affil]);
+              }
+            }
           }
           $account->field_profile_search_terms = $termids;
-          if (strpos($wg,'faculty') !== FALSE) {
+          if (strpos($wg, 'faculty') !== FALSE) {
             $account->addRole('faculty');
-          } else if (strpos($wg, 'staff') !== FALSE) {
-            $account->addRole('staff');
-          } else if (strpos($wg, 'student') !== FALSE) {
-            $account->addRole('student');
-          } else if (strpos($wg, 'postdoc') !== FALSE) {
-            $account->addRole('student');
+          }
+          else {
+            if (strpos($wg, 'staff') !== FALSE) {
+              $account->addRole('staff');
+            }
+            else {
+              if (strpos($wg, 'student') !== FALSE) {
+                $account->addRole('student');
+              }
+              else {
+                if (strpos($wg, 'postdoc') !== FALSE) {
+                  $account->addRole('student');
+                }
+              }
+            }
           }
           $account->save();
         }

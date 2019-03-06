@@ -28,6 +28,17 @@ class StanfordEarthCapxJson extends Json {
    * @throws \GuzzleHttp\Exception\RequestException
    */
   protected function getSourceData($url) {
+
+    $wg = '';
+    $privGroupPos = strpos($url, 'privGroups=');
+    if ($privGroupPos !== FALSE) {
+      $wg = substr($url, $privGroupPos + 11);
+      $ampPos = strpos($wg, '&');
+      if ($ampPos !== FALSE) {
+        $wg = substr($wg, 0, $ampPos);
+      }
+    }
+
     $curUrl = $url;
     $continue = TRUE;
     $source_data_out = [];
@@ -92,6 +103,36 @@ class StanfordEarthCapxJson extends Json {
       }
       $source_data_out = array_merge($source_data_out, $source_data);
     }
+
+    // now we want to get the members of the workgroup from the workgroup API
+    // and see if anyone is missing.
+    if (!empty($wg)) {
+      $wg_service = \Drupal::service('stanford_earth_workgroups.workgroup');
+      $wg_members = $wg_service->getMembers($wg);
+      if ($wg_members['status']['member_count'] > 0) {
+        //put our sunets from CAP in an array so easier to search
+        //$wg_cap_members = [];
+        foreach ($source_data_out as $profile) {
+          $wg_cap_members[] = $profile['uid'];
+        }
+        foreach ($wg_members['members'] as $sunet => $name) {
+          if (array_search($sunet, $wg_cap_members) === FALSE) {
+            if (strpos($name, ',') !== FALSE) {
+              $dname = substr($name, strpos($name, ',') + 2) . ' ' .
+                substr($name, 0, strpos($name, ','));
+            } else {
+              $dname = $name;
+            }
+            $source_data_out[] = [
+              'uid' => $sunet,
+              'displayName' => $dname,
+            ];
+          }
+        }
+      }
+    }
+
+
     return $source_data_out;
   }
 

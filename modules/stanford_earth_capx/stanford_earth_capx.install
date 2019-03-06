@@ -9,37 +9,37 @@ use Drupal\Core\Database\Database;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
- * Return search terms schema for module install and update
+ * Return search terms schema for module install and update.
  */
 function _stanford_earth_capx_search_table() {
   return [
-      'description' => "Stanford Cap-X Profile Search Term Info",
-      'fields' => [
-        'sunetid' => [
-          'type' => 'varchar',
-          'length' => 8,
-          'not null' => TRUE,
-          'description' => "SUNetID for this account and profile",
-        ],
-        'entity_id' => [
-          'type' => 'int',
-          'not null' => FALSE,
-          'description' => "Entity id to which the profile was imported",
-        ],
-        'workgroup_list' => [
-          'type' => 'text',
-          'not null' => FALSE,
-          'size' => 'big',
-          'description' => 'Workgroups in which this profile is found',
-        ],
-        'search_terms' => [
-          'type' => 'text',
-          'not null' => FALSE,
-          'size' => 'big',
-          'description' => 'Search terms by which this profile can be found',
-        ],
+    'description' => "Stanford Cap-X Profile Search Term Info",
+    'fields' => [
+      'sunetid' => [
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+        'description' => "SUNetID for this account and profile",
       ],
-      'primary key' => ['sunetid'],
+      'entity_id' => [
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => "Entity id to which the profile was imported",
+      ],
+      'workgroup_list' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Workgroups in which this profile is found',
+      ],
+      'search_terms' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Search terms by which this profile can be found',
+      ],
+    ],
+    'primary key' => ['sunetid'],
   ];
 }
 
@@ -53,7 +53,7 @@ function stanford_earth_capx_schema() {
 }
 
 /**
- * Add new fields to schema
+ * Add new fields to schema.
  */
 function stanford_earth_capx_update_8100() {
   $search_terms = _stanford_earth_capx_search_table();
@@ -62,7 +62,7 @@ function stanford_earth_capx_update_8100() {
 }
 
 /**
- * Add workgroup list to info table
+ * Add workgroup list to info table.
  */
 function stanford_earth_capx_update_8101() {
   $schema = Database::getConnection()->schema();
@@ -76,7 +76,7 @@ function stanford_earth_capx_update_8101() {
 }
 
 /**
- * Fix Profile Search Terms
+ * Fix Profile Search Terms.
  */
 function stanford_earth_capx_update_8102() {
   /* @var $entity_service \Drupal\Core\Entity\EntityTypeManager */
@@ -85,7 +85,7 @@ function stanford_earth_capx_update_8102() {
     ->getStorage('taxonomy_term')
     ->loadByProperties(['vid' => 'people_search_terms']);
   if (!empty($terms)) {
-    foreach ($terms as $key => $value) {
+    foreach ($terms as $value) {
       $name = $value->getName();
       $name = str_replace('DEAN\'S OFFICE', 'Dean\'s Office', $name);
       $name = str_replace('All Dean', 'Dean', $name);

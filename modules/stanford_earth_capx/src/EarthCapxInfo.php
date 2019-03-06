@@ -136,8 +136,12 @@ class EarthCapxInfo {
    *   The source array from the migration row.
    * @param int $photoId
    *   The photoId from the image url in the profile data.
+   * @param string $wg
+   *   The name of the workgroup being processed.
    */
-  public function getOkayToUpdateProfile(array $source = [], int $photoId = 0, $wg = null) {
+  public function getOkayToUpdateProfile(array $source = [],
+                                         int $photoId = 0,
+                                         string $wg = NULL) {
     // Checks $status which was set in the constructor.
     $oktoupdate = FALSE;
     $msg = new MigrateMessage();
@@ -158,7 +162,7 @@ class EarthCapxInfo {
         $oktoupdate = TRUE;
       }
       if (!$oktoupdate && empty($this->entityId)) {
-          $oktoupdate = TRUE;
+        $oktoupdate = TRUE;
       }
       if (!$oktoupdate && !empty($source['updateemail'])) {
         $oktoupdate = TRUE;
@@ -169,6 +173,7 @@ class EarthCapxInfo {
     }
     return $oktoupdate;
   }
+
   /**
    * Update the table with information about the profile.
    *
@@ -181,8 +186,13 @@ class EarthCapxInfo {
    *   Entity ID of the profile.
    * @param int $photo_id
    *   Photo id number from profile photo URL.
+   * @param string $wg
+   *   Workgroup being processed.
    */
-  public function setInfoRecord(array $source = [], $entity_id = 0, $photo_id = 0, $wg = null) {
+  public function setInfoRecord(array $source = [],
+                                $entity_id = 0,
+                                $photo_id = 0,
+                                $wg = NULL) {
     // Function uses $status which was originally set in the constructor.
     // If the $status is 'invalid', post a message and return.
     // If the $status is 'new', create a new record.
@@ -213,7 +223,7 @@ class EarthCapxInfo {
 
     $photo_id = intval($photo_id);
 
-    // add the workgroup if not null and not already in array
+    // Add the workgroup if not null and not already in array.
     $wg_changed = FALSE;
     $wgs = $this->workgroups;
     if (!empty($wg) && !in_array($wg, $wgs)) {
