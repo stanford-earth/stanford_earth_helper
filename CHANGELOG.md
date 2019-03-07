@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha19
+--------------------------------------------------------------------------------
+_Release Date: 2019-03-06
+
+_Add workgroup members not found in CAP to profile imports.
+_Clean up code.
+
 8.x-1.0-alpha18
 --------------------------------------------------------------------------------
 _Release Date: 2019-02-07
