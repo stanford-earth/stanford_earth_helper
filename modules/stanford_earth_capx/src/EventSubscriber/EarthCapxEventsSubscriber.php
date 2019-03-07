@@ -31,36 +31,24 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
   protected $entityTypeManager;
 
   /**
-   * User object.
-   *
-   * @var \Drupal\user\Entity\User
-   */
-  protected $user;
-
-  /**
    * EarthCapxEventsSubscriber constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The EntityTypeManager service.
-   * @param \Drupal\user\Entity\User $user
-   *   The User object to load accounts.
    */
-  public function __construct(EntityTypeManager $entityTypeManager,
-                              User $user) {
+  public function __construct(\Drupal\Core\Entity\EntityTypeManager $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
-    $this->user = $user;
-
-    parent::__construct();
   }
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+/*  public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_type.manager')
     );
   }
+*/
 
   /**
    * {@inheritdoc}
@@ -228,8 +216,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
           }
         }
 
-        $account = $this->user::load($destination);
-        // $account = \Drupal\user\Entity\User::load($destination);
+        $account = \Drupal\user\Entity\User::load($destination);
         if (empty($account->getPassword())) {
           $account->setPassword(user_password());
           $account->save();

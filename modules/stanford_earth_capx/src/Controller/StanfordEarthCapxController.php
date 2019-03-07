@@ -3,12 +3,13 @@
 namespace Drupal\stanford_earth_capx\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\migrate\Plugin\MigratePluginManager;
+use Drupal\migrate\Plugin\MigrationPluginManager;
 use Drupal\migrate_plus\Entity\Migration;
 use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Redirect from earth to pangea controller.
@@ -19,7 +20,7 @@ class StanfordEarthCapxController extends ControllerBase {
   /**
    * Migration plugin manager.
    *
-   * @var \Drupal\migrate\Plugin\MigratePluginManager
+   * @var Drupal\migrate\Plugin\MigrationPluginManager
    *   The migration plugin manager object.
    */
   protected $mp;
@@ -43,20 +44,19 @@ class StanfordEarthCapxController extends ControllerBase {
   /**
    * StanfordEarthCapxController constructor.
    *
-   * @param \Drupal\migrate\Plugin\MigratePluginManager $mp
+   * @param Drupal\migrate\Plugin\MigrationPluginManager $mp
    *   The migration plugin manager.
    * @param \Drupal\Core\Database\Connection $db
    *   The database connection object.
    * @param \Drupal\Core\Config\ConfigFactory $cf
    *   The config factory object.
    */
-  public function __construct(MigratePluginManager $mp,
+  public function __construct(MigrationPluginManager $mp,
                               Connection $db,
                               ConfigFactory $cf) {
     $this->mp = $mp;
     $this->db = $db;
     $this->cf = $cf;
-    parent::__construct();
   }
 
   /**

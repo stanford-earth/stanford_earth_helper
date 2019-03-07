@@ -3,6 +3,7 @@ services:
   stanford_earth_capx_events_subscriber:
     # Event subscriber class that will listen for the events.
     class: '\Drupal\stanford_earth_capx\EventSubscriber\EarthCapxEventsSubscriber'
+    arguments: ['@entity_type.manager']
     # Tagged as an event_subscriber to register this subscriber with the event_dispatch service.
     tags:
       - { name: 'event_subscriber' }
