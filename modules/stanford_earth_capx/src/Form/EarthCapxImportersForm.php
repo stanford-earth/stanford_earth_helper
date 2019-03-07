@@ -525,7 +525,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @param int $wg_idx
    *   Index number for migration.
    */
-  public function earthCapxCreateWgMigration(array &$form, FormStateInterface $form_state, string $wg, array $fp_array, int $wg_idx) {
+  public function earthCapxCreateWgMigration(array $form, FormStateInterface $form_state, string $wg, array $fp_array, int $wg_idx) {
     $fp_array['id'] = 'earth_capx_importer_' . str_pad(strval($wg_idx), 3, "0", STR_PAD_LEFT);
     $fp_array['source']['urls'] = [
       'https://cap.stanford.edu/cap-api/api/profiles/v1?privGroups=' . $wg .
