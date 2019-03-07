@@ -5,13 +5,13 @@ namespace Drupal\stanford_earth_capx\EventSubscriber;
 use Drupal\migrate\Event\MigrateRollbackEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\migrate\MigrateException;
-use Drupal\migrate\Event\MigrateEvents;
+use Drupal\migrate\Event\EventBase;
 use Drupal\migrate\Event\MigratePreRowSaveEvent;
 use Drupal\migrate\Event\MigratePostRowSaveEvent;
 use Drupal\migrate\Event\MigrateRowDeleteEvent;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\user\Entity\User;
+use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
@@ -31,24 +31,22 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
   protected $entityTypeManager;
 
   /**
+   * User object.
+   *
+   * @var \Drupal\user\UserStorageInterface
+   */
+  protected $user;
+
+  /**
    * EarthCapxEventsSubscriber constructor.
    *
    * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
    *   The EntityTypeManager service.
    */
-  public function __construct(\Drupal\Core\Entity\EntityTypeManager $entityTypeManager) {
+  public function __construct(EntityTypeManager $entityTypeManager) {
     $this->entityTypeManager = $entityTypeManager;
+    $this->user = $entityTypeManager->getStorage('user');
   }
-
-  /**
-   * {@inheritdoc}
-   */
-/*  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager')
-    );
-  }
-*/
 
   /**
    * {@inheritdoc}
@@ -85,10 +83,10 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
   /**
    * Get the workgroup name from the source URL.
    *
-   * @param \Drupal\migrate\Event\MigrateEvents $event
+   * @param \Drupal\migrate\Event\EventBase $event
    *   Information about the migration source row being processed.
    */
-  private function getWorkgroup(MigrateEvents $event) {
+  private function getWorkgroup(EventBase $event) {
     $urls = $event->getRow()->getSourceProperty('urls');
     $wg = '';
     if (!empty($urls)) {
@@ -216,7 +214,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
           }
         }
 
-        $account = \Drupal\user\Entity\User::load($destination);
+        $account = $this->user->load($destination);
         if (empty($account->getPassword())) {
           $account->setPassword(user_password());
           $account->save();
