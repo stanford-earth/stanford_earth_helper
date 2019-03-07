@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha21
+--------------------------------------------------------------------------------
+_Release Date: 2019-03-07
+
+_Trim profiles Appointments field if greater than 255 characters.
+
 8.x-1.0-alpha20
 --------------------------------------------------------------------------------
 _Release Date: 2019-03-06
