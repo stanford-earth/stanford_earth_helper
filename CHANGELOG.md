@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha22
+--------------------------------------------------------------------------------
+_Release Date: 2019-03-07
+
+_Set first and last names in profiles for workgroup people w/o cap profiles.
+
 8.x-1.0-alpha21
 --------------------------------------------------------------------------------
 _Release Date: 2019-03-07

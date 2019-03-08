@@ -1,5 +1,5 @@
 # [Stanford Earth CAP-X](https://github.com/SU-SWS/stanford_earth_helper)
-##### Version: 8.x-1.x-alpha21
+##### Version: 8.x-1.x-alpha22
 
 Changelog: [Changelog.txt](CHANGELOG.txt)
 
