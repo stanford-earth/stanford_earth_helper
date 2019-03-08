@@ -120,18 +120,27 @@ class StanfordEarthCapxJson extends Json {
           $wg_cap_members[] = $profile['uid'];
         }
         foreach ($wg_members['members'] as $sunet => $name) {
-          if (array_search($sunet, $wg_cap_members) === FALSE) {
+          if (array_search($sunet, $wg_cap_members) === FALSE &&
+            !empty($name)) {
             if (strpos($name, ',') !== FALSE) {
-              $dname = substr($name, strpos($name, ',') + 2) . ' ' .
-                substr($name, 0, strpos($name, ','));
+              $nsplit = explode(',', $name, 2);
+              $lname = $nsplit[0];
+              $fname = '';
+              if (count($nsplit) > 1) {
+                $fname = trim($nsplit[1]);
+              }
+              $dname = $fname . ' ' . $lname;
             }
             else {
               $dname = $name;
+              $lname = $name;
+              $fname = '';
             }
 
             $source_data_out[] = [
               'uid' => $sunet,
               'displayName' => $dname,
+              'names' => ['preferred' =>['firstName'=> $fname, 'lastName'=> $lname]],
             ];
           }
         }
