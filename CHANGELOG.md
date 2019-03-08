@@ -1,4 +1,10 @@
 # Stanford Earth Helper
+  
+8.x-1.0-alpha23
+--------------------------------------------------------------------------------
+_Release Date: 2019-03-08
+
+_Move code to fix up existing profile search terms from installN to a routed func.
 
 8.x-1.0-alpha22
 --------------------------------------------------------------------------------
