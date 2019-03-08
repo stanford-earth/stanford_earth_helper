@@ -13,3 +13,11 @@ stanford_earth_capx.update_all:
     _controller: '\Drupal\stanford_earth_capx\Controller\StanfordEarthCapxController::updateAll'
   requirements:
     _permission: 'administer site configuration'
+stanford_earth_capx.update_terms:
+  path: '/admin/config/people/capx_update_terms'
+  defaults:
+    _title: 'Update profile search terms'
+    _controller: '\Drupal\stanford_earth_capx\Controller\StanfordEarthCapxController::updateSearchTerms'
+  requirements:
+    _permission: 'administer site configuration'
+
