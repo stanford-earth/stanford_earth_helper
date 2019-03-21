@@ -86,6 +86,14 @@ source:
       name: field_contact_phone
       label: 'Contact Phone'
       selector: contactPhone
+    -
+      name: field_event_status
+      label: 'Event Status'
+      selector: eventStatus
+    -
+      name: status_code
+      label: 'Status Code'
+      selector: status
   ids:
     guid:
       type: string
@@ -98,7 +106,7 @@ source:
     minimal_html: minimal_html
     source_base_path: 'http://events.stanford.edu/'
     file_destination: 'public://stanford-event/importer/'
-    view_map: 'View map'
+    view_map: ' View map'
 process:
   feed_urls:
     plugin: stanford_earth_feed_url

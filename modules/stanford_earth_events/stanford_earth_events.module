@@ -55,11 +55,11 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
  * Implements hook_cron().
  */
 function stanford_earth_events_cron() {
-  $migrations = stanford_earth_events_migration_list();
+  //$migrations = stanford_earth_events_migration_list();
   // Take it one group at a time, importing the migrations within each group.
-  foreach ($migrations as $migration_list) {
-    array_walk($migration_list, 'stanford_earth_events_execute_migration');
-  }
+  //foreach ($migrations as $migration_list) {
+  //  array_walk($migration_list, 'stanford_earth_events_execute_migration');
+  //}
 }
 
 /**
@@ -144,4 +144,17 @@ function stanford_earth_events_execute_migration(MigrationInterface $migration, 
   // $migration->getIdMap()->prepareUpdate();
   $executable = new MigrateExecutable($migration, $log);
   $executable->import();
+}
+
+function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
+
+  if (substr($migration->id(), 0, 15) === 'events_importer') {
+
+    // if eventStatus is CANCELED and event is found in unlisted map, then
+    // change 'public' flag to 0
+    $row->setSourceProperty('phone', $newphones);
+
+  }
+  return TRUE;
+
 }

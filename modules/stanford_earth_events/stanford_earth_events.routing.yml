@@ -5,3 +5,11 @@ stanford_earth_events.importers:
     _form: '\Drupal\stanford_earth_events\Form\EventImportersForm'
   requirements:
     _permission: 'administer events importers'
+stanford_earth_events.import_events:
+  path: '/admin/stanford/events/import_events'
+  defaults:
+    _title: 'Import Stanford Events'
+    refresh: false
+    _controller: '\Drupal\stanford_earth_events\Controller\StanfordEarthEventsController::importEvents'
+  requirements:
+    _permission: 'administer site configuration'
