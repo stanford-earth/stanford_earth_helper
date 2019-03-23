@@ -116,8 +116,8 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
 
   public function migratePreRowSave(MigratePreRowSaveEvent $event) {
     // Get the row in question.
-    $row = $event->getRow();
-    $row->setSourceProperty("test","whodis?");
+    //$row = $event->getRow();
+    //$row->setSourceProperty("test","whodis?");
 
     $xyz = 1;
   }

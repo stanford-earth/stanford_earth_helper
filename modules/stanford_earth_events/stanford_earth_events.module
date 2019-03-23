@@ -152,10 +152,9 @@ function stanford_earth_events_execute_migration(MigrationInterface $migration, 
 function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
   if (substr($migration->id(), 0, 15) === 'events_importer') {
-
     // if eventStatus is CANCELED and event is found in unlisted map, then
     // change 'public' flag to 0
-    $row->setSourceProperty('phone', $newphones);
+    //$row->setSourceProperty('phone', $newphones);
 
   }
   return TRUE;
