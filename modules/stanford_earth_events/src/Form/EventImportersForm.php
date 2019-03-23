@@ -261,7 +261,7 @@ class EventImportersForm extends ConfigSingleImportForm {
     batch_set($batch_builder->toArray());
 
     // Clear out all caches to ensure the config gets picked up.
-    drupal_flush_all_caches();
+    //drupal_flush_all_caches();
   }
 
   /**

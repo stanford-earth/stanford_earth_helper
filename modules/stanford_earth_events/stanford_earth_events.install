@@ -1,0 +1,85 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for stanford_earth_events.
+ */
+
+use Drupal\Core\Database\Database;
+//use Drupal\stanford_earth_capx\EarthCapxInfo;
+
+/**
+ * Return search terms schema for module install and update.
+ */
+/*
+function _stanford_earth_capx_search_table() {
+  return [
+    'description' => "Stanford Cap-X Profile Search Term Info",
+    'fields' => [
+      'sunetid' => [
+        'type' => 'varchar',
+        'length' => 8,
+        'not null' => TRUE,
+        'description' => "SUNetID for this account and profile",
+      ],
+      'entity_id' => [
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => "Entity id to which the profile was imported",
+      ],
+      'workgroup_list' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Workgroups in which this profile is found',
+      ],
+      'search_terms' => [
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Search terms by which this profile can be found',
+      ],
+    ],
+    'primary key' => ['sunetid'],
+  ];
+}
+*/
+
+
+/**
+ * Implements hook_schema().
+ */
+/*
+function stanford_earth_capx_schema() {
+  $capxinfo = EarthCapxInfo::getSchema();
+  $search_terms = ['migrate_info_earth_capx_search_terms' => _stanford_earth_capx_search_table()];
+  return array_merge($capxinfo, $search_terms);
+}
+*/
+
+/**
+ * Delete future events imported from old migrations so they don't get duplicated.
+ */
+function stanford_earth_events_update_8102() {
+  $event_entities = [];
+  $result = Database::getConnection()->query("SELECT entity_id FROM {" .
+    "node__field_s_event_date} WHERE entity_id IN " .
+    "(SELECT destid1 from {migrate_map_events_importer_unlisted}) AND " .
+    "unix_timestamp(field_s_event_date_value) > unix_timestamp() " .
+    "ORDER BY entity_id;");
+  foreach ($result as $record) {
+    $event_entities[] = intval($record->entity_id);
+  }
+  $result = Database::getConnection()->query("SELECT entity_id FROM {" .
+    "node__field_s_event_date} WHERE entity_id IN " .
+    "(SELECT destid1 from {migrate_map_events_importer}) AND " .
+    "unix_timestamp(field_s_event_date_value) > unix_timestamp() " .
+    "ORDER BY entity_id;");
+  foreach ($result as $record) {
+    $event_entities[] = intval($record->entity_id);
+  }
+  $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
+  $entities = $storage_handler->loadMultiple($event_entities);
+  $storage_handler->delete($entities);
+  $xyz = 1;
+}

@@ -11,7 +11,7 @@ label: 'Events importer'
 source:
   plugin: stanford_earth_url
   data_fetcher_plugin: file
-  urls: null
+  urls: {  }
   data_parser_plugin: stanford_earth_simple_xml
   item_selector: /EventList/Event
   fields:
