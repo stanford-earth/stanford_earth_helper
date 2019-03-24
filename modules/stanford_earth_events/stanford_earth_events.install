@@ -6,61 +6,21 @@
  */
 
 use Drupal\Core\Database\Database;
-//use Drupal\stanford_earth_capx\EarthCapxInfo;
-
-/**
- * Return search terms schema for module install and update.
- */
-/*
-function _stanford_earth_capx_search_table() {
-  return [
-    'description' => "Stanford Cap-X Profile Search Term Info",
-    'fields' => [
-      'sunetid' => [
-        'type' => 'varchar',
-        'length' => 8,
-        'not null' => TRUE,
-        'description' => "SUNetID for this account and profile",
-      ],
-      'entity_id' => [
-        'type' => 'int',
-        'not null' => FALSE,
-        'description' => "Entity id to which the profile was imported",
-      ],
-      'workgroup_list' => [
-        'type' => 'text',
-        'not null' => FALSE,
-        'size' => 'big',
-        'description' => 'Workgroups in which this profile is found',
-      ],
-      'search_terms' => [
-        'type' => 'text',
-        'not null' => FALSE,
-        'size' => 'big',
-        'description' => 'Search terms by which this profile can be found',
-      ],
-    ],
-    'primary key' => ['sunetid'],
-  ];
-}
-*/
-
+use Drupal\stanford_earth_events\EarthEventsInfo;
 
 /**
  * Implements hook_schema().
  */
-/*
+
 function stanford_earth_capx_schema() {
-  $capxinfo = EarthCapxInfo::getSchema();
-  $search_terms = ['migrate_info_earth_capx_search_terms' => _stanford_earth_capx_search_table()];
-  return array_merge($capxinfo, $search_terms);
+  $eventsinfo = EarthEventsInfo::getSchema();
+  return $eventsinfo;
 }
-*/
 
 /**
  * Delete future events imported from old migrations so they don't get duplicated.
  */
-function stanford_earth_events_update_8102() {
+function stanford_earth_events_update_8100() {
   $event_entities = [];
   $result = Database::getConnection()->query("SELECT entity_id FROM {" .
     "node__field_s_event_date} WHERE entity_id IN " .
@@ -81,5 +41,12 @@ function stanford_earth_events_update_8102() {
   $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
   $entities = $storage_handler->loadMultiple($event_entities);
   $storage_handler->delete($entities);
-  $xyz = 1;
+  Database::getConnection()->schema()->dropTable('migrate_map_events_importer');
+  Database::getConnection()->schema()->dropTable('migrate_map_events_importer_unlisted');
+
+  // add the events info table
+  $eventsinfo = EarthEventsInfo::getSchema();
+  $schema = Database::getConnection()->schema();
+  $schema->createTable(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE, $eventsinfo);
+
 }

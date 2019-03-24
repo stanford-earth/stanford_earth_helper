@@ -71,55 +71,34 @@ class EarthEventsInfo {
   }
 
   /**
-   * Check if we should update the profile.
+   * Check if we should update the event.
    *
-   * Return true if profile should be updated because it is new
-   * or because the etag has changed.
+   * Return true if event should be updated because it is new
+   * or because something has changed.
    *
    * @param array $source
    *   The source array from the migration row.
-   * @param int $photoId
-   *   The photoId from the image url in the profile data.
-   * @param string $wg
-   *   The name of the workgroup being processed.
    */
-  public function getOkayToUpdateProfile(array $source = [],
-                                         int $photoId = 0,
-                                         string $wg = NULL) {
+  public function getOkayToUpdateEvent(array $source = []) {
     // Checks $status which was set in the constructor.
     $oktoupdate = FALSE;
     $msg = new MigrateMessage();
-    if (empty($source['sunetid']) ||
-      $this->status == self::EARTH_CAPX_INFO_INVALID ||
-      $source['sunetid'] !== $this->sunetid) {
-      $msg->display(t('Unable to validate new profile information.'), 'error');
+    if (empty($source['guid']) ||
+      $this->status == self::EARTH_EVENTS_INFO_INVALID ||
+      $source['guid'] !== $this->guid) {
+      $msg->display(t('Unable to validate new event information.'), 'error');
     }
-    elseif ($this->status == self::EARTH_CAPX_INFO_NEW) {
+    elseif ($this->status == self::EARTH_EVENTS_INFO_NEW) {
       $oktoupdate = TRUE;
     }
-    elseif ($this->status == self::EARTH_CAPX_INFO_FOUND) {
-      $source_etag = '';
-      if (!empty($source['etag'])) {
-        $source_etag = $source['etag'];
-      }
-      if ($this->etag !== $source_etag || $this->profilePhotoFid !== $photoId) {
-        $oktoupdate = TRUE;
-      }
-      if (!$oktoupdate && empty($this->entityId)) {
-        $oktoupdate = TRUE;
-      }
-      if (!$oktoupdate && !empty($source['updateemail'])) {
-        $oktoupdate = TRUE;
-      }
-      if (!$oktoupdate && !empty($wg) && !in_array($wg, $this->workgroups)) {
-        $oktoupdate = TRUE;
-      }
+    elseif ($this->status == self::EARTH_EVENTS_INFO_FOUND) {
+      $oktoupdate = TRUE;
     }
     return $oktoupdate;
   }
 
   /**
-   * Update the table with information about the profile.
+   * Update the table with information about the event.
    *
    * Update the table with information from the source array and destination id
    * only do the operation if information has changed.
@@ -127,11 +106,7 @@ class EarthEventsInfo {
    * @param array $source
    *   Source data from migration row.
    * @param int $entity_id
-   *   Entity ID of the profile.
-   * @param int $photo_id
-   *   Photo id number from profile photo URL.
-   * @param string $wg
-   *   Workgroup being processed.
+   *   Entity ID of the event.
    */
   public function setInfoRecord(array $source = [],
                                 $entity_id = 0,
@@ -222,21 +197,24 @@ class EarthEventsInfo {
    * Delete a record from the table by entity_id.
    *
    * @param string $entity_id
-   *   Entity ID of profile to be deleted.
+   *   Entity ID of event to be deleted.
    */
   public static function delete($entity_id = 0) {
     if ($entity_id > 0) {
-      \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-        ->condition('entity_id', $entity_id)
-        ->execute();
+      $db = \Drupal::database();
+      if ($db->schema()->tableExists(self::EARTH_EVENTS_INFO_TABLE)) {
+        $db->delete(self::EARTH_EVENTS_INFO_TABLE)
+          ->condition('entity_id', $entity_id)
+          ->execute();
+      }
     }
   }
 
   /**
-   * Return true if this is a new profile import.
+   * Return true if this is a new event import.
    */
   public function isNew() {
-    if ($this->status == self::EARTH_CAPX_INFO_NEW) {
+    if ($this->status == self::EARTH_EVENTS_INFO_NEW) {
       return TRUE;
     }
     else {
@@ -249,7 +227,7 @@ class EarthEventsInfo {
    */
   public static function getSchema() {
     return [
-      'migrate_info_earth_events_importer' => [
+      self::EARTH_EVENTS_INFO_TABLE => [
         'description' => "Stanford Events Import Information",
         'fields' => [
           'guid' => [

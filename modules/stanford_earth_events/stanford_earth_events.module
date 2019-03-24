@@ -16,6 +16,7 @@ use Drupal\migrate\MigrateMessage;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
+use Drupal\stanford_earth_events\EarthEventsInfo;
 
 
 /**
@@ -28,28 +29,17 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
     return;
   }
 
+  // Delete record from events info table.
+  EarthEventsInfo::delete($entity->id());
+
+  // Delelete records from migration maps
   $database = \Drupal::database();
-  /** @var \Drupal\migrate\Plugin\MigrationPluginManager $manager */
-  $manager = \Drupal::service('plugin.manager.migration');
-  $migrations = $manager->createInstances([]);
-
-  /** @var \Drupal\migrate_plus\Entity\Migration $migration */
-  foreach ($migrations as $migration) {
-    $destination = $migration->get('destination');
-
-    if (isset($destination['plugin']) && strpos($destination['plugin'], 'entity:') !== FALSE) {
-      list(, $type) = explode(':', $destination['plugin']);
-
-      if ($type == $entity->getEntityTypeId()) {
-        $table = 'migrate_map_' . $migration->id();
-
-        if ($database->schema()->tableExists($table)) {
-          $database->delete($table)
-            ->condition('destid1', $entity->id())
-            ->execute();
-        }
-        return;
-      }
+  $eventTables = $database->schema()->findTables('migrate_map_earth_events_importer_%');
+  foreach ($eventTables as $table) {
+    if ($database->schema()->tableExists($table)) {
+      $database->delete($table)
+        ->condition('destid1', $entity->id())
+        ->execute();
     }
   }
 }
@@ -58,100 +48,58 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
  * Implements hook_cron().
  */
 function stanford_earth_events_cron() {
-  //$migrations = stanford_earth_events_migration_list();
-  // Take it one group at a time, importing the migrations within each group.
-  //foreach ($migrations as $migration_list) {
-  //  array_walk($migration_list, 'stanford_earth_events_execute_migration');
-  //}
+  // cleanup tbd
 }
 
 /**
- * Retrieve a list of active migrations.
- *
- * @param string $migration_ids
- *   Comma-separated list of migrations - if present, return only these
- *   migrations.
- *
- * @return Drupal\migrate\Plugin\MigrationInterface[][]
- *   An array keyed by migration group, each value containing an array of
- *   migrations or an empty array if no migrations match the input criteria.
+ * Implements hook_migrate_prepare_row().
  */
-function stanford_earth_events_migration_list($migration_ids = '') {
-  // Filter keys must match the migration configuration property name.
-  $filter['migration_group'] = ['earth_events'];
-  $filter['migration_tags'] = [];
+/*
+function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
-  $manager = \Drupal::service('plugin.manager.migration');
-  $matched_migrations = $manager->createInstances([]);
+  // We need to keep canceled unlisted events from showing up in the events list.
+  // This hook gets called for every migration so check that it's an Events one.
+  if (substr($migration->id(), 0, 21) === 'earth_events_importer') {
 
-  // Do not return any migrations which fail to meet requirements.
-  /** @var \Drupal\migrate\Plugin\Migration $migration */
-  foreach ($matched_migrations as $id => $migration) {
-    if ($migration->getSourcePlugin() instanceof RequirementsInterface) {
-      try {
-        $migration->getSourcePlugin()->checkRequirements();
-      }
-      catch (RequirementsException $e) {
-        unset($matched_migrations[$id]);
+    $phones = $row->getSourceProperty('phone');
+    $newphones = [];
+    if (!empty($phones) && is_array($phones)) {
+      $newphones = [];
+      foreach ($phones as $ph) {
+        $newphones[] = ['phone' => $ph];
       }
     }
-  }
+    $row->setSourceProperty('phone', $newphones);
 
-  // Filters the matched migrations if a group or a tag has been input.
-  if (!empty($filter['migration_group']) || !empty($filter['migration_tags'])) {
-    // Get migrations in any of the specified groups and with any of the
-    // specified tags.
-    foreach ($filter as $property => $values) {
-      if (!empty($values)) {
-        $filtered_migrations = [];
-        foreach ($values as $search_value) {
-          foreach ($matched_migrations as $id => $migration) {
-            // Cast to array because migration_tags can be an array.
-            $configured_values = (array) $migration->get($property);
-            $configured_id = (in_array($search_value, $configured_values)) ? $search_value : 'default';
-            if (empty($search_value) || $search_value == $configured_id) {
-              if (empty($migration_ids) || in_array(Unicode::strtolower($id), $migration_ids)) {
-                $filtered_migrations[$id] = $migration;
-              }
-            }
-          }
+    // some appointments are longer than 255 plaintext characters
+    $appts = $row->getSourceProperty('appointments');
+    if (!empty($appts) && strlen($appts) > 255) {
+      $row->setSourceProperty('appointments', substr($appts, 0, 255));
+    }
+
+    // If the user account already exists, set its id in the row data.
+    $sunetid = $row->getSourceProperty('sunetid');
+    if (!empty($sunetid)) {
+
+      $sunetuser = user_load_by_name($sunetid);
+      if (!empty($sunetuser)) {
+        $entityid = intval($sunetuser->id());
+        $row->setSourceProperty('uid', $entityid);
+        $row->setDestinationProperty('uid', $entityid);
+        if (empty($sunetuser->getEmail())) {
+          $row->setSourceProperty('updateemail', 1);
         }
-        $matched_migrations = $filtered_migrations;
       }
     }
   }
+  return TRUE;
 
-  // Sort the matched migrations by group.
-  if (!empty($matched_migrations)) {
-    foreach ($matched_migrations as $id => $migration) {
-      $configured_group_id = empty($migration->get('migration_group')) ? 'default' : $migration->get('migration_group');
-      $migrations[$configured_group_id][$id] = $migration;
-    }
-  }
-  return isset($migrations) ? $migrations : [];
 }
-
-/**
- * Executes a single migration.
- *
- * If the --execute-dependencies option was given,
- * the migration's dependencies will also be executed first.
- *
- * @param \Drupal\migrate\Plugin\MigrationInterface $migration
- *   The migration to execute.
- * @param string $migration_id
- *   The migration ID (not used, just an artifact of array_walk()).
- */
-function stanford_earth_events_execute_migration(MigrationInterface $migration, $migration_id) {
-  $log = new MigrateMessage();
-  // $migration->getIdMap()->prepareUpdate();
-  $executable = new MigrateExecutable($migration, $log);
-  $executable->import();
-}
+*/
 
 function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
 
-  if (substr($migration->id(), 0, 15) === 'events_importer') {
+  if (substr($migration->id(), 0, 21) === 'earth_events_importer') {
     // if eventStatus is CANCELED and event is found in unlisted map, then
     // change 'public' flag to 0
     //$row->setSourceProperty('phone', $newphones);
