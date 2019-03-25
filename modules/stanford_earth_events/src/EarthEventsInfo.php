@@ -26,7 +26,7 @@ class EarthEventsInfo {
   /**
    * Table name constant for info table.
    *
-   * EARTH_CAPX_INFO_TABLE = The table added by Drupal hook_schema.
+   * EARTH_EVENTS_INFO_TABLE = The table added by Drupal hook_schema.
    *
    * @var string
    */
@@ -37,6 +37,7 @@ class EarthEventsInfo {
   private $unlisted;
   private $orphaned;
   private $status;
+  private $starttime;
 
   /**
    * Construct with $guid param; if already exists, populate other properties.
@@ -52,6 +53,7 @@ class EarthEventsInfo {
     $this->entityId = 0;
     $this->unlisted = FALSE;
     $this->orphaned = FALSE;
+    $this->starttime = 0;
     if (!empty($guid)) {
       $this->status = self::EARTH_EVENTS_INFO_NEW;
       $this->guid = $guid;
@@ -66,6 +68,12 @@ class EarthEventsInfo {
         if (!empty($record->unlisted)) {
           $this->unlisted = boolval($record->unlisted);
         }
+        if (!empty($record->orphaned)) {
+          $this->orphaned = boolval($record->orphaned);
+        }
+        if (!empty($record->starttime)) {
+          $this->starttime = intval($record->starttime);
+        }
       }
     }
   }
@@ -79,7 +87,7 @@ class EarthEventsInfo {
    * @param array $source
    *   The source array from the migration row.
    */
-  public function getOkayToUpdateEvent(array $source = []) {
+  public function getOkayToUpdateEventStatus(array $source = []) {
     // Checks $status which was set in the constructor.
     $oktoupdate = FALSE;
     $msg = new MigrateMessage();
@@ -92,6 +100,7 @@ class EarthEventsInfo {
       $oktoupdate = TRUE;
     }
     elseif ($this->status == self::EARTH_EVENTS_INFO_FOUND) {
+      // for now
       $oktoupdate = TRUE;
     }
     return $oktoupdate;
@@ -107,87 +116,76 @@ class EarthEventsInfo {
    *   Source data from migration row.
    * @param int $entity_id
    *   Entity ID of the event.
+   * @param boolean $orphaned
+   *   Whether the event info record has been orphaned.
    */
   public function setInfoRecord(array $source = [],
                                 $entity_id = 0,
-                                $photo_id = 0,
-                                $wg = NULL) {
+                                $orphaned = FALSE) {
     // Function uses $status which was originally set in the constructor.
     // If the $status is 'invalid', post a message and return.
     // If the $status is 'new', create a new record.
     // If the $status is 'found' and nothing has changed, just return.
     // If the $status is 'found' and values have changed, delete and recreate.
     $msg = new MigrateMessage();
-    if (empty($source['sunetid']) ||
-      $this->status == self::EARTH_CAPX_INFO_INVALID) {
-      $msg->display(t('Unable to update EarthCapxInfo table. Missing source id.'), 'error');
+    if (empty($source['guid']) ||
+      $this->status == self::EARTH_EVENTS_INFO_INVALID) {
+      $msg->display(t('Unable to update EarthEventsInfo table. Missing event guid.'), 'error');
       return;
     }
-    if ($source['sunetid'] !== $this->sunetid) {
-      $msg->display(t('Unable to update EarthCapxInfo table. Mismatched ids: @sunet1, @sunet2',
-        ['@sunet1' => $source['sunetid'], '@sunet2' => $this->sunetid]));
+    if ($source['guid'] !== $this->guid) {
+      $msg->display(t('Unable to update EarthEventsInfo table. Mismatched ids: @guid1, @guid2',
+        ['@guid1' => $source['guid'], '@guid2' => $this->guid]));
       return;
     }
 
-    // Get the fields from the source array.
-    $source_etag = '';
-    if (!empty($source['etag'])) {
-      $source_etag = $source['etag'];
+    // Get the status field from the source array.
+    $unlisted = FALSE;
+    if (isset($source['status_code']) &&
+      intval($source['status_code']) == 0) {
+      $unlisted = TRUE;
     }
 
-    $source_ts = '';
-    if (!empty($source['profile_photo'])) {
-      $source_ts = $this->getPhotoTimestamp($source['profile_photo']);
-    }
-
-    $photo_id = intval($photo_id);
-
-    // Add the workgroup if not null and not already in array.
-    $wg_changed = FALSE;
-    $wgs = $this->workgroups;
-    if (!empty($wg) && !in_array($wg, $wgs)) {
-      $wgs[] = $wg;
-      $wg_changed = TRUE;
+    $starttime = 0;
+    if (isset($source['field_s_event_date'])) {
+      $starttime = strtotime($source['field_s_event_date']);
     }
 
     // If existing in table, see if we need to update.
-    if ($this->status == self::EARTH_CAPX_INFO_FOUND) {
-      if ($this->etag !== $source_etag ||
-        $this->profilePhotoTimestamp !== $source_ts ||
-        $this->profilePhotoFid !== $photo_id ||
-        $this->entityId !== $entity_id ||
-        $wg_changed) {
+    if ($this->status == self::EARTH_EVENTS_INFO_FOUND) {
+      if ($this->orphaned !== $orphaned ||
+        $this->unlisted !== $unlisted ||
+        $this->starttime !== $starttime ||
+        $this->entityId != $entity_id ) {
         // The information is different, so delete record and set status = NEW.
-        \Drupal::database()->delete(self::EARTH_CAPX_INFO_TABLE)
-          ->condition('sunetid', $this->sunetid)
+        \Drupal::database()->delete(self::EARTH_EVENTS_INFO_TABLE)
+          ->condition('guid', $this->guid)
           ->execute();
-        $this->status = self::EARTH_CAPX_INFO_NEW;
+        $this->status = self::EARTH_EVENTS_INFO_NEW;
       }
     }
 
     // Now we will insert only if record is truly new or has changed.
-    if ($this->status == self::EARTH_CAPX_INFO_NEW) {
-      $this->etag = $source_etag;
-      $this->profilePhotoTimestamp = $source_ts;
-      $this->profilePhotoFid = $photo_id;
+    if ($this->status == self::EARTH_EVENTS_INFO_NEW) {
+      $this->unlisted = $unlisted;
+      $this->orphaned = $orphaned;
       $this->entityId = $entity_id;
-      $this->workgroups = $wgs;
+      $this->starttime = $starttime;
       try {
-        \Drupal::database()->insert(self::EARTH_CAPX_INFO_TABLE)
+        \Drupal::database()->insert(self::EARTH_EVENTS_INFO_TABLE)
           ->fields([
-            'sunetid' => $this->sunetid,
-            'etag' => $this->etag,
-            'photo_timestamp' => $this->profilePhotoTimestamp,
+            'guid' => $this->guid,
             'entity_id' => $this->entityId,
-            'profile_photo_id' => $this->profilePhotoFid,
-            'workgroup_list' => serialize($this->workgroups),
+            'unlisted' => intval($this->unlisted),
+            'orphaned' => intval($this->orphaned),
+            'starttime' => strval($this->starttime),
           ])
           ->execute();
       }
       catch (Exception $e) {
         // Log the exception to watchdog.
         $m = new MigrateMessage();
-        $m->display(t('Unable to insert new EarthCapxInfo record for @sunet', ['sunet' => $this->sunetid]));
+        $m->display(t('Unable to insert new EarthEventsInfo record for @guid', ['guid' => $this->guid]));
         \Drupal::logger('type')->error($e->getMessage());
       }
     }
@@ -223,6 +221,20 @@ class EarthEventsInfo {
   }
 
   /**
+   * Return true if this is an unlisted event.
+   */
+  public function isUnlisted() {
+    return $this->unlisted;
+  }
+
+  /**
+   * Return true if this is an orphaned event.
+   */
+  public function isOrphaned() {
+    return $this->orphaned;
+  }
+
+  /**
    * The schema for this table to be retrieved by the module hook_schema call.
    */
   public static function getSchema() {
@@ -251,6 +263,12 @@ class EarthEventsInfo {
             'not null' => FALSE,
             'description' => "Field used during imports to unpublish orphaned events",
           ],
+          'starttime' => [
+            'type' => 'varchar',
+            'length' => 255,
+            'not null' => FALSE,
+            'description' => "Unix timestamp of the event start time",
+          ]
         ],
         'primary key' => ['guid'],
       ],

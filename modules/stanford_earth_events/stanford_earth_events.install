@@ -12,7 +12,7 @@ use Drupal\stanford_earth_events\EarthEventsInfo;
  * Implements hook_schema().
  */
 
-function stanford_earth_capx_schema() {
+function stanford_earth_events_schema() {
   $eventsinfo = EarthEventsInfo::getSchema();
   return $eventsinfo;
 }
@@ -21,32 +21,42 @@ function stanford_earth_capx_schema() {
  * Delete future events imported from old migrations so they don't get duplicated.
  */
 function stanford_earth_events_update_8100() {
+  $db = Database::getConnection();
+  $schema = $db->schema();
   $event_entities = [];
-  $result = Database::getConnection()->query("SELECT entity_id FROM {" .
-    "node__field_s_event_date} WHERE entity_id IN " .
-    "(SELECT destid1 from {migrate_map_events_importer_unlisted}) AND " .
-    "unix_timestamp(field_s_event_date_value) > unix_timestamp() " .
-    "ORDER BY entity_id;");
-  foreach ($result as $record) {
-    $event_entities[] = intval($record->entity_id);
+  if ($schema->tableExists('{migrate_map_events_importer_unlisted}')) {
+    $result = $db->query("SELECT entity_id FROM {" .
+      "node__field_s_event_date} WHERE entity_id IN " .
+      "(SELECT destid1 from {migrate_map_events_importer_unlisted}) AND " .
+      "unix_timestamp(field_s_event_date_value) > unix_timestamp() " .
+      "ORDER BY entity_id;");
+    foreach ($result as $record) {
+      $event_entities[] = intval($record->entity_id);
+    }
+    $schema->dropTable('migrate_map_events_importer_unlisted');
+    $schema->dropTable('migrate_message_events_importer_unlisted');
   }
-  $result = Database::getConnection()->query("SELECT entity_id FROM {" .
-    "node__field_s_event_date} WHERE entity_id IN " .
-    "(SELECT destid1 from {migrate_map_events_importer}) AND " .
-    "unix_timestamp(field_s_event_date_value) > unix_timestamp() " .
-    "ORDER BY entity_id;");
-  foreach ($result as $record) {
-    $event_entities[] = intval($record->entity_id);
+  if ($schema->tableExists('{migrate_map_events_importer}')) {
+    $result = $db->query("SELECT entity_id FROM {" .
+      "node__field_s_event_date} WHERE entity_id IN " .
+      "(SELECT destid1 from {migrate_map_events_importer}) AND " .
+      "unix_timestamp(field_s_event_date_value) > unix_timestamp() " .
+      "ORDER BY entity_id;");
+    foreach ($result as $record) {
+      $event_entities[] = intval($record->entity_id);
+    }
+    $schema->dropTable('migrate_map_events_importer');
+    $schema->dropTable('migrate_message_events_importer');
   }
-  $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
-  $entities = $storage_handler->loadMultiple($event_entities);
-  $storage_handler->delete($entities);
-  Database::getConnection()->schema()->dropTable('migrate_map_events_importer');
-  Database::getConnection()->schema()->dropTable('migrate_map_events_importer_unlisted');
+  if (!empty($event_entities)) {
+    $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
+    $entities = $storage_handler->loadMultiple($event_entities);
+    $storage_handler->delete($entities);
+  }
 
   // add the events info table
   $eventsinfo = EarthEventsInfo::getSchema();
-  $schema = Database::getConnection()->schema();
-  $schema->createTable(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE, $eventsinfo);
-
+  $eventsinfodef = reset($eventsinfo);
+  $eventsinfokey = key($eventsinfo);
+  $schema->createTable($eventsinfokey, $eventsinfodef);
 }

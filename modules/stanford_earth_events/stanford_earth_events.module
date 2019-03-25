@@ -7,12 +7,7 @@
  * Long description.
  */
 
-use Drupal\Component\Utility\Unicode;
-use Drupal\migrate\Exception\RequirementsException;
-use Drupal\migrate\Plugin\RequirementsInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\migrate_tools\MigrateExecutable;
-use Drupal\migrate\MigrateMessage;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
@@ -32,7 +27,7 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
   // Delete record from events info table.
   EarthEventsInfo::delete($entity->id());
 
-  // Delelete records from migration maps
+  // Delete records from migration maps
   $database = \Drupal::database();
   $eventTables = $database->schema()->findTables('migrate_map_earth_events_importer_%');
   foreach ($eventTables as $table) {
@@ -51,60 +46,21 @@ function stanford_earth_events_cron() {
   // cleanup tbd
 }
 
-/**
- * Implements hook_migrate_prepare_row().
- */
-/*
 function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
-
-  // We need to keep canceled unlisted events from showing up in the events list.
-  // This hook gets called for every migration so check that it's an Events one.
   if (substr($migration->id(), 0, 21) === 'earth_events_importer') {
-
-    $phones = $row->getSourceProperty('phone');
-    $newphones = [];
-    if (!empty($phones) && is_array($phones)) {
-      $newphones = [];
-      foreach ($phones as $ph) {
-        $newphones[] = ['phone' => $ph];
+    $event_status = $row->getSourceProperty('field_event_status');
+    if ($event_status == 'Unlisted') {
+      $row->setSourceProperty('status_code', '0');
+    } else if ($event_status == 'CANCELED') {
+      $event = new EarthEventsInfo($row->getSourceProperty('guid'));
+      if ($event->isUnlisted()) {
+        $row->setSourceProperty('status_code', '0');
+      } else {
+        $row->setSourceProperty('status_code', '1');
       }
-    }
-    $row->setSourceProperty('phone', $newphones);
-
-    // some appointments are longer than 255 plaintext characters
-    $appts = $row->getSourceProperty('appointments');
-    if (!empty($appts) && strlen($appts) > 255) {
-      $row->setSourceProperty('appointments', substr($appts, 0, 255));
-    }
-
-    // If the user account already exists, set its id in the row data.
-    $sunetid = $row->getSourceProperty('sunetid');
-    if (!empty($sunetid)) {
-
-      $sunetuser = user_load_by_name($sunetid);
-      if (!empty($sunetuser)) {
-        $entityid = intval($sunetuser->id());
-        $row->setSourceProperty('uid', $entityid);
-        $row->setDestinationProperty('uid', $entityid);
-        if (empty($sunetuser->getEmail())) {
-          $row->setSourceProperty('updateemail', 1);
-        }
-      }
+    } else {
+      $row->setSourceProperty('status_code', '1');
     }
   }
   return TRUE;
-
-}
-*/
-
-function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
-
-  if (substr($migration->id(), 0, 21) === 'earth_events_importer') {
-    // if eventStatus is CANCELED and event is found in unlisted map, then
-    // change 'public' flag to 0
-    //$row->setSourceProperty('phone', $newphones);
-
-  }
-  return TRUE;
-
 }

@@ -10,6 +10,8 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Render\HtmlResponse;
+use Drupal\Core\DependencyInjection\DependencySerializationTrait;
+use Drupal\stanford_earth_events\EarthEventsInfo;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -17,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class StanfordEarthEventsController extends ControllerBase {
 
+  use DependencySerializationTrait;
   use StringTranslationTrait;
 
   /**
@@ -77,27 +80,24 @@ class StanfordEarthEventsController extends ControllerBase {
    */
   public function importEvents() {
 
-    /*
-    if ($refresh) {
-      $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, workgroup_list=''")->execute();
-      $this->db->query("DELETE FROM {user__field_profile_search_terms}")->execute();
-    }
-    */
-
     $eMigrations = $this->cf
-      ->listAll('migrate_plus.migration.events_importer');
+      ->listAll('migrate_plus.migration.earth_events_importer');
 
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle($this->t('Import Events'));
-
+    $batch_builder->addOperation(
+      [
+        $this,
+        'earthEventsMakeOrphans',
+      ]
+    );
     foreach ($eMigrations as $eMigration) {
-      $migration = Migration::load(substr($eMigration, strpos($eMigration, 'events')));
-      // $mp = \Drupal::getContainer()->get('plugin.manager.migration');
+      $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth_events_importer')));
       $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
       $migration_plugin->getIdMap()->prepareUpdate();
       $context = [
         'sandbox' => [
-          'total' => 1000,
+          'total' => 200,
           'counter' => 0,
           'batch_limit' => 200,
           'operation' => 1,
@@ -106,7 +106,7 @@ class StanfordEarthEventsController extends ControllerBase {
       $batch_builder->addOperation(
         '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
         [
-          substr($eMigration, strpos($eMigration, 'events')),
+          substr($eMigration, strpos($eMigration, 'earth_events')),
           [
             'limit' => 0,
             'update' => 1,
@@ -116,7 +116,40 @@ class StanfordEarthEventsController extends ControllerBase {
         ]
       );
     }
+    $batch_builder->addOperation(
+      [
+        $this,
+        'earthEventsDeleteOrphans',
+      ]
+    );
     batch_set($batch_builder->toArray());
     return batch_process('/');
+  }
+
+  public function earthEventsMakeOrphans() {
+    //$db = \Drupal::database();
+    $this->db
+      ->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
+      ->fields([
+        'orphaned' => 1,
+      ])
+      ->condition('starttime', REQUEST_TIME, '>')
+      ->execute();
+  }
+
+  public function earthEventsDeleteOrphans() {
+    $orphanedEntities = [];
+    $result = $this->db
+      ->query("SELECT entity_id FROM {" .
+        EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE " .
+        "orphaned = 1");
+    foreach ($result as $record) {
+      $orphaned_entities[] = intval($record->entity_id);
+    }
+    if (!empty($orphaned_entities)) {
+      $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
+      $entities = $storage_handler->loadMultiple($orphaned_entities);
+      $storage_handler->delete($entities);
+    }
   }
 }

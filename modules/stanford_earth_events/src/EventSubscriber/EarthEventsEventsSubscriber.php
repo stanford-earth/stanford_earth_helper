@@ -15,6 +15,7 @@ use Drupal\migrate\Event\MigrateRowDeleteEvent;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Drupal\stanford_earth_events\EarthEventsInfo;
 
 /**
  * Class EntityTypeSubscriber.
@@ -58,68 +59,9 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
-      MigrateEvents::MAP_SAVE => 'migrateMapSave',
-      MigrateEvents::PRE_IMPORT => 'migratePreImport',
-      MigrateEvents::POST_IMPORT => 'migratePostImport',
-      MigrateEvents::PRE_ROW_SAVE => 'migratePreRowSave',
       MigrateEvents::POST_ROW_SAVE => 'migratePostRowSave',
       MigrateEvents::POST_ROW_DELETE => 'migratePostRowDelete',
     ];
-  }
-
-  /**
-   * Get the workgroup name from the source URL.
-   *
-   * @param \Drupal\migrate\Event\EventBase $event
-   *   Information about the migration source row being processed.
-   */
-  private function getWorkgroup(EventBase $event) {
-    $urls = $event->getRow()->getSourceProperty('urls');
-    $wg = '';
-    if (!empty($urls)) {
-      $url = reset($urls);
-      $start = strpos($url, 'privGroups=');
-      if ($start !== FALSE) {
-        $end = strpos($url, '&', $start);
-        if ($end !== FALSE) {
-          $start += 11;
-          $wg = substr($url, $start, $end - $start);
-        }
-      }
-    }
-    return $wg;
-  }
-
-  public function migrateMapSave(MigrateMapSaveEvent $event) {
-    $xyz = 1;
-  }
-
-  /**
-   * React to a migrate PRE_IMPORT event.
-   *
-   * @param \Drupal\migrate\Event\MigrateImportEvent $event
-   *   Contains information about the migration source row being saved.
-   */
-  public function migratePreImport(MigrateImportEvent $event) {
-    $xyz = 1;
-  }
-
-  /**
-   * React to a migrate POST_IMPORT event.
-   *
-   * @param \Drupal\migrate\Event\MigrateImportEvent $event
-   *  blah blah
-   */
-  public function migratePostImport(MigrateImportEvent $event) {
-    $xyz = 1;
-  }
-
-  public function migratePreRowSave(MigratePreRowSaveEvent $event) {
-    // Get the row in question.
-    //$row = $event->getRow();
-    //$row->setSourceProperty("test","whodis?");
-
-    $xyz = 1;
   }
 
   /**
@@ -133,147 +75,27 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
   public function migratePostRowSave(MigratePostRowSaveEvent $event) {
 
     // This event gets thrown for all migrations, so check that first.
-    if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== 0) {
+    if (strpos($event->getMigration()->id(), 'earth_events_importer') !== 0) {
       return;
     }
 
-    // Save CAP API etag and other information so we don't later re-import
-    // a profile that has not changed.
+    // Save Event guid and entity id and whether the event is unlisted
     $row = $event->getRow();
+    $guid = $row->getSourceProperty('guid');
+    if (empty($guid)) {
+      return;
+    }
+
     $destination = 0;
     $destination_ids = $event->getDestinationIdValues();
     if (!empty($destination_ids[0])) {
       $destination = intval($destination_ids[0]);
     }
 
-    // Get the fid of the profile photo.
-    $photoId = 0;
-    $dest_values = $row->getDestinationProperty('field_s_person_image');
-    if (!empty($dest_values['target_id'])) {
-      $photoId = intval($dest_values['target_id']);
+    $info = new EarthEventsInfo($row->getSourceProperty('guid'));
+    if ($info->getOkayToUpdateEventStatus($row->getSource())) {
+      $info->setInfoRecord($row->getSource(), $destination, empty($destination));
     }
-
-    // Get the workgroup from the import event.
-    $wg = $this->getWorkgroup($event);
-
-    $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
-    $info->setInfoRecord($row->getSource(), $destination, $photoId, $wg);
-
-    // Update the person search terms based on the workgroup.
-    if (!empty($destination)) {
-
-      if (!empty($wg)) {
-        // Next look up the workgroup in the profile_workgroups vocabulary.
-        $properties = [
-          'vid' => 'profile_workgroups',
-          'name' => $wg,
-        ];
-        $wg_terms = $this->entityTypeManager
-          ->getStorage('taxonomy_term')
-          ->loadByProperties($properties);
-
-        // If we find it, record the search terms for the workgroup.
-        $term_array = [];
-        if (!empty($wg_terms)) {
-          $entity = reset($wg_terms);
-          $search_terms = $entity->field_people_search_terms;
-          foreach ($search_terms as $search_term) {
-            if ($search_term->entity) {
-              $id = $search_term->entity->id();
-              $term_array[intval($id)] = $id;
-            }
-          }
-        }
-
-        $account = $this->user->load($destination);
-        if (empty($account->getPassword())) {
-          $account->setPassword(user_password());
-          $account->save();
-        }
-
-        // If we have search terms, load the user account and add them
-        // to the field_profile_search_terms taxonomy reference field.
-        if (!empty($term_array)) {
-          $termids = [];
-          $saved_terms = $account->get('field_profile_search_terms')
-            ->getValue();
-          if (!empty($saved_terms)) {
-            foreach ($saved_terms as $saved_term) {
-              $termid = $saved_term['target_id'];
-              $term_array[intval($termid)] = $termid;
-            }
-          }
-          foreach ($term_array as $tid) {
-            $termids[] = ['target_id' => $tid];
-          }
-          if ($wg !== 'earthsci:ere-faculty-regular' &&
-            $wg !== 'earthsci:eess-faculty-regular' &&
-            $wg !== 'earthsci:ges-faculty-regular' &&
-            $wg !== 'earthsci:geophysics-faculty-regular' &&
-            strpos($wg, 'faculty') !== FALSE) {
-            $all_reg_tid = -1;
-            $all_affil_tid = -1;
-            $props = [
-              'vid' => 'people_search_terms',
-              'name' => 'All Regular Faculty',
-            ];
-            $wg_term_f1 = $this->entityTypeManager
-              ->getStorage('taxonomy_term')
-              ->loadByProperties($props);
-            if (!empty($wg_term_f1)) {
-              $entity_f1 = reset($wg_term_f1);
-              $all_reg_tid = intval($entity_f1->id());
-              $props['name'] = 'All Affiliated Faculty';
-              $wg_term_f2 = $this->entityTypeManager
-                ->getStorage('taxonomy_term')
-                ->loadByProperties($props);
-              if (!empty($wg_term_f2)) {
-                $entity_f2 = reset($wg_term_f2);
-                $all_affil_tid = intval($entity_f2->id());
-              }
-            }
-            if ($all_reg_tid > -1 && $all_affil_tid > -1) {
-              $found_reg = -1;
-              $found_affil = -1;
-              foreach ($termids as $fackey => $facterm) {
-                if (intval($facterm['target_id']) == $all_reg_tid) {
-                  $found_reg = $fackey;
-                }
-                else {
-                  if (intval($facterm['target_id']) == $all_affil_tid) {
-                    $found_affil = $fackey;
-                  }
-                }
-              }
-              if ($found_reg > -1 && $found_affil > 1) {
-                unset($termids[$found_affil]);
-              }
-            }
-          }
-          $account->field_profile_search_terms = $termids;
-          if (strpos($wg, 'faculty') !== FALSE) {
-            $account->addRole('faculty');
-          }
-          else {
-            if (strpos($wg, 'staff') !== FALSE) {
-              $account->addRole('staff');
-            }
-            else {
-              if (strpos($wg, 'student') !== FALSE) {
-                $account->addRole('student');
-              }
-              else {
-                if (strpos($wg, 'postdoc') !== FALSE) {
-                  $account->addRole('student');
-                }
-              }
-            }
-          }
-          $account->save();
-        }
-      }
-    }
-
   }
 
   /**
@@ -287,7 +109,7 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
   public function migratePostRowDelete(MigrateRowDeleteEvent $event) {
 
     // This event gets thrown for all migrations, so check that first.
-    if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== 0) {
+    if (strpos($event->getMigration()->id(), 'earth_events_importer') !== 0) {
       return;
     }
 
@@ -296,7 +118,7 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
     if (!empty($destination_ids['uid'])) {
       $destination = intval($destination_ids['uid']);
     }
-    EarthCapxInfo::delete($destination);
+    EarthEventsInfo::delete($destination);
 
   }
 

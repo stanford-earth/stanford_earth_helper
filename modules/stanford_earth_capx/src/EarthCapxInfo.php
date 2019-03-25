@@ -140,7 +140,7 @@ class EarthCapxInfo {
    *   The name of the workgroup being processed.
    */
   public function getOkayToUpdateProfile(array $source = [],
-                                         int $photoId = 0,
+                                         int $photoId = NULL,
                                          string $wg = NULL) {
     // Checks $status which was set in the constructor.
     $oktoupdate = FALSE;
