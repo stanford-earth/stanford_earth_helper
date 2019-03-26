@@ -1,5 +1,15 @@
 # Stanford Earth Helper
   
+8.x-1.0-alpha24
+--------------------------------------------------------------------------------
+_Release Date: 2019-03-26
+
+_Rewrite of stanford_earth_events module to be more like stanford_earth_capx
+_Creates individual migrations for each Stanford Events URL.
+_Updates previously imported events when changes have been made on Stanford Events.
+_Removes previously imported events when removed completely from Stanford Events.
+_Keeps "Unlisted" events unlisted even if status changes to "Canceled".
+
 8.x-1.0-alpha23
 --------------------------------------------------------------------------------
 _Release Date: 2019-03-08
