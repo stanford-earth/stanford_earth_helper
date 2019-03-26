@@ -9,9 +9,9 @@ use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Render\HtmlResponse;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\stanford_earth_events\EarthEventsInfo;
+use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -47,6 +47,13 @@ class StanfordEarthEventsController extends ControllerBase {
   protected $cf;
 
   /**
+   * EntityTypeManager service.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
+
+  /**
    * StanfordEarthEventsController constructor.
    *
    * @param Drupal\migrate\Plugin\MigrationPluginManager $mp
@@ -55,13 +62,17 @@ class StanfordEarthEventsController extends ControllerBase {
    *   The database connection object.
    * @param \Drupal\Core\Config\ConfigFactory $cf
    *   The config factory object.
+   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   *   The EntityTypeManager service.
    */
   public function __construct(MigrationPluginManager $mp,
                               Connection $db,
-                              ConfigFactory $cf) {
+                              ConfigFactory $cf,
+                              EntityTypeManager $entityTypeManager) {
     $this->mp = $mp;
     $this->db = $db;
     $this->cf = $cf;
+    $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
@@ -71,7 +82,8 @@ class StanfordEarthEventsController extends ControllerBase {
     return new static(
       $container->get('plugin.manager.migration'),
       $container->get('database'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -126,8 +138,10 @@ class StanfordEarthEventsController extends ControllerBase {
     return batch_process('/');
   }
 
+  /**
+   * Mark all future events as orphans, to be reset as updated from feeds.
+   */
   public function earthEventsMakeOrphans() {
-    //$db = \Drupal::database();
     $this->db
       ->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
       ->fields([
@@ -137,19 +151,26 @@ class StanfordEarthEventsController extends ControllerBase {
       ->execute();
   }
 
+  /**
+   * Deletes records from the Event Info table marked as orphans.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
   public function earthEventsDeleteOrphans() {
-    $orphanedEntities = [];
+    $orphaned_entities = [];
     $result = $this->db
       ->query("SELECT entity_id FROM {" .
-        EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE " .
-        "orphaned = 1");
+        EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE orphaned = 1");
     foreach ($result as $record) {
       $orphaned_entities[] = intval($record->entity_id);
     }
     if (!empty($orphaned_entities)) {
-      $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
+      $storage_handler = $this->entityTypeManager->getStorage('node');
       $entities = $storage_handler->loadMultiple($orphaned_entities);
       $storage_handler->delete($entities);
     }
   }
+
 }

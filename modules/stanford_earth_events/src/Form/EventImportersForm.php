@@ -3,7 +3,6 @@
 namespace Drupal\stanford_earth_events\Form;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\config\Form\ConfigSingleImportForm;
@@ -179,8 +178,6 @@ class EventImportersForm extends ConfigSingleImportForm {
       }
 
     }
-
-
   }
 
   /**
@@ -237,10 +234,9 @@ class EventImportersForm extends ConfigSingleImportForm {
       }
     }
 
-    // create batch creation of migrations for each feed
+    // Create batch creation of migrations for each feed.
     $fp_array = Yaml::decode($form_state->getValue('import'));
     $batch_builder = new BatchBuilder();
-    //$batch_builder->setFinishCallback()
     $batch_builder->setTitle(t('Create Event Migrations'));
     $batch_builder->setInitMessage(t('Creating Stanford Event import migrations for each requested feed.'));
     foreach ($feeds as $feed_idx => $feed) {
@@ -259,9 +255,6 @@ class EventImportersForm extends ConfigSingleImportForm {
         ]);
     }
     batch_set($batch_builder->toArray());
-
-    // Clear out all caches to ensure the config gets picked up.
-    //drupal_flush_all_caches();
   }
 
   /**

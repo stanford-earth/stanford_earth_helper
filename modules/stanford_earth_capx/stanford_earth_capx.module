@@ -56,7 +56,7 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
     }
     $row->setSourceProperty('phone', $newphones);
 
-    // some appointments are longer than 255 plaintext characters
+    // Some appointments are longer than 255 plaintext characters.
     $appts = $row->getSourceProperty('appointments');
     if (!empty($appts) && strlen($appts) > 255) {
       $row->setSourceProperty('appointments', substr($appts, 0, 255));

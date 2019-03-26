@@ -140,7 +140,12 @@ class StanfordEarthCapxJson extends Json {
             $source_data_out[] = [
               'uid' => $sunet,
               'displayName' => $dname,
-              'names' => ['preferred' =>['firstName'=> $fname, 'lastName'=> $lname]],
+              'names' => [
+                'preferred' => [
+                  'firstName' => $fname,
+                  'lastName' => $lname,
+                ],
+              ],
             ];
           }
         }

@@ -100,7 +100,7 @@ class EarthEventsInfo {
       $oktoupdate = TRUE;
     }
     elseif ($this->status == self::EARTH_EVENTS_INFO_FOUND) {
-      // for now
+      // For now.
       $oktoupdate = TRUE;
     }
     return $oktoupdate;
@@ -116,7 +116,7 @@ class EarthEventsInfo {
    *   Source data from migration row.
    * @param int $entity_id
    *   Entity ID of the event.
-   * @param boolean $orphaned
+   * @param bool $orphaned
    *   Whether the event info record has been orphaned.
    */
   public function setInfoRecord(array $source = [],
@@ -156,7 +156,7 @@ class EarthEventsInfo {
       if ($this->orphaned !== $orphaned ||
         $this->unlisted !== $unlisted ||
         $this->starttime !== $starttime ||
-        $this->entityId != $entity_id ) {
+        $this->entityId != $entity_id) {
         // The information is different, so delete record and set status = NEW.
         \Drupal::database()->delete(self::EARTH_EVENTS_INFO_TABLE)
           ->condition('guid', $this->guid)
@@ -268,7 +268,7 @@ class EarthEventsInfo {
             'length' => 255,
             'not null' => FALSE,
             'description' => "Unix timestamp of the event start time",
-          ]
+          ],
         ],
         'primary key' => ['guid'],
       ],

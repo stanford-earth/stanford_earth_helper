@@ -2,19 +2,12 @@
 
 namespace Drupal\stanford_earth_events\EventSubscriber;
 
-use Drupal\migrate\Event\MigrateRollbackEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Drupal\migrate\MigrateException;
-use Drupal\migrate\Event\EventBase;
 use Drupal\migrate\Event\MigrateEvents;
-use Drupal\migrate\Event\MigrateImportEvent;
-use Drupal\migrate\Event\MigrateMapSaveEvent;
-use Drupal\migrate\Event\MigratePreRowSaveEvent;
 use Drupal\migrate\Event\MigratePostRowSaveEvent;
 use Drupal\migrate\Event\MigrateRowDeleteEvent;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Entity\EntityTypeManager;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Drupal\stanford_earth_events\EarthEventsInfo;
 
 /**
@@ -79,7 +72,7 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    // Save Event guid and entity id and whether the event is unlisted
+    // Save Event guid and entity id and whether the event is unlisted.
     $row = $event->getRow();
     $guid = $row->getSourceProperty('guid');
     if (empty($guid)) {

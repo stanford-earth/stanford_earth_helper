@@ -13,7 +13,6 @@ use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\stanford_earth_events\EarthEventsInfo;
 
-
 /**
  * Implements hook_entity_delete().
  */
@@ -27,7 +26,7 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
   // Delete record from events info table.
   EarthEventsInfo::delete($entity->id());
 
-  // Delete records from migration maps
+  // Delete records from migration maps.
   $database = \Drupal::database();
   $eventTables = $database->schema()->findTables('migrate_map_earth_events_importer_%');
   foreach ($eventTables as $table) {
@@ -43,22 +42,28 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
  * Implements hook_cron().
  */
 function stanford_earth_events_cron() {
-  // cleanup tbd
+  // Cron cleanup tbd.
 }
 
+/**
+ * {@inheritdoc}
+ */
 function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
   if (substr($migration->id(), 0, 21) === 'earth_events_importer') {
     $event_status = $row->getSourceProperty('field_event_status');
     if ($event_status == 'Unlisted') {
       $row->setSourceProperty('status_code', '0');
-    } else if ($event_status == 'CANCELED') {
+    }
+    elseif ($event_status == 'CANCELED') {
       $event = new EarthEventsInfo($row->getSourceProperty('guid'));
       if ($event->isUnlisted()) {
         $row->setSourceProperty('status_code', '0');
-      } else {
+      }
+      else {
         $row->setSourceProperty('status_code', '1');
       }
-    } else {
+    }
+    else {
       $row->setSourceProperty('status_code', '1');
     }
   }

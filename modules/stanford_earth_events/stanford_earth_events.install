@@ -11,14 +11,13 @@ use Drupal\stanford_earth_events\EarthEventsInfo;
 /**
  * Implements hook_schema().
  */
-
 function stanford_earth_events_schema() {
   $eventsinfo = EarthEventsInfo::getSchema();
   return $eventsinfo;
 }
 
 /**
- * Delete future events imported from old migrations so they don't get duplicated.
+ * Delete future events imported from old migrations so they aren't duplicated.
  */
 function stanford_earth_events_update_8100() {
   $db = Database::getConnection();
@@ -54,7 +53,7 @@ function stanford_earth_events_update_8100() {
     $storage_handler->delete($entities);
   }
 
-  // add the events info table
+  // Add the events info table.
   $eventsinfo = EarthEventsInfo::getSchema();
   $eventsinfodef = reset($eventsinfo);
   $eventsinfokey = key($eventsinfo);

@@ -9,7 +9,6 @@ use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\Core\Render\HtmlResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -117,40 +116,4 @@ class StanfordEarthCapxController extends ControllerBase {
     return batch_process('/');
   }
 
-  public function updateSearchTerms() {
-    /* @var $entity_service \Drupal\Core\Entity\EntityTypeManager */
-    $entity_service = \Drupal::service('entity_type.manager');
-    $terms = $entity_service
-      ->getStorage('taxonomy_term')
-      ->loadByProperties(['vid' => 'people_search_terms']);
-    if (!empty($terms)) {
-      foreach ($terms as $value) {
-        $name = $value->getName();
-        $name = str_replace('DEAN\'S OFFICE', 'Dean\'s Office', $name);
-        $name = str_replace('All Dean', 'Dean', $name);
-        $name = str_replace('SUSTAINABILITY', 'Change Leadership for Sustainability', $name);
-        $name = str_replace('All Change', 'Change', $name);
-        if (strpos($name,'E-IPER Program') === FALSE) {
-          $name = str_replace('E-IPER', 'E-IPER Program', $name);
-        }
-        $name = str_replace('All E-IPER', 'E-IPER', $name);
-        $name = str_replace('EARTH SYSTEMS', 'Earth Systems Program', $name);
-        $name = str_replace('All Earth Systems', 'Earth Systems', $name);
-        $name = str_replace('ERE', 'Energy Resources Engineering', $name);
-        $name = str_replace('All Energy', 'Energy', $name);
-        $name = str_replace('ESS', 'Earth System Science', $name);
-        $name = str_replace('All Earth System', 'Earth System', $name);
-        $name = str_replace('GEOPHYSICS', 'Geophysics', $name);
-        $name = str_replace('All Geo', 'Geo', $name);
-        $name = str_replace('GS', 'Geological Sciences', $name);
-        $name = str_replace('All Geo', 'Geological', $name);
-        $name = str_replace('Affiliated', 'Associated', $name);
-        $value->setName($name);
-        $value->save();
-      }
-    }
-    $response = new HtmlResponse();
-    $response->setContent('Update done.');
-    return $response;
-  }
 }
