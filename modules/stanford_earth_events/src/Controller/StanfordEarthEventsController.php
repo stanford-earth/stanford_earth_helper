@@ -135,7 +135,8 @@ class StanfordEarthEventsController extends ControllerBase {
       ]
     );
     batch_set($batch_builder->toArray());
-    return batch_process('/');
+    return drush_backend_batch_process();
+   // return batch_process('/');
   }
 
   /**

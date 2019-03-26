@@ -11,7 +11,7 @@ use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
-use Drupal\Tests\Component\Datetime\DateTimePlus;
+use Drupal\stanford_earth_events\Controller\StanfordEarthEventsController;
 use Drupal\stanford_earth_events\EarthEventsInfo;
 
 /**
@@ -48,11 +48,17 @@ function stanford_earth_events_cron() {
     "America/Los_Angeles"
   );
   \Drupal::logger('cron')->info('Request time: ' . $rtime->format("D M d Y H:i:s T"));
-//use Drupal\content_statistics\Controller\ContentStatisticsController
-
-//$statistics = new ContentStatisticsController;
-//$value = $statistics->count();
-  // Cron cleanup tbd.
+  $hour = $rtime->format("H");
+  if ($hour == "08" || $hour == "12" || $hour == "16" || $hour == "20") {
+    $container = \Drupal::getContainer();
+    $controller = new StanfordEarthEventsController(
+      $container->get('plugin.manager.migration'),
+      $container->get('database'),
+      $container->get('config.factory'),
+      $container->get('entity_type.manager')
+    );
+    $controller->importEvents();
+  }
 }
 
 /**
