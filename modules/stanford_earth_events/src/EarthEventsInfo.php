@@ -244,7 +244,7 @@ class EarthEventsInfo {
         'fields' => [
           'guid' => [
             'type' => 'varchar',
-            'length' => 255,
+            'length' => 16,
             'not null' => TRUE,
             'description' => "GUID for imported event",
           ],
