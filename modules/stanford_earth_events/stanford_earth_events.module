@@ -11,6 +11,7 @@ use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
+use Drupal\Tests\Component\Datetime\DateTimePlus;
 use Drupal\stanford_earth_events\EarthEventsInfo;
 
 /**
@@ -42,6 +43,15 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
  * Implements hook_cron().
  */
 function stanford_earth_events_cron() {
+  $rtime = \Drupal\Component\Datetime\DateTimePlus::createFromTimestamp(
+    \Drupal::time()->getRequestTime(),
+    "America/Los_Angeles"
+  );
+  \Drupal::logger('cron')->info('Request time: ' . $rtime->format("D M d Y H:i:s T"));
+//use Drupal\content_statistics\Controller\ContentStatisticsController
+
+//$statistics = new ContentStatisticsController;
+//$value = $statistics->count();
   // Cron cleanup tbd.
 }
 
