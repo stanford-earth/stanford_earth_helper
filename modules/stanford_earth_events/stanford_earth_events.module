@@ -45,6 +45,7 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
  * Implements hook_cron().
  */
 function stanford_earth_events_cron() {
+  /*
   $rtime = \Drupal\Component\Datetime\DateTimePlus::createFromTimestamp(
     \Drupal::time()->getRequestTime(),
     "America/Los_Angeles"
@@ -61,6 +62,7 @@ function stanford_earth_events_cron() {
     );
     $controller->importEvents();
   }
+  */
 }
 
 /**
