@@ -235,6 +235,41 @@ class EarthEventsInfo {
   }
 
   /**
+   * Mark all future events as orphans, to be reset as updated from feeds.
+   */
+  public static function earthEventsMakeOrphans() {
+    \Drupal::database()
+      ->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
+      ->fields([
+        'orphaned' => 1,
+      ])
+      ->condition('starttime', REQUEST_TIME, '>')
+      ->execute();
+  }
+
+  /**
+   * Deletes records from the Event Info table marked as orphans.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public static function earthEventsDeleteOrphans() {
+    $orphaned_entities = [];
+    $result = \Drupal::database()
+      ->query("SELECT entity_id FROM {" .
+        EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE orphaned = 1");
+    foreach ($result as $record) {
+      $orphaned_entities[] = intval($record->entity_id);
+    }
+    if (!empty($orphaned_entities)) {
+      $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
+      $entities = $storage_handler->loadMultiple($orphaned_entities);
+      $storage_handler->delete($entities);
+    }
+  }
+
+  /**
    * The schema for this table to be retrieved by the module hook_schema call.
    */
   public static function getSchema() {

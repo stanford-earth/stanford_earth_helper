@@ -99,79 +99,45 @@ class StanfordEarthEventsController extends ControllerBase {
     $batch_builder->setTitle($this->t('Import Events'));
     $batch_builder->addOperation(
       [
-        $this,
+        new EarthEventsInfo(),
         'earthEventsMakeOrphans',
       ]
     );
     foreach ($eMigrations as $eMigration) {
-      $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth_events_importer')));
-      $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
-      $migration_plugin->getIdMap()->prepareUpdate();
-      $context = [
-        'sandbox' => [
-          'total' => 200,
-          'counter' => 0,
-          'batch_limit' => 200,
-          'operation' => 1,
-        ],
-      ];
-      $batch_builder->addOperation(
-        '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
-        [
-          substr($eMigration, strpos($eMigration, 'earth_events')),
-          [
-            'limit' => 0,
-            'update' => 1,
-            'force' => 0,
+      if (strpos($eMigration, "process") === FALSE) {
+        $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth_events_importer')));
+        $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
+        $migration_plugin->getIdMap()->prepareUpdate();
+        $context = [
+          'sandbox' => [
+            'total' => 200,
+            'counter' => 0,
+            'batch_limit' => 200,
+            'operation' => 1,
           ],
-          $context,
-        ]
-      );
+        ];
+        $batch_builder->addOperation(
+          '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
+          [
+            substr($eMigration, strpos($eMigration, 'earth_events')),
+            [
+              'limit' => 0,
+              'update' => 1,
+              'force' => 0,
+            ],
+            $context,
+          ]
+        );
+      }
     }
     $batch_builder->addOperation(
       [
-        $this,
+        new EarthEventsInfo(),
         'earthEventsDeleteOrphans',
       ]
     );
     batch_set($batch_builder->toArray());
-    return drush_backend_batch_process();
-   // return batch_process('/');
-  }
-
-  /**
-   * Mark all future events as orphans, to be reset as updated from feeds.
-   */
-  public function earthEventsMakeOrphans() {
-    $this->db
-      ->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
-      ->fields([
-        'orphaned' => 1,
-      ])
-      ->condition('starttime', REQUEST_TIME, '>')
-      ->execute();
-  }
-
-  /**
-   * Deletes records from the Event Info table marked as orphans.
-   *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  public function earthEventsDeleteOrphans() {
-    $orphaned_entities = [];
-    $result = $this->db
-      ->query("SELECT entity_id FROM {" .
-        EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE orphaned = 1");
-    foreach ($result as $record) {
-      $orphaned_entities[] = intval($record->entity_id);
-    }
-    if (!empty($orphaned_entities)) {
-      $storage_handler = $this->entityTypeManager->getStorage('node');
-      $entities = $storage_handler->loadMultiple($orphaned_entities);
-      $storage_handler->delete($entities);
-    }
+    return batch_process('/');
   }
 
 }

@@ -31,10 +31,12 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
   $database = \Drupal::database();
   $eventTables = $database->schema()->findTables('migrate_map_earth_events_importer_%');
   foreach ($eventTables as $table) {
-    if ($database->schema()->tableExists($table)) {
-      $database->delete($table)
-        ->condition('destid1', $entity->id())
-        ->execute();
+    if (strpos($table, "process") === FALSE) {
+      if ($database->schema()->tableExists($table)) {
+        $database->delete($table)
+          ->condition('destid1', $entity->id())
+          ->execute();
+      }
     }
   }
 }

@@ -198,7 +198,10 @@ class EventImportersForm extends ConfigSingleImportForm {
     // Delete the old migrations.
     $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth_events_importer');
     foreach ($eMigrations as $eMigration) {
-      $this->configFactory->getEditable($eMigration)->delete();
+      if (strpos($eMigration, "000_preprocess") === FALSE &&
+          strpos($eMigration, "999_postprocess") === FALSE) {
+        $this->configFactory->getEditable($eMigration)->delete();
+      }
     }
 
     // Delete the old migration map and message tables.
@@ -241,6 +244,7 @@ class EventImportersForm extends ConfigSingleImportForm {
     $batch_builder->setTitle(t('Create Event Migrations'));
     $batch_builder->setInitMessage(t('Creating Stanford Event import migrations for each requested feed.'));
     foreach ($feeds as $feed_idx => $feed) {
+      $m_index = intval($feed_idx) + 1;
       // Create migration configuration in batch mode.
       $batch_builder->addOperation(
         [
@@ -252,7 +256,7 @@ class EventImportersForm extends ConfigSingleImportForm {
           $form_state,
           $feed,
           $fp_array,
-          $feed_idx,
+          $m_index,
         ]);
     }
     batch_set($batch_builder->toArray());
