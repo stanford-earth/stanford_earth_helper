@@ -1,4 +1,11 @@
 # Stanford Earth Helper
+
+8.x-1.0-alpha25
+--------------------------------------------------------------------------------
+_Release Date: 2019-03-27
+
+_Adds pre-process and post-process migrations to clean up orphan events.
+_Set up to now run using "drush migrate:import --group=earth_events --update=UPDATE.
   
 8.x-1.0-alpha24
 --------------------------------------------------------------------------------
