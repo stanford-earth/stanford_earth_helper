@@ -13,6 +13,8 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\stanford_earth_events\EarthEventsInfo;
 use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\migrate\MigrateMessage;
+use Drupal\migrate_tools\MigrateBatchExecutable;
 
 /**
  * Stanford events controller.
@@ -97,16 +99,25 @@ class StanfordEarthEventsController extends ControllerBase {
 
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle($this->t('Import Events'));
+    $batch_builder->setProgressive(TRUE);
+    $batch_builder->setFinishCallback(
+      [
+        new EarthEventsInfo(),
+        'earthEventsDeleteOrphans',
+      ]
+    );
+    /*
     $batch_builder->addOperation(
       [
         new EarthEventsInfo(),
         'earthEventsMakeOrphans',
       ]
     );
+    */
     foreach ($eMigrations as $eMigration) {
       if (strpos($eMigration, "process") === FALSE) {
-        $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth_events_importer')));
-        $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
+        //$migrationId = substr($eMigration, strpos($eMigration, 'earth_events_importer'));
+/*
         $migration_plugin->getIdMap()->prepareUpdate();
         $context = [
           'sandbox' => [
@@ -116,28 +127,49 @@ class StanfordEarthEventsController extends ControllerBase {
             'operation' => 1,
           ],
         ];
+*/
         $batch_builder->addOperation(
-          '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
+          [
+            $this,
+            'earthEventImportFeed',
+          ],
           [
             substr($eMigration, strpos($eMigration, 'earth_events')),
-            [
-              'limit' => 0,
-              'update' => 1,
-              'force' => 0,
-            ],
-            $context,
           ]
         );
       }
     }
+/*
     $batch_builder->addOperation(
       [
         new EarthEventsInfo(),
         'earthEventsDeleteOrphans',
       ]
     );
+*/
     batch_set($batch_builder->toArray());
+    EarthEventsInfo::earthEventsMakeOrphans();
     return batch_process('/');
+  }
+
+  /**
+   * Import event feed via batch.
+   *
+   * @param string $migrationId
+   *   Name of the migration to import.
+   */
+  public function earthEventImportFeed(string $migrationId) {
+    $migration = Migration::load($migrationId);
+    /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
+    $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
+    $migrateMessage = new MigrateMessage();
+    $options = [
+      'limit' => 0,
+      'update' => 1,
+      'force' => 0,
+    ];
+    $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
+    $executable->batchImport();
   }
 
 }
