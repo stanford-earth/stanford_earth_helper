@@ -235,7 +235,7 @@ class EarthEventsInfo {
   }
 
   /**
-   * Return true if this event is new or found, false if invalid
+   * Return true if this event is new or found, false if invalid.
    */
   public function isValid() {
     return (!empty($this->status));

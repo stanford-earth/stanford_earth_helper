@@ -11,7 +11,6 @@ use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
-use Drupal\stanford_earth_events\Controller\StanfordEarthEventsController;
 use Drupal\stanford_earth_events\EarthEventsInfo;
 
 /**
@@ -45,24 +44,6 @@ function stanford_earth_events_entity_delete(EntityInterface $entity) {
  * Implements hook_cron().
  */
 function stanford_earth_events_cron() {
-  /*
-  $rtime = \Drupal\Component\Datetime\DateTimePlus::createFromTimestamp(
-    \Drupal::time()->getRequestTime(),
-    "America/Los_Angeles"
-  );
-  \Drupal::logger('cron')->info('Request time: ' . $rtime->format("D M d Y H:i:s T"));
-  $hour = $rtime->format("H");
-  if ($hour == "08" || $hour == "12" || $hour == "16" || $hour == "20") {
-    $container = \Drupal::getContainer();
-    $controller = new StanfordEarthEventsController(
-      $container->get('plugin.manager.migration'),
-      $container->get('database'),
-      $container->get('config.factory'),
-      $container->get('entity_type.manager')
-    );
-    $controller->importEvents();
-  }
-  */
 }
 
 /**
