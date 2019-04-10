@@ -126,49 +126,6 @@ class EventImportersForm extends ConfigSingleImportForm {
       return $form;
     }
 
-    // test code
-    $db = \Drupal::database();
-    //$db = Database::getConnection();
-    $schema = $db->schema();
-    $event_entities = [];
-    $event_list = [];
-    if ($schema->tableExists('{migrate_info_earth_events_importer}')) {
-      $result = $db->query("SELECT guid, entity_id FROM {" .
-        "migrate_info_earth_events_importer} " .
-        "ORDER BY entity_id;");
-      $check9999 = true;
-      foreach ($result as $record) {
-        if ($check9999) {
-          if ($record->entity_id > 9999) {
-            $event_entities[] = 9999;
-            $check9999 = false;
-          }
-        }
-        $event_list[$record->guid] = intval($record->entity_id);
-        $event_entities[] = intval($record->entity_id);
-      }
-    }
-    if (!empty($event_entities)) {
-      $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
-      $entities = $storage_handler->loadMultiple($event_entities);
-      //$storage_handler->delete($entities);
-    }
-    $list_to_delete = [];
-    for ($i = 1; $i<33; $i++) {
-      $table_name = 'migrate_map_earth_events_importer_' .
-        str_pad(strval($i), 3, "0",
-          STR_PAD_LEFT);
-      $result = $db->query("SELECT sourceid1, destid1 FROM " .
-        $table_name );
-      foreach($result as $record) {
-        if (!empty($event_list[$record->sourceid1]) && intval($record->destid1) !== $event_list[$record->sourceid1]) {
-          $list_to_delete[$record->sourceid1] = intval($record->destid1);
-        }
-      }
-    }
-    $xyz = 1;
-    // end test code
-
     // Create a one field form for editing the list of workgroups for profiles.
     $feeds = $this->config('migrate_plus.migration_group.earth_events')
       ->get('feeds');
