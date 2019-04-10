@@ -70,12 +70,12 @@ function stanford_earth_events_cron() {
  */
 function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
   if (substr($migration->id(), 0, 21) === 'earth_events_importer') {
+    $event = new EarthEventsInfo($row->getSourceProperty('guid'));
     $event_status = $row->getSourceProperty('field_event_status');
     if ($event_status == 'Unlisted') {
       $row->setSourceProperty('status_code', '0');
     }
     elseif ($event_status == 'CANCELED') {
-      $event = new EarthEventsInfo($row->getSourceProperty('guid'));
       if ($event->isUnlisted()) {
         $row->setSourceProperty('status_code', '0');
       }
@@ -85,6 +85,15 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
     }
     else {
       $row->setSourceProperty('status_code', '1');
+    }
+
+    // If the event node already exists, set its id in the row data.
+    if ($event->isValid()) {
+      $entityid = $event->entityId();
+      if (!empty($entityid)) {
+        $row->setSourceProperty('nid', $entityid);
+        $row->setDestinationProperty('nid', $entityid);
+      }
     }
   }
   return TRUE;

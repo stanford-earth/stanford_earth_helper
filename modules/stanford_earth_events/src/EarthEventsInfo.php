@@ -235,6 +235,20 @@ class EarthEventsInfo {
   }
 
   /**
+   * Return true if this event is new or found, false if invalid
+   */
+  public function isValid() {
+    return (!empty($this->status));
+  }
+
+  /**
+   * Return the entity id of the event or zero if there is none.
+   */
+  public function entityId() {
+    return $this->entityId;
+  }
+
+  /**
    * Mark all future events as orphans, to be reset as updated from feeds.
    */
   public static function earthEventsMakeOrphans() {
