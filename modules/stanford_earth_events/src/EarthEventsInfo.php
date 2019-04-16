@@ -4,6 +4,9 @@ namespace Drupal\stanford_earth_events;
 
 use Drupal\Core\Database;
 use Drupal\migrate\MigrateMessage;
+use Drupal\stanford_earth_events\EarthEventsLock;
+
+//class StanfordEventsException extends \Drupal\Core\Entity\Exception {}
 
 /**
  * Encapsulates an information table for Earth Events imports.
@@ -252,6 +255,22 @@ class EarthEventsInfo {
    * Mark all future events as orphans, to be reset as updated from feeds.
    */
   public static function earthEventsMakeOrphans() {
+    $db = \Drupal::database();
+    $lock = new EarthEventsLock($db);
+    $test = $lock->getLockId();
+    if ($lock->acquire('EarthEventsLock', 900)) {
+      $lockid = $lock->getLockId();
+    }
+    /** @var \Drupal\Core\Tempstore\PrivateTempStore $session */
+    $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
+    $xyz = $session->get('mylockid');
+    if ($xyz !== NULL) {
+      $xy2 = 'found! '.$xyz;
+    } else {
+      $session->set('mylockid', $lockid);
+    }
+    $xyz = getmypid();
+    //print 'make orphans -- user: ' . \Drupal::currentUser()->getAccountName() . ' pid: ' . getmypid() . chr(13). chr(10);\Drupsal
     \Drupal::database()
       ->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
       ->fields([
@@ -259,6 +278,7 @@ class EarthEventsInfo {
       ])
       ->condition('starttime', REQUEST_TIME, '>')
       ->execute();
+    //throw new \Exception("Test failure while making orphans");
   }
 
   /**
@@ -269,6 +289,20 @@ class EarthEventsInfo {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public static function earthEventsDeleteOrphans() {
+    $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
+    $xyz = $session->get('mylockid');
+    if ($xyz !== NULL) {
+      /** @var \Drupal\Core\Lock\DatabaseLockBackend $lock */
+      $lock = \Drupal::service('lock');
+      $lockid = $lock->getLockId();
+      if ($lockid === $xyz) {
+        $xy2 = "we got it";
+      }
+    }
+
+    $abc = getmypid();
+    $xyz = $abc;
+    //print 'delete orphans -- user: ' . \Drupal::currentUser()->getAccountName() . ' pid: ' . getmypid() . chr(13). chr(10);
     $orphaned_entities = [];
     $result = \Drupal::database()
       ->query("SELECT entity_id FROM {" .

@@ -99,7 +99,7 @@ class StanfordEarthEventsController extends ControllerBase {
 
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle($this->t('Import Events'));
-    $batch_builder->setProgressive(TRUE);
+    //$batch_builder->setProgressive(TRUE);
     $batch_builder->setFinishCallback(
       [
         new EarthEventsInfo(),
@@ -170,6 +170,11 @@ class StanfordEarthEventsController extends ControllerBase {
     ];
     $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
     $executable->batchImport();
+    $xy5 = $migration_plugin->getStatus();
+    $xy4 = $migration_plugin->getStatusLabel();
+    $xyz = $executable->checkStatus();
+    $xy2 = $executable->getBatchContext();
+    $xy3 = 1;
   }
 
 }

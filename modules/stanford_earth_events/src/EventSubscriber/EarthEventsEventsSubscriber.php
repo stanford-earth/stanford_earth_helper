@@ -54,7 +54,52 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
     return [
       MigrateEvents::POST_ROW_SAVE => 'migratePostRowSave',
       MigrateEvents::POST_ROW_DELETE => 'migratePostRowDelete',
+        MigrateEvents::POST_IMPORT => 'migratePostImport',
+        MigrateEvents::IDMAP_MESSAGE => 'migrateIdmapMessage',
+        MigrateEvents::MAP_DELETE => 'migrateMapDelete',
+        MigrateEvents::MAP_SAVE => 'migrateMapSave',
+        MigrateEvents::POST_ROLLBACK => 'migratePostRollback',
+        MigrateEvents::PRE_IMPORT => 'migratePreImport',
+        MigrateEvents::PRE_ROW_DELETE => 'migratePreDelete',
+        MigrateEvents::PRE_ROLLBACK => 'migratePreRollback',
+      MigrateEvents::PRE_ROW_SAVE => 'migratePreRowSave',
     ];
+  }
+
+  public function migrateIdmapMessage(\Drupal\migrate\Event\MigrateIdMapMessageEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migratePostImport(\Drupal\migrate\Event\MigrateImportEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migrateMapDelete(\Drupal\migrate\Event\MigrateMapDeleteEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migrateMapSave(\Drupal\migrate\Event\MigrateMapSaveEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migratePostRollback(\Drupal\migrate\Event\MigrateRollbackEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migratePreImport(\Drupal\migrate\Event\MigrateImportEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migratePreDelete(\Drupal\migrate\Event\MigrateRowDeleteEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migratePreRollback(\Drupal\migrate\Event\MigrateRollbackEvent $event) {
+    $xyz = 1;
+  }
+
+  public function migratePreRowSave(\Drupal\migrate\Event\MigratePreRowSaveEvent $event) {
+    $xyz = 1;
   }
 
   /**
