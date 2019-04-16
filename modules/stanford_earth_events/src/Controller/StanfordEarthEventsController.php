@@ -106,28 +106,20 @@ class StanfordEarthEventsController extends ControllerBase {
         'earthEventsDeleteOrphans',
       ]
     );
-    /*
-    $batch_builder->addOperation(
-      [
-        new EarthEventsInfo(),
-        'earthEventsMakeOrphans',
-      ]
-    );
-    */
     foreach ($eMigrations as $eMigration) {
       if (strpos($eMigration, "process") === FALSE) {
         //$migrationId = substr($eMigration, strpos($eMigration, 'earth_events_importer'));
-/*
-        $migration_plugin->getIdMap()->prepareUpdate();
-        $context = [
-          'sandbox' => [
-            'total' => 200,
-            'counter' => 0,
-            'batch_limit' => 200,
-            'operation' => 1,
-          ],
-        ];
-*/
+        /*
+                $migration_plugin->getIdMap()->prepareUpdate();
+                $context = [
+                  'sandbox' => [
+                    'total' => 200,
+                    'counter' => 0,
+                    'batch_limit' => 200,
+                    'operation' => 1,
+                  ],
+                ];
+        */
         $batch_builder->addOperation(
           [
             $this,
@@ -139,14 +131,14 @@ class StanfordEarthEventsController extends ControllerBase {
         );
       }
     }
-/*
-    $batch_builder->addOperation(
-      [
-        new EarthEventsInfo(),
-        'earthEventsDeleteOrphans',
-      ]
-    );
-*/
+    /*
+        $batch_builder->addOperation(
+          [
+            new EarthEventsInfo(),
+            'earthEventsDeleteOrphans',
+          ]
+        );
+    */
     batch_set($batch_builder->toArray());
     EarthEventsInfo::earthEventsMakeOrphans();
     return batch_process('/');
@@ -162,6 +154,7 @@ class StanfordEarthEventsController extends ControllerBase {
     $migration = Migration::load($migrationId);
     /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
     $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
+    $migration_plugin->getIdMap()->prepareUpdate();
     $migrateMessage = new MigrateMessage();
     $options = [
       'limit' => 0,
@@ -176,5 +169,4 @@ class StanfordEarthEventsController extends ControllerBase {
     $xy2 = $executable->getBatchContext();
     $xy3 = 1;
   }
-
 }

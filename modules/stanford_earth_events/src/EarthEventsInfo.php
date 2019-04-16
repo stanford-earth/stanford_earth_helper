@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_events;
 
 use Drupal\Core\Database;
+use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate\MigrateMessage;
 use Drupal\stanford_earth_events\EarthEventsLock;
 
@@ -271,6 +272,24 @@ class EarthEventsInfo {
     }
     $xyz = getmypid();
     //print 'make orphans -- user: ' . \Drupal::currentUser()->getAccountName() . ' pid: ' . getmypid() . chr(13). chr(10);\Drupsal
+    // First let's make sure any non-IDLE migrations are reset.
+    $eMigrations = \Drupal::service("config.factory")
+      ->listAll('migrate_plus.migration.earth_events_importer');
+    foreach ($eMigrations as $eMigration) {
+      if (strpos($eMigration, "process") === FALSE) {
+        $migration = Migration::load(substr($eMigration, strpos($eMigration,
+          'earth_events')));
+        /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
+        $migration_plugin = \Drupal::service('plugin.manager.migration')
+          ->createInstance($migration->id(), $migration->toArray());
+        if ($migration_plugin->getStatus() !== $migration_plugin::STATUS_IDLE) {
+          $migration_plugin->setStatus($migration_plugin::STATUS_IDLE);
+        }
+      }
+    }
+    // Then set all the records in the Info table to orphaned.
+    // They will be reset one-by-one as the events are updated.
+    // At the end, any still flagged as orphaned will be removed.
     \Drupal::database()
       ->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
       ->fields([
@@ -309,11 +328,37 @@ class EarthEventsInfo {
         EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE orphaned = 1");
     foreach ($result as $record) {
       $orphaned_entities[] = intval($record->entity_id);
+    // Don't delete orphans unless all migrations are idle.
+    $okToProceed = TRUE;
+    $eMigrations = \Drupal::service("config.factory")
+      ->listAll('migrate_plus.migration.earth_events_importer');
+    foreach ($eMigrations as $eMigration) {
+      if (strpos($eMigration, "process") === FALSE) {
+        $migration = Migration::load(substr($eMigration, strpos($eMigration,
+          'earth_events')));
+        /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
+        $migration_plugin = \Drupal::service('plugin.manager.migration')
+          ->createInstance($migration->id(), $migration->toArray());
+        if ($migration_plugin->getStatus() !== $migration_plugin::STATUS_IDLE) {
+          $okToProceed = FALSE;
+          break;
+        }
+      }
     }
-    if (!empty($orphaned_entities)) {
-      $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
-      $entities = $storage_handler->loadMultiple($orphaned_entities);
-      $storage_handler->delete($entities);
+
+    if ($okToProceed) {
+      $orphaned_entities = [];
+      $result = \Drupal::database()
+        ->query("SELECT entity_id FROM {" .
+          EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE orphaned = 1");
+      foreach ($result as $record) {
+        $orphaned_entities[] = intval($record->entity_id);
+      }
+      if (!empty($orphaned_entities)) {
+        $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
+        $entities = $storage_handler->loadMultiple($orphaned_entities);
+        $storage_handler->delete($entities);
+      }
     }
   }
 
