@@ -2,12 +2,8 @@
 
 namespace Drupal\stanford_earth_events;
 
-use Drupal\Core\Database;
 use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate\MigrateMessage;
-use Drupal\stanford_earth_events\EarthEventsLock;
-
-//class StanfordEventsException extends \Drupal\Core\Entity\Exception {}
 
 /**
  * Encapsulates an information table for Earth Events imports.
@@ -256,59 +252,67 @@ class EarthEventsInfo {
    * Mark all future events as orphans, to be reset as updated from feeds.
    */
   public static function earthEventsMakeOrphans() {
+    // We need to access the database.
     $db = \Drupal::database();
+    // Only make orphans if we can first acquire a lock.
     $lock = new EarthEventsLock($db);
-    $test = $lock->getLockId();
     if ($lock->acquire('EarthEventsLock', 900)) {
-      $lockid = $lock->getLockId();
-    }
-    /** @var \Drupal\Core\Tempstore\PrivateTempStore $session */
-    $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
-    $xyz = $session->get('mylockid');
-    if ($xyz !== NULL) {
-      $xy2 = 'found! '.$xyz;
-    } else {
-      $session->set('mylockid', $lockid);
-    }
-    $xyz = getmypid();
-    //print 'make orphans -- user: ' . \Drupal::currentUser()->getAccountName() . ' pid: ' . getmypid() . chr(13). chr(10);\Drupsal
-    // First let's make sure any non-IDLE migrations are reset.
-    $eMigrations = \Drupal::service("config.factory")
-      ->listAll('migrate_plus.migration.earth_events_importer');
-    foreach ($eMigrations as $eMigration) {
-      if (strpos($eMigration, "process") === FALSE) {
-        $migration = Migration::load(substr($eMigration, strpos($eMigration,
-          'earth_events')));
-        /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
-        $migration_plugin = \Drupal::service('plugin.manager.migration')
-          ->createInstance($migration->id(), $migration->toArray());
-        if ($migration_plugin->getStatus() !== $migration_plugin::STATUS_IDLE) {
-          $migration_plugin->setStatus($migration_plugin::STATUS_IDLE);
+      // We have a lock, so store the lock id in our session.
+      /** @var \Drupal\Core\Tempstore\PrivateTempStore $session */
+      $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
+      $session->set('eartheventslockid', $lock->getLockId());
+
+      // Now let's make sure any non-IDLE migrations are reset.
+      $eMigrations = \Drupal::service("config.factory")
+        ->listAll('migrate_plus.migration.earth_events_importer');
+      foreach ($eMigrations as $eMigration) {
+        // Ignore this preprocess migration.
+        if (strpos($eMigration, "preprocess") === FALSE) {
+          $migration = Migration::load(substr($eMigration, strpos($eMigration,
+            'earth_events')));
+          /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
+          $migration_plugin = \Drupal::service('plugin.manager.migration')
+            ->createInstance($migration->id(), $migration->toArray());
+          if ($migration_plugin->getStatus() !== $migration_plugin::STATUS_IDLE) {
+            $migration_plugin->setStatus($migration_plugin::STATUS_IDLE);
+          }
         }
       }
+
+      // Then set the records for future events in the Info table to orphaned.
+      // They will be reset one-by-one as the events are updated.
+      // At the end, any still flagged as orphaned will be removed.
+      $db->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
+        ->fields([
+          'orphaned' => 1,
+        ])
+        ->condition('starttime', REQUEST_TIME, '>')
+        ->execute();
     }
-    // Then set all the records in the Info table to orphaned.
-    // They will be reset one-by-one as the events are updated.
-    // At the end, any still flagged as orphaned will be removed.
-    \Drupal::database()
-      ->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
-      ->fields([
-        'orphaned' => 1,
-      ])
-      ->condition('starttime', REQUEST_TIME, '>')
-      ->execute();
-    //throw new \Exception("Test failure while making orphans");
+    // we will release the lock after deleting orphans.
   }
 
   /**
    * Deletes records from the Event Info table marked as orphans.
    *
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public static function earthEventsDeleteOrphans() {
+    // We need to access the database.
+    $db = \Drupal::database();
+    // See if we have a lock by looking for a lockid stored in our session.
+    /** @var \Drupal\Core\TempStore\PrivateTempStore $session */
     $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
+    $mylockid = $session->get('eartheventslockid');
+    if (!empty($mylockid)) {
+      // See if there is a lock in the semaphore table that matches our id
+      $lock = new EarthEventsLock($db);
+      $actual = $lock->getExistingLockId('EarthEventsLock');
+      // if they match, check that the lock hasn't timed out.
+      if (!empty($actual) && $actual === $mylockid) {
+
+      }
+
+    }
     $xyz = $session->get('mylockid');
     if ($xyz !== NULL) {
       /** @var \Drupal\Core\Lock\DatabaseLockBackend $lock */
@@ -326,8 +330,9 @@ class EarthEventsInfo {
     $result = \Drupal::database()
       ->query("SELECT entity_id FROM {" .
         EarthEventsInfo::EARTH_EVENTS_INFO_TABLE . "} WHERE orphaned = 1");
-    foreach ($result as $record) {
-      $orphaned_entities[] = intval($record->entity_id);
+    //foreach ($result as $record) {
+    //  $orphaned_entities[] = intval($record->entity_id);
+
     // Don't delete orphans unless all migrations are idle.
     $okToProceed = TRUE;
     $eMigrations = \Drupal::service("config.factory")

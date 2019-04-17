@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_events;
 
 use Drupal\Core\Database\Connection;
+use Drupal\Core\Lock\DatabaseLockBackend;
 
 /**
  * Defines the persistent database lock backend for Events.
@@ -25,5 +26,19 @@ class EarthEventsLock extends DatabaseLockBackend {
     $this->database = $database;
   }
 
+  public function getExistingLockId($name) {
+    try {
+      $lock = $this->database->query('SELECT value FROM {semaphore} WHERE name = :name', [':name' => $name])->fetchAssoc();
+      $lockId = $lock['value'];
+    }
+    catch (\Exception $e) {
+      $lockId = FALSE;
+    }
+    return $lockId;
+  }
+
+  public function isLockExpired($name) {
+    try {}
+  }
 }
 
