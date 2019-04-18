@@ -98,7 +98,6 @@ class StanfordEarthEventsController extends ControllerBase {
       ->listAll('migrate_plus.migration.earth_events_importer');
 
     $batch_builder = new BatchBuilder();
-    //$batch_builder->setTitle($this->t('Import Events'));
     $batch_builder->setFinishCallback(
       [
         new EarthEventsInfo(),
@@ -143,4 +142,5 @@ class StanfordEarthEventsController extends ControllerBase {
     $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
     $executable->batchImport();
   }
+
 }

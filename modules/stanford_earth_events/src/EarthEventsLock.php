@@ -7,6 +7,7 @@ use Drupal\Core\Lock\DatabaseLockBackend;
 
 /**
  * Defines the persistent database lock backend for Events.
+ *
  * This backend differs from core PersistentDatabaseLockBackend in that
  * it does not preset the lockid to "persistent".
  *
@@ -26,18 +27,25 @@ class EarthEventsLock extends DatabaseLockBackend {
     $this->database = $database;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function getExistingLockId($name) {
     $this->normalizeName($name);
     try {
       $lock = $this->database->query('SELECT value FROM {semaphore} WHERE name = :name', [':name' => $name])
         ->fetchAssoc();
       $lockId = $lock['value'];
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $lockId = FALSE;
     }
     return $lockId;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   public function valid($name) {
     $this->normalizeName($name);
     $valid = TRUE;
@@ -49,9 +57,11 @@ class EarthEventsLock extends DatabaseLockBackend {
       if ($now > $expire) {
         $valid = FALSE;
       }
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $valid = FALSE;
     }
+
     return $valid;
   }
 

@@ -290,12 +290,11 @@ class EarthEventsInfo {
         ->condition('starttime', REQUEST_TIME, '>')
         ->execute();
     }
-    // we will release the lock after deleting orphans.
+    // We will release the lock after deleting orphans.
   }
 
   /**
    * Deletes records from the Event Info table marked as orphans.
-   *
    */
   public static function earthEventsDeleteOrphans() {
     // We need to access the database.
@@ -305,10 +304,10 @@ class EarthEventsInfo {
     $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
     $mylockid = $session->get('eartheventslockid');
     if (!empty($mylockid)) {
-      // See if there is a lock in the semaphore table that matches our id
+      // See if there is a lock in the semaphore table that matches our id.
       $lock = new EarthEventsLock($db);
       $actual = $lock->getExistingLockId('EarthEventsLock');
-      // if they match, check that the lock hasn't timed out.
+      // If they match, check that the lock hasn't timed out.
       if (!empty($actual) && $actual === $mylockid &&
         $lock->valid('EarthEventsLock')) {
 

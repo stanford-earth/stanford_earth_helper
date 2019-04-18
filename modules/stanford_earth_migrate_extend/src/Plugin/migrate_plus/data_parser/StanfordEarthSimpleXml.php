@@ -39,16 +39,17 @@ class StanfordEarthSimpleXml extends SimpleXml {
     // feed content and kill a lock if we have it to cancel orphan deletion.
     try {
       $xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
-    } catch(MigrateException $migrateException) {
+    }
+    catch (MigrateException $migrateException) {
       // See if we have a lock by looking for a lockid stored in our session.
       /** @var \Drupal\Core\TempStore\PrivateTempStore $session */
       $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
       $mylockid = $session->get('eartheventslockid');
       if (!empty($mylockid)) {
-        // See if there is a lock in the semaphore table that matches our id
+        // See if there is a lock in the semaphore table that matches our id.
         $lock = new EarthEventsLock(\Drupal::database());
         $actual = $lock->getExistingLockId('EarthEventsLock');
-        // if they match, release it.
+        // If they match, release the lock.
         if (!empty($actual) && $actual === $mylockid) {
           $lock->releaseEventLock('EarthEventsInfo', $mylockid);
           $session->delete('eartheventslockid');
