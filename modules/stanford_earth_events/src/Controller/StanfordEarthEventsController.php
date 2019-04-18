@@ -98,8 +98,7 @@ class StanfordEarthEventsController extends ControllerBase {
       ->listAll('migrate_plus.migration.earth_events_importer');
 
     $batch_builder = new BatchBuilder();
-    $batch_builder->setTitle($this->t('Import Events'));
-    //$batch_builder->setProgressive(TRUE);
+    //$batch_builder->setTitle($this->t('Import Events'));
     $batch_builder->setFinishCallback(
       [
         new EarthEventsInfo(),
@@ -108,18 +107,6 @@ class StanfordEarthEventsController extends ControllerBase {
     );
     foreach ($eMigrations as $eMigration) {
       if (strpos($eMigration, "process") === FALSE) {
-        //$migrationId = substr($eMigration, strpos($eMigration, 'earth_events_importer'));
-        /*
-                $migration_plugin->getIdMap()->prepareUpdate();
-                $context = [
-                  'sandbox' => [
-                    'total' => 200,
-                    'counter' => 0,
-                    'batch_limit' => 200,
-                    'operation' => 1,
-                  ],
-                ];
-        */
         $batch_builder->addOperation(
           [
             $this,
@@ -131,14 +118,6 @@ class StanfordEarthEventsController extends ControllerBase {
         );
       }
     }
-    /*
-        $batch_builder->addOperation(
-          [
-            new EarthEventsInfo(),
-            'earthEventsDeleteOrphans',
-          ]
-        );
-    */
     batch_set($batch_builder->toArray());
     EarthEventsInfo::earthEventsMakeOrphans();
     return batch_process('/');
@@ -163,10 +142,5 @@ class StanfordEarthEventsController extends ControllerBase {
     ];
     $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
     $executable->batchImport();
-    $xy5 = $migration_plugin->getStatus();
-    $xy4 = $migration_plugin->getStatusLabel();
-    $xyz = $executable->checkStatus();
-    $xy2 = $executable->getBatchContext();
-    $xy3 = 1;
   }
 }

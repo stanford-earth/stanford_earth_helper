@@ -28,7 +28,18 @@ class NullEventDestination extends DestinationBase {
    * {@inheritdoc}
    */
   public function getIds() {
-    return [];
+    return
+      ['nid' =>
+        [
+          'type' => "integer",
+          'unsigned' => true,
+          'size' => "normal",
+          'min' => "",
+          'max' => "",
+          'prefix' => "",
+          'suffix' => "",
+        ],
+      ];
   }
 
   /**
@@ -42,14 +53,34 @@ class NullEventDestination extends DestinationBase {
    * {@inheritdoc}
    */
   public function import(Row $row, array $old_destination_id_values = []) {
-    return TRUE;
+    return [1];
   }
 
   /**
    * {@inheritdoc}
    */
   public function saveIdMapping(Row $row, array $destination_id_values, $source_row_status = MigrateIdMapInterface::STATUS_IMPORTED, $rollback_action = MigrateIdMapInterface::ROLLBACK_DELETE) {
-    // Do nothing.
+    $xyz = 1;
+  }
+  /**
+   * {@inheritdoc}
+   */
+  public function processedCount() {
+    return 1;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function importedCount() {
+    return 1;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function updateCount() {
+    return 1;
   }
 
 }

@@ -27,18 +27,50 @@ class EarthEventsLock extends DatabaseLockBackend {
   }
 
   public function getExistingLockId($name) {
+    $this->normalizeName($name);
     try {
-      $lock = $this->database->query('SELECT value FROM {semaphore} WHERE name = :name', [':name' => $name])->fetchAssoc();
+      $lock = $this->database->query('SELECT value FROM {semaphore} WHERE name = :name', [':name' => $name])
+        ->fetchAssoc();
       $lockId = $lock['value'];
-    }
-    catch (\Exception $e) {
+    } catch (\Exception $e) {
       $lockId = FALSE;
     }
     return $lockId;
   }
 
-  public function isLockExpired($name) {
-    try {}
+  public function valid($name) {
+    $this->normalizeName($name);
+    $valid = TRUE;
+    try {
+      $lock = $this->database->query('SELECT expire FROM {semaphore} WHERE name = :name', [':name' => $name])
+        ->fetchAssoc();
+      $expire = (float) $lock['expire'];
+      $now = microtime(TRUE);
+      if ($now > $expire) {
+        $valid = FALSE;
+      }
+    } catch (\Exception $e) {
+      $valid = FALSE;
+    }
+    return $valid;
   }
-}
 
+  /**
+   * {@inheritdoc}
+   */
+  public function releaseEventLock($name, $lockid) {
+    $name = $this->normalizeName($name);
+
+    unset($this->locks[$name]);
+    try {
+      $this->database->delete('semaphore')
+        ->condition('name', $name)
+        ->condition('value', $lockid)
+        ->execute();
+    }
+    catch (\Exception $e) {
+      $this->catchException($e);
+    }
+  }
+
+}

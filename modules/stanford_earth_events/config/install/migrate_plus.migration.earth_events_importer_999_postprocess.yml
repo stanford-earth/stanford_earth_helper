@@ -7,7 +7,7 @@ field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
 migration_group: earth_events
-label: 'Events importer Preprocess'
+label: 'Events importer Postprocess'
 source:
   plugin: empty
   constants:
