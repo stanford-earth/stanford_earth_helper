@@ -4,7 +4,7 @@ namespace Drupal\stanford_earth_migrate_extend\Plugin\migrate_plus\data_parser;
 
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\SimpleXml;
 use Drupal\migrate\MigrateException;
-use Drupal\stanford_earth_events\EarthEventsLock;
+use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
 
 /**
  * Obtain XML data for migration using the extended SimpleXML API.
@@ -43,22 +43,24 @@ class StanfordEarthSimpleXml extends SimpleXml {
     catch (MigrateException $migrateException) {
       // See if we have a lock by looking for a lockid stored in our session.
       /** @var \Drupal\Core\TempStore\PrivateTempStore $session */
-      $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
-      $mylockid = $session->get('eartheventslockid');
+      $session = \Drupal::service('tempstore.private')
+        ->get(EarthMigrationLock::EARTH_MIGRATION_LOCK_NAME);
+      $mylockid = $session->get(EarthMigrationLock::EARTH_MIGRATION_LOCK_NAME);
       if (!empty($mylockid)) {
         // See if there is a lock in the semaphore table that matches our id.
-        $lock = new EarthEventsLock(\Drupal::database());
-        $actual = $lock->getExistingLockId('EarthEventsLock');
+        $lock = new EarthMigrationLock(\Drupal::database());
+        $actual = $lock->getExistingLockId();
         // If they match, release the lock.
         if (!empty($actual) && $actual === $mylockid) {
-          $lock->releaseEventLock('EarthEventsInfo', $mylockid);
-          $session->delete('eartheventslockid');
+          $lock->releaseEarthMigrationLock($mylockid);
+          $session->delete(EarthMigrationLock::EARTH_MIGRATION_LOCK_NAME);
         }
       }
       // Continue propagating the exception.
       throw new MigrateException($migrateException->getMessage());
     }
     // End code from ksharp.
+
     $xml = simplexml_load_string($xml_data);
 
     // If there were errors return false.

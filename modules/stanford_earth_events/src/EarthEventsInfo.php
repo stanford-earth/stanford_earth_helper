@@ -4,6 +4,7 @@ namespace Drupal\stanford_earth_events;
 
 use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate\MigrateMessage;
+use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
 
 /**
  * Encapsulates an information table for Earth Events imports.
@@ -255,13 +256,12 @@ class EarthEventsInfo {
     // We need to access the database.
     $db = \Drupal::database();
     // Only make orphans if we can first acquire a lock.
-    $lock = new EarthEventsLock($db);
-    if ($lock->acquire('EarthEventsLock', 900)) {
-
+    $lock = new EarthMigrationLock($db);
+    if ($lock->acquireLock(900)) {
       // We have a lock, so store the lock id in our session.
       /** @var \Drupal\Core\Tempstore\PrivateTempStore $session */
-      $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
-      $session->set('eartheventslockid', $lock->getLockId());
+      $session = \Drupal::service('tempstore.private')->get($lock::EARTH_MIGRATION_LOCK_NAME);
+      $session->set($lock::EARTH_MIGRATION_LOCK_NAME, $lock->getLockId());
 
       // Now let's make sure any non-IDLE migrations are reset.
       $eMigrations = \Drupal::service("config.factory")
@@ -299,18 +299,17 @@ class EarthEventsInfo {
   public static function earthEventsDeleteOrphans() {
     // We need to access the database.
     $db = \Drupal::database();
+    // Instantiate the lock object.
+    $lock = new EarthMigrationLock($db);
     // See if we have a lock by looking for a lockid stored in our session.
     /** @var \Drupal\Core\TempStore\PrivateTempStore $session */
-    $session = \Drupal::service('tempstore.private')->get('EarthEventsInfo');
-    $mylockid = $session->get('eartheventslockid');
+    $session = \Drupal::service('tempstore.private')->get($lock::EARTH_MIGRATION_LOCK_NAME);
+    $mylockid = $session->get($lock::EARTH_MIGRATION_LOCK_NAME);
     if (!empty($mylockid)) {
       // See if there is a lock in the semaphore table that matches our id.
-      $lock = new EarthEventsLock($db);
-      $actual = $lock->getExistingLockId('EarthEventsLock');
+      $actual = $lock->getExistingLockId();
       // If they match, check that the lock hasn't timed out.
-      if (!empty($actual) && $actual === $mylockid &&
-        $lock->valid('EarthEventsLock')) {
-
+      if (!empty($actual) && $actual === $mylockid && $lock->valid()) {
         // Delete orphaned event nodes.
         $orphaned_entities = [];
         $result = $db->query("SELECT entity_id FROM {" .
@@ -323,9 +322,8 @@ class EarthEventsInfo {
           $entities = $storage_handler->loadMultiple($orphaned_entities);
           $storage_handler->delete($entities);
         }
-
         // Release the lock.
-        $lock->releaseEventLock('EarthEventsLock', $mylockid);
+        $lock->releaseEarthMigrationLock($mylockid);
       }
 
     }
