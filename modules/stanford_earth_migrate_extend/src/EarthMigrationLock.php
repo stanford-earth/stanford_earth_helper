@@ -20,7 +20,7 @@ class EarthMigrationLock extends DatabaseLockBackend {
   /**
    * Lock name.
    *
-   * @var string $name
+   * @var string
    *   The name of the lock.
    */
   protected $name;
@@ -47,7 +47,8 @@ class EarthMigrationLock extends DatabaseLockBackend {
         'WHERE name = :name', [':name' => $this->name])
         ->fetchAssoc();
       $lockId = $lock['value'];
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $lockId = FALSE;
     }
     return $lockId;
@@ -67,7 +68,8 @@ class EarthMigrationLock extends DatabaseLockBackend {
       if ($now > $expire) {
         $valid = FALSE;
       }
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $valid = FALSE;
     }
     return $valid;
@@ -83,7 +85,8 @@ class EarthMigrationLock extends DatabaseLockBackend {
         ->condition('name', $this->name)
         ->condition('value', $lockid)
         ->execute();
-    } catch (\Exception $e) {
+    }
+    catch (\Exception $e) {
       $this->catchException($e);
     }
   }
@@ -94,5 +97,5 @@ class EarthMigrationLock extends DatabaseLockBackend {
   public function acquireLock($timeout = 30.0) {
     return parent::acquire(self::EARTH_MIGRATION_LOCK_NAME, $timeout);
   }
-}
 
+}

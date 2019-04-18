@@ -60,7 +60,7 @@ class StanfordEarthSimpleXml extends SimpleXml {
       throw new MigrateException($migrateException->getMessage());
     }
     // End code from ksharp.
-
+    //
     $xml = simplexml_load_string($xml_data);
 
     // If there were errors return false.
