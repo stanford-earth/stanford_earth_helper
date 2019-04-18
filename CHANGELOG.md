@@ -1,6 +1,6 @@
 # Stanford Earth Helper
 
-8.x-1.0-alpha26
+8.x-1.0-alpha27
 --------------------------------------------------------------------------------
 _Release Date: 2019-04-18
 
@@ -9,6 +9,10 @@ _Fixes up management of pre and post process orphan cleanup.
 _Implements a EarthMigrationLock class so only one session at a time kills orphans.
 _Wait, that didn't sound right. Deletes orphan events, I should say.
 _Ensure duplicate events don't get imported, especially after adding/removing feeds.
+
+8.x-1.0-alpha26
+-------------------------------------------------------------------------------
+¯\_(ツ)_/¯
 
 8.x-1.0-alpha25
 --------------------------------------------------------------------------------
