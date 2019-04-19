@@ -29,16 +29,11 @@ class StanfordEarthSimpleXml extends SimpleXml {
    * {@inheritdoc}
    */
   protected function openSourceUrl($url) {
-    // Clear XML error buffer. Other Drupal code that executed during the
-    // migration may have polluted the error buffer and could create false
-    // positives in our error check below. We are only concerned with errors
-    // that occur from attempting to load the XML string into an object here.
-    libxml_clear_errors();
-
-    // Code from ksharp starts here. Intercept a MigrateException from getting
-    // feed content and kill a lock if we have it to cancel orphan deletion.
+    // Intercept a MigrateException from the parent getting feed content
+    // and kill a lock if we have it to cancel orphan deletion.
     try {
-      $xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
+      parent::openSourceUrl($url);
+      //$xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
     }
     catch (MigrateException $migrateException) {
       // See if we have a lock by looking for a lockid stored in our session.
@@ -59,21 +54,6 @@ class StanfordEarthSimpleXml extends SimpleXml {
       // Continue propagating the exception.
       throw new MigrateException($migrateException->getMessage());
     }
-    // End code from ksharp.
-    //
-    $xml = simplexml_load_string($xml_data);
-
-    // If there were errors return false.
-    $errors = libxml_get_errors();
-    if ($errors) {
-      return FALSE;
-    }
-
-    $this->registerNamespaces($xml);
-    $xpath = $this->configuration['item_selector'];
-    $this->matches = $xml->xpath($xpath);
-
-    // Everything went well.
     return TRUE;
   }
 
