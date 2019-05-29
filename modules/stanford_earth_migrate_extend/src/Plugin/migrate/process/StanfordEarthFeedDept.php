@@ -54,7 +54,7 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
         break;
       }
     }
-    return $department;
+    return [$department];
   }
 
 }
