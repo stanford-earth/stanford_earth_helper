@@ -46,6 +46,24 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
 
     set_time_limit(30);
 
+    // Change incoming links without a scheme as being external.
+    $links = $row->getSourceProperty('links');
+    if (!empty($links) && is_array($links)) {
+      $newlinks = FALSE;
+      foreach ($links as $key => $link) {
+        if (is_array($link) && !empty($link['url'])) {
+          $path = ltrim($link['url'], '/');
+          if (parse_url($path, PHP_URL_SCHEME) === NULL) {
+            $links[$key]['url'] = 'https://' . $path;
+            $newlinks = TRUE;
+          }
+        }
+      }
+      if ($newlinks) {
+        $row->setSourceProperty('links', $links);
+      }
+    }
+
     $phones = $row->getSourceProperty('phone');
     $newphones = [];
     if (!empty($phones) && is_array($phones)) {

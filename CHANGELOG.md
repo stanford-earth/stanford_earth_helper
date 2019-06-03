@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha28
+--------------------------------------------------------------------------------
+_Release Date: 2019-06-03
+
+_Fix bug in links from Stanford Profiles (CAP) API missing URL Scheme.
+
 8.x-1.0-alpha27
 --------------------------------------------------------------------------------
 _Release Date: 2019-04-18
