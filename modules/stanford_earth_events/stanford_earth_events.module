@@ -83,20 +83,14 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
         // image_url (field_s_event_image) to the url of the current image.
         if (empty($row->getSourceProperty('field_s_event_image')) &&
           !empty($eventNode->get('field_s_event_media')->getValue())) {
-          $mids = $eventNode->get('field_s_event_media')->getValue();
-          foreach ($mids as $mid) {
-            if (!empty($mid['target_id'])) {
-              $mediaEntity = \Drupal::getContainer()->get('entity.manager')
-                ->getStorage('media')->load($mid['target_id']);
-              if (!empty($mediaEntity->get('field_media_image')->getValue())) {
-                $fids = $mediaEntity->get('field_media_image')->getValue();
-                foreach ($fids as $fid) {
-                  $file = File::load($fid['target_id']);
-                  $uri = $file->getFileUri();
-                  //$url = Url::fromUri(file_create_url($uri))->toString();
-                  $row->setSourceProperty('field_s_event_image',$uri);
-                }
-              }
+          $mid = $eventNode->get('field_s_event_media')->get(0);
+          if (!empty($mid['target_id'])) {
+            $mediaEntity = \Drupal::getContainer()->get('entity.manager')
+              ->getStorage('media')->load($mid['target_id']);
+            if (!empty($mediaEntity->get('field_media_image')->getValue())) {
+              $fid = $mediaEntity->get('field_media_image')->get(0);
+              $row->setSourceProperty('field_s_event_image',
+                File::load($fid['target_id'])->getFileUri());
             }
           }
         }
