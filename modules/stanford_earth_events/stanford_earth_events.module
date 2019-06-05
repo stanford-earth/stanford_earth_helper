@@ -83,14 +83,18 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
         // image_url (field_s_event_image) to the url of the current image.
         if (empty($row->getSourceProperty('field_s_event_image')) &&
           !empty($eventNode->get('field_s_event_media')->getValue())) {
-          $mid = $eventNode->get('field_s_event_media')->get(0);
-          if (!empty($mid['target_id'])) {
+          $mids = $eventNode->get('field_s_event_media')->getValue();
+          $mid = reset($mids);
+          if ($mid !== FALSE && !empty($mid['target_id'])) {
             $mediaEntity = \Drupal::getContainer()->get('entity.manager')
               ->getStorage('media')->load($mid['target_id']);
-            if (!empty($mediaEntity->get('field_media_image')->getValue())) {
-              $fid = $mediaEntity->get('field_media_image')->get(0);
-              $row->setSourceProperty('field_s_event_image',
-                File::load($fid['target_id'])->getFileUri());
+            $fids = $mediaEntity->get('field_media_image')->getValue();
+            if (!empty($fids)) {
+              $fid = reset($fids);
+              if ($fid !== FALSE && !empty($fid['target_id'])) {
+                $row->setSourceProperty('field_s_event_image',
+                  File::load($fid['target_id'])->getFileUri());
+              }
             }
           }
         }
