@@ -82,3 +82,13 @@ function stanford_earth_capx_update_8102() {
   // Code removed to a temporary routed function so it won't get run
   // accidentally here more than once.
 }
+
+/**
+ * Fix links without http or https scheme from CAP API.
+ */
+function stanford_earth_capx_update_8103() {
+  $db = Database::getConnection();
+  $db->query("UPDATE {user__field_s_person_links} SET " .
+    "field_s_person_links_uri = CONCAT('http://' , field_s_person_links_uri) " .
+    "WHERE field_s_person_links_uri NOT LIKE 'http%'")->execute();
+}
