@@ -5,6 +5,7 @@ namespace Drupal\stanford_earth_migrate_extend\Plugin\migrate\process;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
+use Drupal\node\Entity\Node;
 
 /**
  * Looks up the Department or Program that goes with the events feed URL.
@@ -54,7 +55,35 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
         break;
       }
     }
-    return [$department];
+
+    $departments = [];
+    if (!empty($department)) {
+      $departments[] = $department;
+    }
+
+    // If an event is imported from more than one feed (via bookmarking)
+    // we want to make sure we maintain all Department tags put in place.
+    $nid = $row->getSourceProperty('nid');
+    if (!empty($nid)) {
+      $existing = Node::load($nid);
+      if (!empty($existing)) {
+        $depts = $existing->get('field_s_event_department')->getValue();
+        foreach ($depts as $dept) {
+          if (!empty($dept['target_id'])) {
+            $deptTerm = \Drupal::getContainer()->get('entity.manager')
+              ->getStorage('taxonomy_term')->load($dept['target_id']);
+            if (!empty($deptTerm)) {
+              $deptTermName = $deptTerm->getName();
+              if (!empty($deptTermName) &&
+                !in_array($deptTermName, $departments)) {
+                $departments[] = $deptTermName;
+              }
+            }
+          }
+        }
+      }
+    }
+    return $departments;
   }
 
 }
