@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha29
+--------------------------------------------------------------------------------
+_Release Date: 2019-06-05
+
+_Fix events import problem for events with no images in feed.
+_Add update hook for profile imports to fix cap profile links with no scheme.
+
 8.x-1.0-alpha28
 --------------------------------------------------------------------------------
 _Release Date: 2019-06-03
