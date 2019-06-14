@@ -10,6 +10,8 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\user\Entity\User;
+use Drupal\media\Entity\Media;
 
 /**
  * Redirect from earth to pangea controller.
@@ -114,6 +116,24 @@ class StanfordEarthCapxController extends ControllerBase {
     }
     batch_set($batch_builder->toArray());
     return batch_process('/');
+  }
+
+  public function cleanupMedia() {
+    $uids = \Drupal::entityQuery('user')
+      ->condition('field_s_person_media.target_id', 0, '>')
+      ->execute();
+    foreach ($uids as $uid => $uid_str) {
+      $account = User::load($uid);
+      $mid = $account->field_s_person_media->target_id;
+      $media = Media::load($mid);
+      $imageid = $media->field_media_image->target_id;
+      $title = $media->field_media_image->title;
+      $xyz = 1;
+    }
+    return [
+      '#type' => 'markup',
+      '#markup' => $this->t('Hello, World!'),
+    ];
   }
 
 }
