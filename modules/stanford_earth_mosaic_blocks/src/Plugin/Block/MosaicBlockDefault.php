@@ -37,7 +37,7 @@ class MosaicBlockDefault extends BlockBase {
             'image' => [
               '#alt' => $this->t('A collection of happy students'),
               '#theme' => 'image',
-              '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/studentmain.png',
+              '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/studentmain.jpg',
             ],
             'is_right' => TRUE,
             'quote' => $this->t('We face enormous hurdles as a society in dealing with a changing climate, over extraction of resources, and biodiversity loss. Still, I remain optimistic about our ability to identify and design solutions.'),
@@ -46,7 +46,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A smiling woman wearing a lab coat.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student1.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student1.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -54,7 +54,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A smiling blonde woman.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student2.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student2.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -62,7 +62,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A couple of students out in examining plant leaves.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student3.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student3.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -70,7 +70,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A dark haired woman with a camera in a bamboo forest.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student4.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student4.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -87,7 +87,7 @@ class MosaicBlockDefault extends BlockBase {
             'image' => [
               '#alt' => $this->t('A group of clapping graduating students wearing gowns and caps.'),
               '#theme' => 'image',
-              '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/facmain.png',
+              '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/facmain.jpg',
             ],
             'is_right' => FALSE,
             'quote' => $this->t('I\'m fascinated by the way our world works. I use technology to make visible what is not visible to the naked eye.'),
@@ -96,7 +96,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A side profile headshot of a dark haired man.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac1.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac1.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -104,7 +104,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A smiling man with glasses.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac2.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac2.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -112,7 +112,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A smiling blonde woman at a chalkboard.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac3.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac3.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -120,7 +120,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('A smiling lady.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac4.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac4.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -135,7 +135,7 @@ class MosaicBlockDefault extends BlockBase {
             'image' => [
               '#alt' => $this->t('A group of happy students at a table.'),
               '#theme' => 'image',
-              '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alummain.png',
+              '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alummain.jpg',
             ],
             'is_right' => FALSE,
             'items' => [
@@ -143,7 +143,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('Smiling woman wearing pink dress.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum1.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum1.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -151,7 +151,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('Couple hugging and looking through glass at the aquarium.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum2.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum2.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -159,7 +159,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('Smiling man with plant.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum3.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum3.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
@@ -167,7 +167,7 @@ class MosaicBlockDefault extends BlockBase {
                 'image' => [
                   '#alt' => $this->t('Smiling man in a pink collard shirt.'),
                   '#theme' => 'image',
-                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum4.png',
+                  '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum4.jpg',
                 ],
                 // 'link' => 'https://www.stanford.edu',
               ],
