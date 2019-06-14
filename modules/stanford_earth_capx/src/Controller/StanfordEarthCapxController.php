@@ -119,15 +119,76 @@ class StanfordEarthCapxController extends ControllerBase {
   }
 
   public function cleanupMedia() {
+
+    // create table if necessary
+    $db = Database::getConnection();
+    $schema = $db->schema();
+    if ($schema->tableExists('{migrate_info_earth_capx_media}')) {
+      $db->query('delete from {migrate_info_earth_capx_media}');
+    } else {
+      $schema->createTable('migrate_info_earth_capx_media',
+        [
+          'description' => "Stanford Profiles Media Information",
+          'fields' => [
+            'uid' => [
+              'type' => 'int',
+              'not null' => TRUE,
+              'description' => "uid of account",
+            ],
+            'sunetid' => [
+              'type' => 'varchar',
+              'length' => 8,
+              'not null' => FALSE,
+              'description' => "account name",
+            ],
+            'mid' => [
+              'type' => 'int',
+              'not null' => FALSE,
+              'description' => "media entity id",
+            ],
+            'mid_fid' => [
+              'type' => 'int',
+              'not null' => FALSE,
+              'description' => "Image file id associated with mid",
+            ],
+            'mid_title' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => FALSE,
+              'description' => "Title of media image file",
+            ],
+            'image_fid' => [
+              'type' => 'int',
+              'not null' => FALSE,
+              'description' => "Image file id not associated with mid",
+            ],
+            'image_title' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => FALSE,
+              'description' => "Title of image file",
+            ],
+          ],
+          'primary key' => ['uid'],
+        ]
+      );
+    }
+
     $uids = \Drupal::entityQuery('user')
       ->condition('field_s_person_media.target_id', 0, '>')
       ->execute();
+    //$uids = \Drupal::entityQuery('user')
+    //  ->condition('field_s_person_image.target_id', 0, '>')
+    //->execute();
     foreach ($uids as $uid => $uid_str) {
       $account = User::load($uid);
-      $mid = $account->field_s_person_media->target_id;
-      $media = Media::load($mid);
-      $imageid = $media->field_media_image->target_id;
-      $title = $media->field_media_image->title;
+      //$mid = $account->field_s_person_media->target_id;
+      //$media = Media::load($mid);
+      //$media_image_fid = $media->field_media_image->target_id;
+      //$media_image_title = $media->field_media_image->title;
+      $name = $account->getUsername();
+      $image_fid = $account->field_s_person_image->target_id;
+      $image_title = $account->field_s_person_image->title;
       $xyz = 1;
     }
     return [
