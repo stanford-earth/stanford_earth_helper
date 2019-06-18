@@ -126,7 +126,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     $sunetid = $row->getSourceProperty('sunetid');
     $info = new EarthCapxInfo($sunetid);
     $photo_id = 0;
-    $photo_field = $row->getDestinationProperty('field_s_person_image');
+    $photo_field = $row->getDestinationProperty('image_file');
     if (!empty($photo_field['target_id'])) {
       $photo_id = $photo_field['target_id'];
     }
@@ -178,7 +178,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
 
     // Get the fid of the profile photo.
     $photoId = 0;
-    $dest_values = $row->getDestinationProperty('field_s_person_image');
+    $dest_values = $row->getDestinationProperty('image_file');
     if (!empty($dest_values['target_id'])) {
       $photoId = intval($dest_values['target_id']);
     }

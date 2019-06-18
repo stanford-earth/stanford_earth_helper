@@ -256,7 +256,7 @@ class StanfordEarthCapxController extends ControllerBase {
           $files = \Drupal::database()->query("select fid, uri " .
             "FROM file_managed WHERE origname = :origname",
             [':origname' => $origname]);
-          foreach ($files as $key => $foundfile) {
+          foreach ($files as $foundfile) {
             $file = File::load($foundfile->fid);
             if ($foundfile->uri !== $uri) {
               $file->delete();
@@ -267,31 +267,21 @@ class StanfordEarthCapxController extends ControllerBase {
     }
 
     // delete files not in use by any accounts
+    $q1 = "SELECT DISTINCT origname FROM file_managed WHERE fid NOT IN " .
+      "(SELECT fid FROM file_usage WHERE type = 'user') AND " .
+      " uri LIKE '%stanford_person%'";
 
-    // get current list of users from workgroups
-    // delete their images, leaving the ones that are no longer
-    // in workgroups (otherwise their images disappear forever)
-
-
-    /*
-    $uids = \Drupal::entityQuery('user')
-      ->condition('field_s_person_media.target_id', 0, '>')
-      ->execute();
-    //$uids = \Drupal::entityQuery('user')
-    //  ->condition('field_s_person_image.target_id', 0, '>')
-    //->execute();
-    foreach ($uids as $uid => $uid_str) {
-      $account = User::load($uid);
-      //$mid = $account->field_s_person_media->target_id;
-      //$media = Media::load($mid);
-      //$media_image_fid = $media->field_media_image->target_id;
-      //$media_image_title = $media->field_media_image->title;
-      $name = $account->getUsername();
-      $image_fid = $account->field_s_person_image->target_id;
-      $image_title = $account->field_s_person_image->title;
-      $xyz = 1;
+    $orignames = \Drupal::database()->query($q1);
+    foreach ($orignames as $origname) {
+      $q2 = "SELECT fid FROM file_managed WHERE uri NOT LIKE " .
+        "'%" . $origname->origname . "' and origname = '" .
+        $origname->origname . "'";
+      $files = \Drupal::database()->query($q2);
+      foreach ($files as $foundfile) {
+        $file = File::load($foundfile->fid);
+        $file->delete();
+      }
     }
-    */
 
     return [
       '#type' => 'markup',
