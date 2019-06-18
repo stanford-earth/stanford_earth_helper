@@ -12,6 +12,7 @@ use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\user\Entity\User;
 use Drupal\media\Entity\Media;
+use Drupal\file\Entity\File;
 
 /**
  * Redirect from earth to pangea controller.
@@ -174,7 +175,26 @@ class StanfordEarthCapxController extends ControllerBase {
       );
     }
 
-    $q1 = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
+    // find all media entities and image files
+    $q = [];
+    $q[] = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
+      "f.field_media_image_target_id, x.origname, x.uri " .
+      "FROM users_field_data u, user__field_s_person_media m, " .
+      "media__field_media_image f, file_managed x WHERE u.uid = m.entity_id " .
+      "AND m.field_s_person_media_target_id = f.entity_id AND " .
+      "f.field_media_image_target_id = x.fid AND u.uid NOT IN " .
+      "(SELECT DISTINCT entity_id FROM user__field_s_person_image " .
+      "WHERE bundle = 'user')";
+
+    $q[] = "SELECT u.uid, u.name, i.field_s_person_image_target_id, " .
+      "x.origname, x.uri FROM users_field_data u, " .
+      "user__field_s_person_image i, file_managed x " .
+      "WHERE u.uid = i.entity_id AND " .
+      "i.field_s_person_image_target_id = x.fid AND u.uid NOT IN " .
+      "(SELECT distinct entity_id from user__field_s_person_media where " .
+      "bundle = 'user')";
+
+    $q[] = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
       "f.field_media_image_target_id, x.origname, x.uri, " .
       "i.field_s_person_image_target_id FROM users_field_data u, " .
       "user__field_s_person_media m, media__field_media_image f, " .
@@ -183,65 +203,75 @@ class StanfordEarthCapxController extends ControllerBase {
       "f.field_media_image_target_id = x.fid AND u.uid = i.entity_id AND " .
       "i.field_s_person_image_target_id = f.field_media_image_target_id";
 
-    /*
-     *
-     * select u.uid, u.name, m.field_s_person_media_target_id, f.field_media_image_target_id, x.origname, x.uri from users_field_data u, user__field_s_person_media m, media__field_media_image f, file_managed x where u.uid = m.entity_id and m.field_s_person_media_target_id = f.entity_id and f.field_media_image_target_id = x.fid and u.uid not in (select distinct entity_id from user__field_s_person_image where bundle = 'user');
-*
-*    select u.uid, u.name, i.field_s_person_image_target_id, x.origname, x.uri from users_field_data u, user__field_s_person_image i, file_managed x where u.uid = i.entity_id and i.field_s_person_image_target_id = x.fid and u.uid not in (select distinct entity_id from user__field_s_person_media where bundle = 'user');
-*
-     */
-    $image_recs = \Drupal::database()->query($q1);
-    foreach ($image_recs as $key => $image_rec) {
-      $uid = 0;
-      $sunetid = "";
-      $mid = 0;
-      $mid_fid = 0;
-      $origname = "";
-      $uri = "";
-      $image_fid = 0;
-      if (!empty($image_rec->uid)) $uid = $image_rec->uid;
-      if (!empty($image_rec->name)) $sunetid = $image_rec->name;
-      if (!empty($image_rec->field_s_person_media_target_id)) {
-        $mid = $image_rec->field_s_person_media_target_id;
-      }
-      if (!empty($image_rec->field_media_image_target_id)) {
-        $mid_fid = $image_rec->field_media_image_target_id;
-      }
-      if (!empty($image_rec->origname)) {
-        $origname = $image_rec->origname;
-      }
-      if (!empty($image_rec->uri)) {
-        $uri = $image_rec->uri;
-      }
-      if (!empty($image_rec->field_s_person_image_target_id)) {
-        $image_fid = $image_rec->field_s_person_image_target_id;
-      }
+    for ($i = 0; $i < count($q); $i++) {
+      $image_recs = \Drupal::database()->query($q[$i]);
+      foreach ($image_recs as $key => $image_rec) {
+        $uid = 0;
+        $sunetid = "";
+        $mid = 0;
+        $mid_fid = 0;
+        $origname = "";
+        $uri = "";
+        $image_fid = 0;
+        if (!empty($image_rec->uid)) {
+          $uid = $image_rec->uid;
+        }
+        if (!empty($image_rec->name)) {
+          $sunetid = $image_rec->name;
+        }
+        if (!empty($image_rec->field_s_person_media_target_id)) {
+          $mid = $image_rec->field_s_person_media_target_id;
+        }
+        if (!empty($image_rec->field_media_image_target_id)) {
+          $mid_fid = $image_rec->field_media_image_target_id;
+        }
+        if (!empty($image_rec->origname)) {
+          $origname = $image_rec->origname;
+        }
+        if (!empty($image_rec->uri)) {
+          $uri = $image_rec->uri;
+        }
+        if (!empty($image_rec->field_s_person_image_target_id)) {
+          $image_fid = $image_rec->field_s_person_image_target_id;
+        }
 
-      try {
-        \Drupal::database()->insert('migrate_info_earth_capx_media')
-          ->fields([
-            'uid' => $uid,
-            'sunetid' => $sunetid,
-            'mid' => $mid,
-            'mid_fid' => $mid_fid,
-            'origname' => $origname,
-            'image_fid' => $image_fid,
-            'uri' => $uri,
-          ])
-          ->execute();
-      }
-      catch (Exception $e) {
-        \Drupal::logger('type')->error($e->getMessage());
-      }
-      if (!empty($origname)) {
-        //$origbase = substr($origname, 0, strpos($origname, ".jpg"));
-        $files = \Drupal::database()->query("select fid, uri FROM file_managed WHERE origname = :origname", [':origname' => $origname]);
-        foreach ($files as $key => $foundfile) {
-          $xyz = $foundfile->uri;
-          $xy2 = 1;
+        try {
+          \Drupal::database()->insert('migrate_info_earth_capx_media')
+            ->fields([
+              'uid' => $uid,
+              'sunetid' => $sunetid,
+              'mid' => $mid,
+              'mid_fid' => $mid_fid,
+              'origname' => $origname,
+              'image_fid' => $image_fid,
+              'uri' => $uri,
+            ])
+            ->execute();
+        } catch (Exception $e) {
+          \Drupal::logger('type')->error($e->getMessage());
+        }
+
+        // delete duplicates
+        if (!empty($origname)) {
+          $files = \Drupal::database()->query("select fid, uri " .
+            "FROM file_managed WHERE origname = :origname",
+            [':origname' => $origname]);
+          foreach ($files as $key => $foundfile) {
+            $file = File::load($foundfile->fid);
+            if ($foundfile->uri !== $uri) {
+              $file->delete();
+            }
+          }
         }
       }
     }
+
+    // delete files not in use by any accounts
+
+    // get current list of users from workgroups
+    // delete their images, leaving the ones that are no longer
+    // in workgroups (otherwise their images disappear forever)
+
 
     /*
     $uids = \Drupal::entityQuery('user')
