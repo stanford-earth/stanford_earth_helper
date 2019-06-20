@@ -4,6 +4,10 @@ namespace Drupal\stanford_earth_capx;
 
 use Drupal\Core\Database;
 use Drupal\migrate\MigrateMessage;
+use Drupal\user\Entity\User;
+use Drupal\media\Entity\Media;
+use Drupal\file\Entity\File;
+
 
 /**
  * Encapsulates an information table for CAP-X Profile imports.
@@ -113,16 +117,21 @@ class EarthCapxInfo {
    *   The source row array from the migration source.
    */
   public function currentProfilePhotoId(array $source = []) {
-    if (empty($source['profile_photo']) || empty($this->profilePhotoFid)
-      || empty($this->profilePhotoTimestamp)) {
+
+    if (empty($this->profilePhotoFid)) {
       return FALSE;
-    }
-    $photo_ts = $this->getPhotoTimestamp($source['profile_photo']);
-    if ($photo_ts == $this->profilePhotoTimestamp) {
-      return $this->profilePhotoFid;
-    }
-    else {
-      return FALSE;
+    } else {
+      if (empty($source['profile_photo']) ||
+          empty($this->profilePhotoTimestamp) ||
+          empty($this->getPhotoTimestamp($source['profile_photo'])) ||
+          $this->profilePhotoTimestamp !==
+          $this->getPhotoTimestamp($source['profile_photo'])) {
+        $file = File::load($this->profilePhotoFid);
+        $file->delete();
+        return FALSE;
+      } else {
+        return $this->profilePhotoFid;
+      }
     }
   }
 
@@ -138,7 +147,7 @@ class EarthCapxInfo {
    *   The photoId from the image url in the profile data.
    * @param string $wg
    *   The name of the workgroup being processed.
-   */
+   **/
   public function getOkayToUpdateProfile(array $source = [],
                                          int $photoId = NULL,
                                          string $wg = NULL) {
@@ -297,6 +306,205 @@ class EarthCapxInfo {
     }
     else {
       return FALSE;
+    }
+  }
+
+  public static function buildProfileMediaTable() {
+
+    $db = \Drupal::database();
+
+    // create table if necessary
+    $schema = $db->schema();
+    if ($schema->tableExists('{migrate_info_earth_capx_media}')) {
+      $db->query('delete from {migrate_info_earth_capx_media}');
+    }
+    else {
+      $schema->createTable('migrate_info_earth_capx_media',
+        [
+          'description' => "Stanford Profiles Media Information",
+          'fields' => [
+            'uid' => [
+              'type' => 'int',
+              'not null' => TRUE,
+              'description' => "uid of account",
+            ],
+            'sunetid' => [
+              'type' => 'varchar',
+              'length' => 8,
+              'not null' => FALSE,
+              'description' => "account name",
+            ],
+            'mid' => [
+              'type' => 'int',
+              'not null' => FALSE,
+              'description' => "media entity id",
+            ],
+            'mid_fid' => [
+              'type' => 'int',
+              'not null' => FALSE,
+              'description' => "Image file id associated with mid",
+            ],
+            'origname' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => FALSE,
+              'description' => "Title of media image file",
+            ],
+            'image_fid' => [
+              'type' => 'int',
+              'not null' => FALSE,
+              'description' => "Image file id not associated with mid",
+            ],
+            'uri' => [
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => FALSE,
+              'description' => "Title of image file",
+            ],
+          ],
+          'primary key' => ['uid'],
+        ]
+      );
+    }
+
+    // find all media entities and image files
+    $q = [];
+    $q[] = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
+      "f.field_media_image_target_id, x.origname, x.uri " .
+      "FROM users_field_data u, user__field_s_person_media m, " .
+      "media__field_media_image f, file_managed x WHERE u.uid = m.entity_id " .
+      "AND m.field_s_person_media_target_id = f.entity_id AND " .
+      "f.field_media_image_target_id = x.fid AND u.uid NOT IN " .
+      "(SELECT DISTINCT entity_id FROM user__field_s_person_image " .
+      "WHERE bundle = 'user')";
+
+    $q[] = "SELECT u.uid, u.name, i.field_s_person_image_target_id, " .
+      "x.origname, x.uri FROM users_field_data u, " .
+      "user__field_s_person_image i, file_managed x " .
+      "WHERE u.uid = i.entity_id AND " .
+      "i.field_s_person_image_target_id = x.fid AND u.uid NOT IN " .
+      "(SELECT distinct entity_id from user__field_s_person_media where " .
+      "bundle = 'user')";
+
+    $q[] = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
+      "f.field_media_image_target_id, x.origname, x.uri, " .
+      "i.field_s_person_image_target_id FROM users_field_data u, " .
+      "user__field_s_person_media m, media__field_media_image f, " .
+      "file_managed x, user__field_s_person_image i WHERE u.uid = " .
+      "m.entity_id AND m.field_s_person_media_target_id = f.entity_id AND " .
+      "f.field_media_image_target_id = x.fid AND u.uid = i.entity_id AND " .
+      "i.field_s_person_image_target_id = f.field_media_image_target_id";
+
+    for ($i = 0; $i < count($q); $i++) {
+      $image_recs = $db->query($q[$i]);
+      foreach ($image_recs as $key => $image_rec) {
+        $uid = 0;
+        $sunetid = "";
+        $mid = 0;
+        $mid_fid = 0;
+        $origname = "";
+        $uri = "";
+        $image_fid = 0;
+        if (!empty($image_rec->uid)) {
+          $uid = $image_rec->uid;
+        }
+        if (!empty($image_rec->name)) {
+          $sunetid = $image_rec->name;
+        }
+        if (!empty($image_rec->field_s_person_media_target_id)) {
+          $mid = $image_rec->field_s_person_media_target_id;
+        }
+        if (!empty($image_rec->field_media_image_target_id)) {
+          $mid_fid = $image_rec->field_media_image_target_id;
+        }
+        if (!empty($image_rec->origname)) {
+          $origname = $image_rec->origname;
+        }
+        if (!empty($image_rec->uri)) {
+          $uri = $image_rec->uri;
+        }
+        if (!empty($image_rec->field_s_person_image_target_id)) {
+          $image_fid = $image_rec->field_s_person_image_target_id;
+        }
+
+        try {
+          $db->insert('migrate_info_earth_capx_media')
+            ->fields([
+              'uid' => $uid,
+              'sunetid' => $sunetid,
+              'mid' => $mid,
+              'mid_fid' => $mid_fid,
+              'origname' => $origname,
+              'image_fid' => $image_fid,
+              'uri' => $uri,
+            ])
+            ->execute();
+        } catch (Exception $e) {
+          \Drupal::logger('type')->error($e->getMessage());
+        }
+      }
+    }
+  }
+
+  public static function deleteDuplicateProfileImages() {
+    $db = \Drupal::database();
+    set_time_limit(0);
+    $fnames = $db->query("SELECT origname, uri from " .
+      "{migrate_info_earth_capx_media}");
+    foreach ($fnames as $fname) {
+      $origname = $fname->origname;
+      $uri = $fname->uri;
+      // delete duplicates
+      if (!empty($origname)) {
+        $files = $db->query("select fid, uri " .
+          "FROM file_managed WHERE origname = :origname",
+          [':origname' => $origname]);
+        foreach ($files as $foundfile) {
+          $file = File::load($foundfile->fid);
+          if ($foundfile->uri !== $uri) {
+            $file->delete();
+          }
+        }
+      }
+    }
+  }
+
+  public static function deleteUnusedProfileImages() {
+    $db = \Drupal::database();
+    set_time_limit(0);
+    // delete files not in use by any accounts
+    $q1 = "SELECT DISTINCT origname FROM file_managed WHERE fid NOT IN " .
+      "(SELECT fid FROM file_usage WHERE type = 'user') AND " .
+      " uri LIKE '%stanford_person%'";
+
+    $orignames = $db->query($q1);
+    foreach ($orignames as $origname) {
+      $q2 = "SELECT fid FROM file_managed WHERE uri NOT LIKE " .
+        "'%" . $origname->origname . "' and origname = '" .
+        $origname->origname . "'";
+      $files = $db->query($q2);
+      foreach ($files as $foundfile) {
+        $file = File::load($foundfile->fid);
+        $file->delete();
+      }
+    }
+  }
+
+  public static function deleteWorkgroupProfileImages($wg) {
+    $wg_service = \Drupal::service('stanford_earth_workgroups.workgroup');
+    $wg_members = $wg_service->getMembers($wg);
+    if ($wg_members['status']['member_count'] > 0) {
+      foreach ($wg_members['members'] as $sunetid => $displayname) {
+        /** @var \Drupal\user\Entity\User $account */
+        $account = user_load_by_name($sunetid);
+        $account->get('field_s_person_image')->setValue(NULL);
+        //$account->get('field_s_person_media')->setValue(NULL);
+        if ($sunetid == 'amyb') {
+          $xyz = 1;
+        }
+        $account->get('field_s_person_media')->applyDefaultValue();
+        $account->save();
+      }
     }
   }
 

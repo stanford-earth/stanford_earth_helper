@@ -9,10 +9,8 @@ use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\stanford_earth_capx\EarthCapxInfo;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\user\Entity\User;
-use Drupal\media\Entity\Media;
-use Drupal\file\Entity\File;
 
 /**
  * Redirect from earth to pangea controller.
@@ -79,10 +77,15 @@ class StanfordEarthCapxController extends ControllerBase {
   public function updateAll($refresh) {
 
     if ($refresh) {
-      $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, workgroup_list=''")->execute();
-      $this->db->query("DELETE FROM {user__field_profile_search_terms}")->execute();
+      $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, profile_photo_id = 0, workgroup_list=''")->execute();
+      //$this->db->query("DELETE FROM {user__field_profile_search_terms}")->execute();
     }
 
+    return [
+      '#type' => 'markup',
+      '#markup' => $this->t('Run using drush migrate:import.'),
+    ];
+    /*
     $eMigrations = $this->cf
       ->listAll('migrate_plus.migration.earth_capx_import');
 
@@ -117,176 +120,54 @@ class StanfordEarthCapxController extends ControllerBase {
     }
     batch_set($batch_builder->toArray());
     return batch_process('/');
+    */
   }
 
   public function cleanupMedia() {
 
-    // create table if necessary
-    $db = \Drupal::database();
-    $schema = $db->schema();
-    if ($schema->tableExists('{migrate_info_earth_capx_media}')) {
-      $db->query('delete from {migrate_info_earth_capx_media}');
-    } else {
-      $schema->createTable('migrate_info_earth_capx_media',
+    $batch_builder = new BatchBuilder();
+    $batch_builder->setTitle('Cleanup duplicate profile images');
+    $batch_builder->addOperation(
+      [
+        new EarthCapxInfo(),
+        'buildProfileMediaTable',
+      ]
+    );
+    $batch_builder->addOperation(
+      [
+        new EarthCapxInfo(),
+        'deleteDuplicateProfileImages'
+      ]
+    );
+    $batch_builder->addOperation(
+      [
+        new EarthCapxInfo(),
+        'deleteUnusedProfileImages'
+      ]
+    );
+    $wgs = $this->config('migrate_plus.migration_group.earth_capx')
+      ->get('workgroups');
+
+    foreach ($wgs as $wg) {
+      $batch_builder->addOperation(
         [
-          'description' => "Stanford Profiles Media Information",
-          'fields' => [
-            'uid' => [
-              'type' => 'int',
-              'not null' => TRUE,
-              'description' => "uid of account",
-            ],
-            'sunetid' => [
-              'type' => 'varchar',
-              'length' => 8,
-              'not null' => FALSE,
-              'description' => "account name",
-            ],
-            'mid' => [
-              'type' => 'int',
-              'not null' => FALSE,
-              'description' => "media entity id",
-            ],
-            'mid_fid' => [
-              'type' => 'int',
-              'not null' => FALSE,
-              'description' => "Image file id associated with mid",
-            ],
-            'origname' => [
-              'type' => 'varchar',
-              'length' => 255,
-              'not null' => FALSE,
-              'description' => "Title of media image file",
-            ],
-            'image_fid' => [
-              'type' => 'int',
-              'not null' => FALSE,
-              'description' => "Image file id not associated with mid",
-            ],
-            'uri' => [
-              'type' => 'varchar',
-              'length' => 255,
-              'not null' => FALSE,
-              'description' => "Title of image file",
-            ],
-          ],
-          'primary key' => ['uid'],
+          new EarthCapxInfo(),
+          'deleteWorkgroupProfileImages'
+        ],
+        [
+          $wg
         ]
       );
     }
-
-    // find all media entities and image files
-    $q = [];
-    $q[] = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
-      "f.field_media_image_target_id, x.origname, x.uri " .
-      "FROM users_field_data u, user__field_s_person_media m, " .
-      "media__field_media_image f, file_managed x WHERE u.uid = m.entity_id " .
-      "AND m.field_s_person_media_target_id = f.entity_id AND " .
-      "f.field_media_image_target_id = x.fid AND u.uid NOT IN " .
-      "(SELECT DISTINCT entity_id FROM user__field_s_person_image " .
-      "WHERE bundle = 'user')";
-
-    $q[] = "SELECT u.uid, u.name, i.field_s_person_image_target_id, " .
-      "x.origname, x.uri FROM users_field_data u, " .
-      "user__field_s_person_image i, file_managed x " .
-      "WHERE u.uid = i.entity_id AND " .
-      "i.field_s_person_image_target_id = x.fid AND u.uid NOT IN " .
-      "(SELECT distinct entity_id from user__field_s_person_media where " .
-      "bundle = 'user')";
-
-    $q[] = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
-      "f.field_media_image_target_id, x.origname, x.uri, " .
-      "i.field_s_person_image_target_id FROM users_field_data u, " .
-      "user__field_s_person_media m, media__field_media_image f, " .
-      "file_managed x, user__field_s_person_image i WHERE u.uid = "  .
-      "m.entity_id AND m.field_s_person_media_target_id = f.entity_id AND " .
-      "f.field_media_image_target_id = x.fid AND u.uid = i.entity_id AND " .
-      "i.field_s_person_image_target_id = f.field_media_image_target_id";
-
-    for ($i = 0; $i < count($q); $i++) {
-      $image_recs = \Drupal::database()->query($q[$i]);
-      foreach ($image_recs as $key => $image_rec) {
-        $uid = 0;
-        $sunetid = "";
-        $mid = 0;
-        $mid_fid = 0;
-        $origname = "";
-        $uri = "";
-        $image_fid = 0;
-        if (!empty($image_rec->uid)) {
-          $uid = $image_rec->uid;
-        }
-        if (!empty($image_rec->name)) {
-          $sunetid = $image_rec->name;
-        }
-        if (!empty($image_rec->field_s_person_media_target_id)) {
-          $mid = $image_rec->field_s_person_media_target_id;
-        }
-        if (!empty($image_rec->field_media_image_target_id)) {
-          $mid_fid = $image_rec->field_media_image_target_id;
-        }
-        if (!empty($image_rec->origname)) {
-          $origname = $image_rec->origname;
-        }
-        if (!empty($image_rec->uri)) {
-          $uri = $image_rec->uri;
-        }
-        if (!empty($image_rec->field_s_person_image_target_id)) {
-          $image_fid = $image_rec->field_s_person_image_target_id;
-        }
-
-        try {
-          \Drupal::database()->insert('migrate_info_earth_capx_media')
-            ->fields([
-              'uid' => $uid,
-              'sunetid' => $sunetid,
-              'mid' => $mid,
-              'mid_fid' => $mid_fid,
-              'origname' => $origname,
-              'image_fid' => $image_fid,
-              'uri' => $uri,
-            ])
-            ->execute();
-        } catch (Exception $e) {
-          \Drupal::logger('type')->error($e->getMessage());
-        }
-
-        // delete duplicates
-        if (!empty($origname)) {
-          $files = \Drupal::database()->query("select fid, uri " .
-            "FROM file_managed WHERE origname = :origname",
-            [':origname' => $origname]);
-          foreach ($files as $foundfile) {
-            $file = File::load($foundfile->fid);
-            if ($foundfile->uri !== $uri) {
-              $file->delete();
-            }
-          }
-        }
-      }
-    }
-
-    // delete files not in use by any accounts
-    $q1 = "SELECT DISTINCT origname FROM file_managed WHERE fid NOT IN " .
-      "(SELECT fid FROM file_usage WHERE type = 'user') AND " .
-      " uri LIKE '%stanford_person%'";
-
-    $orignames = \Drupal::database()->query($q1);
-    foreach ($orignames as $origname) {
-      $q2 = "SELECT fid FROM file_managed WHERE uri NOT LIKE " .
-        "'%" . $origname->origname . "' and origname = '" .
-        $origname->origname . "'";
-      $files = \Drupal::database()->query($q2);
-      foreach ($files as $foundfile) {
-        $file = File::load($foundfile->fid);
-        $file->delete();
-      }
-    }
-
+    $batch_builder->setProgressive(true);
+    batch_set($batch_builder->toArray());
+    return batch_process('/');
+/*
     return [
       '#type' => 'markup',
       '#markup' => $this->t('Hello, World!'),
     ];
+*/
   }
 
 }

@@ -129,6 +129,11 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     $photo_field = $row->getDestinationProperty('image_file');
     if (!empty($photo_field['target_id'])) {
       $photo_id = $photo_field['target_id'];
+    } else if (!empty($sunetid)) {
+      // if there is no profile photo, reset to default here.
+      $existing_user = user_load_by_name($sunetid);
+      $existing_user->get('field_s_person_media')->applyDefaultValue();
+      $existing_user->save();
     }
     // Check source data in the row against etag and photo info stored in table.
     $okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id, $wg);
