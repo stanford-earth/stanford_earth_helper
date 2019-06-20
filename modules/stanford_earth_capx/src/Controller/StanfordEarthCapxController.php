@@ -133,12 +133,14 @@ class StanfordEarthCapxController extends ControllerBase {
         'buildProfileMediaTable',
       ]
     );
+
     $batch_builder->addOperation(
       [
         new EarthCapxInfo(),
         'deleteDuplicateProfileImages'
       ]
     );
+
     $batch_builder->addOperation(
       [
         new EarthCapxInfo(),

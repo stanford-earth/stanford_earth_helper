@@ -446,6 +446,20 @@ class EarthCapxInfo {
     }
   }
 
+  public static function deleteMediaEntity($fid) {
+    $db = \Drupal::database();
+    $storage = \Drupal::entityTypeManager()->getStorage('media');
+    $media = $db->query("select entity_id from media__field_media_image " .
+      "WHERE bundle = 'image' and field_media_image_target_id = :target_id",
+      [':target_id' => $fid]);
+    foreach ($media as $medium) {
+      $mentity = $storage->load($medium->entity_id);
+      if (!empty($mentity)) {
+        $storage->delete([$mentity]);
+      }
+    }
+  }
+
   public static function deleteDuplicateProfileImages() {
     $db = \Drupal::database();
     set_time_limit(0);
@@ -462,6 +476,7 @@ class EarthCapxInfo {
         foreach ($files as $foundfile) {
           $file = File::load($foundfile->fid);
           if ($foundfile->uri !== $uri) {
+            EarthCapxInfo::deleteMediaEntity($foundfile->fid);
             $file->delete();
           }
         }
@@ -484,6 +499,7 @@ class EarthCapxInfo {
         $origname->origname . "'";
       $files = $db->query($q2);
       foreach ($files as $foundfile) {
+        EarthCapxInfo::deleteMediaEntity($foundfile->fid);
         $file = File::load($foundfile->fid);
         $file->delete();
       }
@@ -491,16 +507,58 @@ class EarthCapxInfo {
   }
 
   public static function deleteWorkgroupProfileImages($wg) {
+
+    $db = \Drupal::database();
+    $user_fields = \Drupal::service('entity_field.manager')
+      ->getFieldDefinitions('user','user');
+    /** @var \Drupal\field\Entity\FieldConfig $media_field_def **/
+    $media_field_def = $user_fields['field_s_person_media'];
+    $default_value = $media_field_def->getDefaultValueLiteral();
+    $default_image = NULL;
+    if (!empty($default_value[0]['target_uuid'])) {
+      $default_image = $default_value[0]['target_uuid'];
+    }
+    if (!empty($default_image)) {
+       $mids = $db->query("SELECT mid FROM media WHERE uuid = :uuid",
+         [':uuid' => $default_image]);
+    }
+    $default_mid = 0;
+    $default_fid = 0;
+    foreach ($mids as $mid) {
+      $default_mid = $mid->mid;
+    }
+    if (!empty($default_mid)) {
+      $storage = \Drupal::entityTypeManager()->getStorage('media');
+      $mentity = $storage->load($default_mid);
+      $fid_val = $mentity->get('field_media_image')->getValue();
+      if (!empty($fid_val[0]['target_id'])) {
+        $default_fid = $fid_val[0]['target_id'];
+      }
+    }
+
     $wg_service = \Drupal::service('stanford_earth_workgroups.workgroup');
     $wg_members = $wg_service->getMembers($wg);
     if ($wg_members['status']['member_count'] > 0) {
       foreach ($wg_members['members'] as $sunetid => $displayname) {
         /** @var \Drupal\user\Entity\User $account */
         $account = user_load_by_name($sunetid);
+        $val = $account->get('field_s_person_image')->getValue();
+        if (!empty($val[0]['target_id'])) {
+          $fid = $val[0]['target_id'];
+          if ($fid !== $default_fid) {
+            EarthCapxInfo::deleteMediaEntity($fid);
+            $file = File::load($fid);
+            $file->delete();
+          }
+        }
         $account->get('field_s_person_image')->setValue(NULL);
-        //$account->get('field_s_person_media')->setValue(NULL);
-        if ($sunetid == 'amyb') {
-          $xyz = 1;
+        $val = $account->get('field_s_person_media')->getValue();
+        if (!empty($val[0]['target_id']) && $val[0]['target_id'] !== $default_mid) {
+          $storage = \Drupal::entityTypeManager()->getStorage('media');
+          $mentity = $storage->load($val[0]['target_id']);
+          if (!empty($mentity)) {
+            $storage->delete([$mentity]);
+          }
         }
         $account->get('field_s_person_media')->applyDefaultValue();
         $account->save();
