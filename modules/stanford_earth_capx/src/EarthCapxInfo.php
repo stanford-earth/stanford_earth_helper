@@ -476,7 +476,7 @@ class EarthCapxInfo {
         foreach ($files as $foundfile) {
           $file = File::load($foundfile->fid);
           if ($foundfile->uri !== $uri) {
-            EarthCapxInfo::deleteMediaEntity($foundfile->fid);
+            self::deleteMediaEntity($foundfile->fid);
             $file->delete();
           }
         }
@@ -499,7 +499,7 @@ class EarthCapxInfo {
         $origname->origname . "'";
       $files = $db->query($q2);
       foreach ($files as $foundfile) {
-        EarthCapxInfo::deleteMediaEntity($foundfile->fid);
+        self::deleteMediaEntity($foundfile->fid);
         $file = File::load($foundfile->fid);
         $file->delete();
       }
@@ -546,7 +546,7 @@ class EarthCapxInfo {
         if (!empty($val[0]['target_id'])) {
           $fid = $val[0]['target_id'];
           if ($fid !== $default_fid) {
-            EarthCapxInfo::deleteMediaEntity($fid);
+            self::deleteMediaEntity($fid);
             $file = File::load($fid);
             $file->delete();
           }
@@ -564,6 +564,34 @@ class EarthCapxInfo {
         $account->save();
       }
     }
+  }
+
+  public static function getDefaultProfileMediaEntity() {
+    $account = User::load(0);
+    $media_field_def = $account->getFieldDefinition('field_s_person_media');
+    $found_mid = $media_field_def->getDefaultValue($account);
+    $default_mid = 0;
+    $default_fid = 0;
+    if (!empty($found_mid) and is_array($found_mid)) {
+      if (!empty($found_mid[0]['target_id'])) {
+        $media_entity = Media::load($found_mid[0]['target_id']);
+        if (!empty($media_entity)) {
+          $default_mid = $media_entity->id();
+          $image_field = $media_entity->get('field_media_image');
+          $found_fid = $image_field->getValue();
+          if (!empty($found_fid) and is_array($found_fid)) {
+            if (!empty($found_fid[0]['target_id'])) {
+              $default_fid = $found_fid[0]['target_id'];
+            }
+          }
+        }
+      }
+    }
+    $default_profile_image = [
+      'default_mid' => $default_mid,
+      'default_fid' => $default_fid,
+    ];
+    return $default_profile_image;
   }
 
   /**

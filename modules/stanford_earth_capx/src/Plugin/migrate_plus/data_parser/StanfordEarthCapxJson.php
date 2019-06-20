@@ -130,16 +130,19 @@ class StanfordEarthCapxJson extends Json {
                 $fname = trim($nsplit[1]);
               }
               $dname = $fname . ' ' . $lname;
+              $alias = strtolower($fname . '-' . $lname);
             }
             else {
               $dname = $name;
               $lname = $name;
               $fname = '';
+              $alias = strtolower($name);
             }
 
             $source_data_out[] = [
               'uid' => $sunet,
               'displayName' => $dname,
+              'alias' => $alias,
               'names' => [
                 'preferred' => [
                   'firstName' => $fname,
