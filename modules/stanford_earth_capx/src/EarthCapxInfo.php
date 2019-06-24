@@ -316,6 +316,27 @@ class EarthCapxInfo {
     return $this->entityId;
   }
 
+  /**
+   * Get the photo timestamp from the cap url.
+   */
+  public static function getProfileImageTimestamp($photoUrl = NULL) {
+    $photo_ts = '';
+    if (!empty($photoUrl) && is_string($photoUrl)) {
+      $ts1 = strpos($photoUrl, "ts=");
+      if ($ts1 !== FALSE) {
+        $ts2 = substr($photoUrl, $ts1);
+        if (strpos($ts2, "&") !== FALSE) {
+          $photo_ts = substr($ts2, 3, strpos($ts2, "&") - 3);
+        }
+        else {
+          $photo_ts = substr($ts2, 3);
+        }
+        $photo_ts = '_' . $photo_ts;
+      }
+    }
+    return $photo_ts;
+  }
+
   public static function buildProfileMediaTable() {
 
     $db = \Drupal::database();

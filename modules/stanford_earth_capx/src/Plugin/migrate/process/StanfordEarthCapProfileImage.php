@@ -94,18 +94,56 @@ class StanfordEarthCapProfileImage extends FileImport {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    // See if we already have the current profile photo.
-    $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
-    $defaultProfileImage = $info::getDefaultProfileMediaEntity();
+    // Get the profile default image media entity id and file id.
+    $defaultProfileImage = EarthCapxInfo::getDefaultProfileMediaEntity();
+    // Get the URL to the profile image from the CAP API.
     $profile_photo = $row->getSourceProperty('profile_photo');
+
+    // If there is no profile photo URL, return the default media entity id.
     if (empty($profile_photo)) {
       if (empty($defaultProfileImage['default_mid'])) {
+        // Unless there is none, in which case return NULL.
         return NULL;
       } else {
         return $defaultProfileImage['default_mid'];
       }
     }
     else {
+      // If we already have the profile image, return its fid as $value.
+      // If not, the parent will download it and create an fid and return it.
+      $this->configuration['id_only'] = FALSE;
+      $value = parent::transform($value, $migrate_executable, $row,
+        $destination_property);
+      // Assume we will need to create a new media entity,
+      $mid = NULL;
+      // See if there is already a user account associated with CAP API sunetid.
+      $account = NULL;
+      if (!empty($row->getSourceProperty('sunetid'))) {
+        $account = user_load_by_name($row->getSourceProperty('sunetid'));
+        if (!empty($account)) {
+          // If we have an account, and it has its media entity set, and...
+          // It's value is not the default media entity id, then use that.
+          $val = $account->get('field_s_person_media')->getValue();
+          if (!empty($val[0]['target_id']) &&
+            $val[0]['target_id'] !== $defaultProfileImage['default_mid']) {
+            $mid = $val[0]['target_id'];
+          }
+        }
+      }
+      // If we got an existing media entity, load it, otherwise create new.
+      $storage = \Drupal::entityTypeManager()->getStorage('media');
+      $media_entity = NULL;
+      if (!empty($mid)) {
+        $media_entity = $storage->load($mid);
+        if (empty($media_entity)) {
+          $mid = NULL;
+        }
+      }
+      if (empty($mid)) {
+        //$media_entity = $storage->
+      }
+
+
       /*
        * $fid = 0; $ts = 0;
        * $account = NULL;
@@ -140,7 +178,11 @@ class StanfordEarthCapProfileImage extends FileImport {
       }
     }
 
+    // See if we already have the current profile photo.
+    $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
+
     $photoId = $info->currentProfilePhotoId($row->getSource());
+    $photoId = 0;
     if ($photoId) {
       $value = ['target_id' => $photoId];
     }
