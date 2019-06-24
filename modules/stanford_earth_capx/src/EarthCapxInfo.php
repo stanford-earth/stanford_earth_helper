@@ -309,6 +309,13 @@ class EarthCapxInfo {
     }
   }
 
+  /**
+   * Return entity_id (uid) of current record.
+   */
+  public function getEntityId() {
+    return $this->entityId;
+  }
+
   public static function buildProfileMediaTable() {
 
     $db = \Drupal::database();

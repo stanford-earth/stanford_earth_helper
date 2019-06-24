@@ -96,6 +96,50 @@ class StanfordEarthCapProfileImage extends FileImport {
 
     // See if we already have the current profile photo.
     $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
+    $defaultProfileImage = $info::getDefaultProfileMediaEntity();
+    $profile_photo = $row->getSourceProperty('profile_photo');
+    if (empty($profile_photo)) {
+      if (empty($defaultProfileImage['default_mid'])) {
+        return NULL;
+      } else {
+        return $defaultProfileImage['default_mid'];
+      }
+    }
+    else {
+      /*
+       * $fid = 0; $ts = 0;
+       * $account = NULL;
+       * if (sunetid from source) {
+       *  $account = load account for sunetid
+       *  if (!empty(account)) {
+       *    get mid from account
+       *    if not empty mid and mid <> default_mid {
+       *    }
+       *  }
+       * }
+       *
+       */
+      $fid = 0;
+      $ts = 0;
+      $account = NULL;
+      if (!empty($row->getSourceProperty('sunetid'))) {
+        $account = user_load_by_name($row->getSourceProperty('sunetid'));
+        if (!empty($account)) {
+          $val = $account->get('field_s_person_media')->getValue();
+          if (!empty($val[0]['target_id']) && $val[0]['target_id'] !== $default_mid) {
+            $storage = \Drupal::entityTypeManager()->getStorage('media');
+            $mentity = $storage->load($val[0]['target_id']);
+            if (!empty($mentity)) {
+              $storage->delete([$mentity]);
+            }
+          }
+          $account->get('field_s_person_media')->applyDefaultValue();
+
+        }
+
+      }
+    }
+
     $photoId = $info->currentProfilePhotoId($row->getSource());
     if ($photoId) {
       $value = ['target_id' => $photoId];
