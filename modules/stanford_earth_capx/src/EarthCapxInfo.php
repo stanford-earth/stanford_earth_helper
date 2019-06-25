@@ -338,7 +338,8 @@ class EarthCapxInfo {
   }
 
   public static function buildProfileMediaTable() {
-
+    set_time_limit(0);
+    $xyz = self::getDefaultProfileMediaEntity();
     $db = \Drupal::database();
 
     // create table if necessary
@@ -489,6 +490,7 @@ class EarthCapxInfo {
   }
 
   public static function deleteDuplicateProfileImages() {
+    set_time_limit(0);
     $db = \Drupal::database();
     set_time_limit(0);
     $fnames = $db->query("SELECT origname, uri from " .
@@ -513,6 +515,7 @@ class EarthCapxInfo {
   }
 
   public static function deleteUnusedProfileImages() {
+    set_time_limit(0);
     $db = \Drupal::database();
     set_time_limit(0);
     // delete files not in use by any accounts
@@ -535,7 +538,7 @@ class EarthCapxInfo {
   }
 
   public static function deleteWorkgroupProfileImages($wg) {
-
+    set_time_limit(0);
     $db = \Drupal::database();
     $user_fields = \Drupal::service('entity_field.manager')
       ->getFieldDefinitions('user','user');
@@ -598,28 +601,16 @@ class EarthCapxInfo {
     $account = User::load(0);
     $media_field_def = $account->getFieldDefinition('field_s_person_media');
     $found_mid = $media_field_def->getDefaultValue($account);
-    $default_mid = 0;
-    $default_fid = 0;
+    $default_mid = NULL;
     if (!empty($found_mid) and is_array($found_mid)) {
       if (!empty($found_mid[0]['target_id'])) {
         $media_entity = Media::load($found_mid[0]['target_id']);
         if (!empty($media_entity)) {
           $default_mid = $media_entity->id();
-          $image_field = $media_entity->get('field_media_image');
-          $found_fid = $image_field->getValue();
-          if (!empty($found_fid) and is_array($found_fid)) {
-            if (!empty($found_fid[0]['target_id'])) {
-              $default_fid = $found_fid[0]['target_id'];
-            }
-          }
         }
       }
     }
-    $default_profile_image = [
-      'default_mid' => $default_mid,
-      'default_fid' => $default_fid,
-    ];
-    return $default_profile_image;
+    return $default_mid;
   }
 
   /**

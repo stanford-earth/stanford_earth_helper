@@ -125,7 +125,6 @@ class StanfordEarthCapxController extends ControllerBase {
 
   public function cleanupMedia() {
 
-    $default_info = EarthCapxInfo::getDefaultProfileMediaEntity();
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle('Cleanup duplicate profile images');
     $batch_builder->addOperation(
