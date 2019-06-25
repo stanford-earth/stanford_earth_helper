@@ -125,18 +125,18 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     // See if we already have migration information for this profile.
     $sunetid = $row->getSourceProperty('sunetid');
     $info = new EarthCapxInfo($sunetid);
-    $photo_id = 0;
-    $photo_field = $row->getDestinationProperty('image_file');
-    if (!empty($photo_field['target_id'])) {
-      $photo_id = $photo_field['target_id'];
-    } else if (!empty($sunetid)) {
-      // if there is no profile photo, reset to default here.
-      $existing_user = user_load_by_name($sunetid);
-      $existing_user->get('field_s_person_media')->applyDefaultValue();
-      $existing_user->save();
-    }
+    //$photo_id = 0;
+    //$photo_field = $row->getDestinationProperty('image_file');
+    //if (!empty($photo_field['target_id'])) {
+    //  $photo_id = $photo_field['target_id'];
+    //} else if (!empty($sunetid)) {
+    //  // if there is no profile photo, reset to default here.
+    //  $existing_user = user_load_by_name($sunetid);
+    //  $existing_user->get('field_s_person_media')->applyDefaultValue();
+    //  $existing_user->save();
+    //}
     // Check source data in the row against etag and photo info stored in table.
-    $okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id, $wg);
+    $okay = TRUE; //$info->getOkayToUpdateProfile($row->getSource(), $photo_id, $wg);
 
     // If okay and a first time profile import for an existing SAML login...
     // We need to store a migration id_map record for the user.
@@ -183,7 +183,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
 
     // Get the fid of the profile photo.
     $photoId = 0;
-    $dest_values = $row->getDestinationProperty('image_file');
+    $dest_values = $row->getDestinationProperty('field_s_person_media');
     if (!empty($dest_values['target_id'])) {
       $photoId = intval($dest_values['target_id']);
     }

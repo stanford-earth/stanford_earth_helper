@@ -114,6 +114,19 @@ class StanfordEarthCapProfileImage extends FileImport {
       $this->configuration['id_only'] = FALSE;
       $value = parent::transform($value, $migrate_executable, $row,
         $destination_property);
+      // Add the image field specific sub fields.
+      foreach (['title', 'alt', 'width', 'height'] as $key) {
+        if ($property = $this->configuration[$key]) {
+          if ($property == '!file') {
+            $file = File::load($value['target_id']);
+            $value[$key] = $file->getFilename();
+          }
+          else {
+            $value[$key] = $this->getPropertyValue($property, $row);
+          }
+        }
+      }
+
       // Assume we will need to create a new media entity,
       $mid = NULL;
       // See if there is already a user account associated with CAP API sunetid.
@@ -140,75 +153,13 @@ class StanfordEarthCapProfileImage extends FileImport {
         }
       }
       if (empty($mid)) {
-        //$media_entity = $storage->
+        $media_entity = $storage->create(['bundle' => 'image']);
       }
-
-
-      /*
-       * $fid = 0; $ts = 0;
-       * $account = NULL;
-       * if (sunetid from source) {
-       *  $account = load account for sunetid
-       *  if (!empty(account)) {
-       *    get mid from account
-       *    if not empty mid and mid <> default_mid {
-       *    }
-       *  }
-       * }
-       *
-       */
-      $fid = 0;
-      $ts = 0;
-      $account = NULL;
-      if (!empty($row->getSourceProperty('sunetid'))) {
-        $account = user_load_by_name($row->getSourceProperty('sunetid'));
-        if (!empty($account)) {
-          $val = $account->get('field_s_person_media')->getValue();
-          if (!empty($val[0]['target_id']) && $val[0]['target_id'] !== $default_mid) {
-            $storage = \Drupal::entityTypeManager()->getStorage('media');
-            $mentity = $storage->load($val[0]['target_id']);
-            if (!empty($mentity)) {
-              $storage->delete([$mentity]);
-            }
-          }
-          $account->get('field_s_person_media')->applyDefaultValue();
-
-        }
-
-      }
+      $media_entity->get('field_media_image')->setValue($value);
+      $media_entity->save();
+      return $media_entity->id();
     }
 
-    // See if we already have the current profile photo.
-    $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
-
-    $photoId = $info->currentProfilePhotoId($row->getSource());
-    $photoId = 0;
-    if ($photoId) {
-      $value = ['target_id' => $photoId];
-    }
-    else {
-      $this->configuration['id_only'] = FALSE;
-      $value = parent::transform($value, $migrate_executable, $row, $destination_property);
-    }
-
-    if ($value && is_array($value)) {
-      // Add the image field specific sub fields.
-      foreach (['title', 'alt', 'width', 'height'] as $key) {
-        if ($property = $this->configuration[$key]) {
-          if ($property == '!file') {
-            $file = File::load($value['target_id']);
-            $value[$key] = $file->getFilename();
-          }
-          else {
-            $value[$key] = $this->getPropertyValue($property, $row);
-          }
-        }
-      }
-      return $value;
-    }
-    else {
-      return NULL;
-    }
   }
 
 }
