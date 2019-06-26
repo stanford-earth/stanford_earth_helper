@@ -650,26 +650,34 @@ class EarthCapxInfo {
       foreach ($wg_members['members'] as $sunetid => $displayname) {
         /** @var \Drupal\user\Entity\User $account */
         $account = user_load_by_name($sunetid);
-        $val = $account->get('field_s_person_image')->getValue();
-        if (!empty($val[0]['target_id'])) {
-          $fid = $val[0]['target_id'];
-          if ($fid !== $default_fid) {
-            self::deleteMediaEntity($fid);
-            $file = File::load($fid);
-            $file->delete();
+        if (!empty($account)) {
+          $image_field = $account->get('field_s_person_image');
+          if (!empty($image_field)) {
+            $val = $image_field->getValue();
+            if (!empty($val[0]['target_id'])) {
+              $fid = $val[0]['target_id'];
+              if ($fid !== $default_fid) {
+                self::deleteMediaEntity($fid);
+                $file = File::load($fid);
+                $file->delete();
+              }
+            }
           }
-        }
-        $account->get('field_s_person_image')->setValue(NULL);
-        $val = $account->get('field_s_person_media')->getValue();
-        if (!empty($val[0]['target_id']) && $val[0]['target_id'] !== $default_mid) {
-          $storage = \Drupal::entityTypeManager()->getStorage('media');
-          $mentity = $storage->load($val[0]['target_id']);
-          if (!empty($mentity)) {
-            $storage->delete([$mentity]);
+          $account->get('field_s_person_image')->setValue(NULL);
+          $media_field = $account->get('field_s_person_media');
+          if (!empty($media_field)) {
+            $val = $media_field->getValue();
+            if (!empty($val[0]['target_id']) && $val[0]['target_id'] !== $default_mid) {
+              $storage = \Drupal::entityTypeManager()->getStorage('media');
+              $mentity = $storage->load($val[0]['target_id']);
+              if (!empty($mentity)) {
+                $storage->delete([$mentity]);
+              }
+            }
           }
+          $account->get('field_s_person_media')->applyDefaultValue();
+          $account->save();
         }
-        $account->get('field_s_person_media')->applyDefaultValue();
-        $account->save();
       }
     }
   }
