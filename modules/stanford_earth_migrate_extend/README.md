@@ -1,5 +1,5 @@
 # [Stanford Earth Migrate Extend](https://github.com/SU-SWS/stanford_earth_helper)
-##### Version: 8.x-1.x
+##### Version: 8.x-1.x-alpha30
 
 Changelog: [Changelog.txt](CHANGELOG.txt)
 

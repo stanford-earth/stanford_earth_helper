@@ -1,5 +1,13 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha30
+--------------------------------------------------------------------------------
+_Release Date: 2019-06-25
+
+_Clean up duplicate and unused profile images.
+_Update mosaic images to be more efficient.
+_Code cleanup.
+
 8.x-1.0-alpha29
 --------------------------------------------------------------------------------
 _Release Date: 2019-06-05
