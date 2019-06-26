@@ -119,12 +119,13 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    $wg = $this->getWorkgroup($event);
     // Get the row in question.
     $row = $event->getRow();
     // See if we already have migration information for this profile.
     $sunetid = $row->getSourceProperty('sunetid');
     $info = new EarthCapxInfo($sunetid);
+    /*
+    //$wg = $this->getWorkgroup($event);
     //$photo_id = 0;
     //$photo_field = $row->getDestinationProperty('image_file');
     //if (!empty($photo_field['target_id'])) {
@@ -136,7 +137,9 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     //  $existing_user->save();
     //}
     // Check source data in the row against etag and photo info stored in table.
-    $okay = TRUE; //$info->getOkayToUpdateProfile($row->getSource(), $photo_id, $wg);
+    //$okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id, $wg);
+     */
+    $okay = TRUE;
 
     // If okay and a first time profile import for an existing SAML login...
     // We need to store a migration id_map record for the user.

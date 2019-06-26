@@ -402,8 +402,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
 
     $fp_array = Yaml::decode($form_state->getValue('import'));
     $batch_builder = new BatchBuilder();
-    $batch_builder->setTitle(t('Create Profile Migrations'));
-    $batch_builder->setInitMessage(t('Creating profile import migrations for each requested workgroup.'));
+    $batch_builder->setTitle($this->t('Create Profile Migrations'));
+    $batch_builder->setInitMessage($this->t('Creating profile import migrations for each requested workgroup.'));
     foreach ($wgs as $wg_idx => $wg) {
       // Create migration configuration in batch mode.
       $batch_builder->addOperation(

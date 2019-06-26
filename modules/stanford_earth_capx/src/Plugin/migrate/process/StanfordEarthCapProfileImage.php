@@ -115,7 +115,9 @@ class StanfordEarthCapProfileImage extends FileImport {
         if ($property = $this->configuration[$key]) {
           if ($property == '!file') {
             $file = File::load($value['target_id']);
-            $value[$key] = 'Profile image for ' . $row->getSourceProperty('display_name'); // $file->getFilename();
+            $value[$key] = 'Profile image for ' .
+              $row->getSourceProperty('display_name');
+            // $file->getFilename();
             // If the file is the empty GIF from CAP, return default mid.
             $furi = $file->getFileUri();
             $handle = fopen($furi, "rb");
@@ -131,7 +133,7 @@ class StanfordEarthCapProfileImage extends FileImport {
         }
       }
 
-      // Assume we will need to create a new media entity,
+      // Assume we will need to create a new media entity.
       $mid = NULL;
       // See if there is already a user account associated with CAP API sunetid.
       $account = NULL;
@@ -143,7 +145,7 @@ class StanfordEarthCapProfileImage extends FileImport {
           $val = $account->get('field_s_person_media')->getValue();
           if (!empty($val[0]['target_id']) &&
             $val[0]['target_id'] !== $defaultProfileMid) {
-              $mid = $val[0]['target_id'];
+            $mid = $val[0]['target_id'];
           }
         }
       }

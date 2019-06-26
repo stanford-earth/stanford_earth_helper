@@ -241,8 +241,8 @@ class EventImportersForm extends ConfigSingleImportForm {
     // Create batch creation of migrations for each feed.
     $fp_array = Yaml::decode($form_state->getValue('import'));
     $batch_builder = new BatchBuilder();
-    $batch_builder->setTitle(t('Create Event Migrations'));
-    $batch_builder->setInitMessage(t('Creating Stanford Event import migrations for each requested feed.'));
+    $batch_builder->setTitle($this->t('Create Event Migrations'));
+    $batch_builder->setInitMessage($this->t('Creating Stanford Event import migrations for each requested feed.'));
     foreach ($feeds as $feed_idx => $feed) {
       $m_index = intval($feed_idx) + 1;
       // Create migration configuration in batch mode.

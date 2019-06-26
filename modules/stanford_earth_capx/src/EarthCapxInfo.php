@@ -2,12 +2,10 @@
 
 namespace Drupal\stanford_earth_capx;
 
-use Drupal\Core\Database;
 use Drupal\migrate\MigrateMessage;
 use Drupal\user\Entity\User;
 use Drupal\media\Entity\Media;
 use Drupal\file\Entity\File;
-
 
 /**
  * Encapsulates an information table for CAP-X Profile imports.
@@ -36,12 +34,53 @@ class EarthCapxInfo {
    */
   const EARTH_CAPX_INFO_TABLE = 'migrate_info_earth_capx_importer';
 
+  /**
+   * Sunetid of user.
+   *
+   * @var string
+   */
   private $sunetid;
+
+  /**
+   * Etag from CAP API.
+   *
+   * @var string
+   */
   private $etag;
+
+  /**
+   * Photo timestamp from url of profile photo.
+   *
+   * @var string
+   */
   private $profilePhotoTimestamp;
+
+  /**
+   * Entity id (user account) of profile.
+   *
+   * @var int
+   */
   private $entityId;
+
+  /**
+   * File id of profile photo for profile.
+   *
+   * @var int
+   */
   private $profilePhotoFid;
+
+  /**
+   * Status of profile info record.
+   *
+   * @var int
+   */
   private $status;
+
+  /**
+   * Workgroup from which user profile comes.
+   *
+   * @var string
+   */
   private $workgroups;
 
   /**
@@ -120,7 +159,8 @@ class EarthCapxInfo {
 
     if (empty($this->profilePhotoFid)) {
       return FALSE;
-    } else {
+    }
+    else {
       if (empty($source['profile_photo']) ||
           empty($this->profilePhotoTimestamp) ||
           empty($this->getPhotoTimestamp($source['profile_photo'])) ||
@@ -129,7 +169,8 @@ class EarthCapxInfo {
         $file = File::load($this->profilePhotoFid);
         $file->delete();
         return FALSE;
-      } else {
+      }
+      else {
         return $this->profilePhotoFid;
       }
     }
@@ -147,7 +188,7 @@ class EarthCapxInfo {
    *   The photoId from the image url in the profile data.
    * @param string $wg
    *   The name of the workgroup being processed.
-   **/
+   */
   public function getOkayToUpdateProfile(array $source = [],
                                          int $photoId = NULL,
                                          string $wg = NULL) {
@@ -157,7 +198,7 @@ class EarthCapxInfo {
     if (empty($source['sunetid']) ||
       $this->status == self::EARTH_CAPX_INFO_INVALID ||
       $source['sunetid'] !== $this->sunetid) {
-      $msg->display(t('Unable to validate new profile information.'), 'error');
+      $msg->display('Unable to validate new profile information.', 'error');
     }
     elseif ($this->status == self::EARTH_CAPX_INFO_NEW) {
       $oktoupdate = TRUE;
@@ -210,12 +251,12 @@ class EarthCapxInfo {
     $msg = new MigrateMessage();
     if (empty($source['sunetid']) ||
       $this->status == self::EARTH_CAPX_INFO_INVALID) {
-      $msg->display(t('Unable to update EarthCapxInfo table. Missing source id.'), 'error');
+      $msg->display('Unable to update EarthCapxInfo table. Missing source id.', 'error');
       return;
     }
     if ($source['sunetid'] !== $this->sunetid) {
-      $msg->display(t('Unable to update EarthCapxInfo table. Mismatched ids: @sunet1, @sunet2',
-        ['@sunet1' => $source['sunetid'], '@sunet2' => $this->sunetid]));
+      $msg->display('Unable to update EarthCapxInfo table. Mismatched ids: @sunet1, @sunet2',
+        ['@sunet1' => $source['sunetid'], '@sunet2' => $this->sunetid]);
       return;
     }
 
@@ -277,7 +318,7 @@ class EarthCapxInfo {
       catch (Exception $e) {
         // Log the exception to watchdog.
         $m = new MigrateMessage();
-        $m->display(t('Unable to insert new EarthCapxInfo record for @sunet', ['sunet' => $this->sunetid]));
+        $m->display('Unable to insert new EarthCapxInfo record for @sunet', ['sunet' => $this->sunetid]);
         \Drupal::logger('type')->error($e->getMessage());
       }
     }
@@ -337,12 +378,16 @@ class EarthCapxInfo {
     return $photo_ts;
   }
 
+  /**
+   * Build a profile media table to use for cleanup.
+   *
+   * @throws \Exception
+   */
   public static function buildProfileMediaTable() {
     set_time_limit(0);
-    $xyz = self::getDefaultProfileMediaEntity();
     $db = \Drupal::database();
 
-    // create table if necessary
+    // Create table if necessary.
     $schema = $db->schema();
     if ($schema->tableExists('{migrate_info_earth_capx_media}')) {
       $db->query('delete from {migrate_info_earth_capx_media}');
@@ -396,7 +441,7 @@ class EarthCapxInfo {
       );
     }
 
-    // find all media entities and image files
+    // Find all media entities and image files.
     $q = [];
     $q[] = "SELECT u.uid, u.name, m.field_s_person_media_target_id, " .
       "f.field_media_image_target_id, x.origname, x.uri " .
@@ -426,7 +471,7 @@ class EarthCapxInfo {
 
     for ($i = 0; $i < count($q); $i++) {
       $image_recs = $db->query($q[$i]);
-      foreach ($image_recs as $key => $image_rec) {
+      foreach ($image_recs as $image_rec) {
         $uid = 0;
         $sunetid = "";
         $mid = 0;
@@ -468,13 +513,24 @@ class EarthCapxInfo {
               'uri' => $uri,
             ])
             ->execute();
-        } catch (Exception $e) {
+        }
+        catch (Exception $e) {
           \Drupal::logger('type')->error($e->getMessage());
         }
       }
     }
   }
 
+  /**
+   * Delete a media entity for which a file is uses.
+   *
+   * @param string $fid
+   *   File id of the file for which to delete a media entity.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
   public static function deleteMediaEntity($fid) {
     $db = \Drupal::database();
     $storage = \Drupal::entityTypeManager()->getStorage('media');
@@ -489,6 +545,11 @@ class EarthCapxInfo {
     }
   }
 
+  /**
+   * Delete duplicate profile images.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
   public static function deleteDuplicateProfileImages() {
     set_time_limit(0);
     $db = \Drupal::database();
@@ -498,7 +559,7 @@ class EarthCapxInfo {
     foreach ($fnames as $fname) {
       $origname = $fname->origname;
       $uri = $fname->uri;
-      // delete duplicates
+      // Delete duplicates.
       if (!empty($origname)) {
         $files = $db->query("select fid, uri " .
           "FROM file_managed WHERE origname = :origname",
@@ -514,18 +575,23 @@ class EarthCapxInfo {
     }
   }
 
+  /**
+   * Deletes unused profile images.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
   public static function deleteUnusedProfileImages() {
     set_time_limit(0);
     $db = \Drupal::database();
     set_time_limit(0);
-    // delete files not in use by any accounts
+    // Delete files not in use by any accounts.
     $q1 = "SELECT DISTINCT origname FROM file_managed WHERE fid NOT IN " .
       "(SELECT fid FROM file_usage WHERE type = 'user') AND " .
       " uri LIKE '%stanford_person%'";
 
     $orignames = $db->query($q1);
     foreach ($orignames as $origname) {
-      $q2 = "SELECT fid FROM file_managed WHERE uri NOT LIKE " .
+      $q2 = 'SELECT fid FROM file_managed WHERE uri NOT LIKE' .
         "'%" . $origname->origname . "' and origname = '" .
         $origname->origname . "'";
       $files = $db->query($q2);
@@ -537,11 +603,22 @@ class EarthCapxInfo {
     }
   }
 
+  /**
+   * Delete profile images associated with a workgroup.
+   *
+   * @param string $wg
+   *   Workgroup name for which to look for users.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   * @throws \Drupal\Core\TypedData\Exception\ReadOnlyException
+   */
   public static function deleteWorkgroupProfileImages($wg) {
     set_time_limit(0);
     $db = \Drupal::database();
     $user_fields = \Drupal::service('entity_field.manager')
-      ->getFieldDefinitions('user','user');
+      ->getFieldDefinitions('user', 'user');
     /** @var \Drupal\field\Entity\FieldConfig $media_field_def **/
     $media_field_def = $user_fields['field_s_person_media'];
     $default_value = $media_field_def->getDefaultValueLiteral();
@@ -550,8 +627,8 @@ class EarthCapxInfo {
       $default_image = $default_value[0]['target_uuid'];
     }
     if (!empty($default_image)) {
-       $mids = $db->query("SELECT mid FROM media WHERE uuid = :uuid",
-         [':uuid' => $default_image]);
+      $mids = $db->query("SELECT mid FROM media WHERE uuid = :uuid",
+        [':uuid' => $default_image]);
     }
     $default_mid = 0;
     $default_fid = 0;
@@ -597,6 +674,12 @@ class EarthCapxInfo {
     }
   }
 
+  /**
+   * Return the default media entity for profiles/user accounts.
+   *
+   * @return int|string|null
+   *   Entity id or null.
+   */
   public static function getDefaultProfileMediaEntity() {
     $account = User::load(0);
     $media_field_def = $account->getFieldDefinition('field_s_person_media');

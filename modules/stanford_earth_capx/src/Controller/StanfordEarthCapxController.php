@@ -4,7 +4,6 @@ namespace Drupal\stanford_earth_capx\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\migrate\Plugin\MigrationPluginManager;
-use Drupal\migrate_plus\Entity\Migration;
 use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
@@ -78,7 +77,8 @@ class StanfordEarthCapxController extends ControllerBase {
 
     if ($refresh) {
       $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, profile_photo_id = 0, workgroup_list=''")->execute();
-      //$this->db->query("DELETE FROM {user__field_profile_search_terms}")->execute();
+      // $this->db->query("DELETE FROM
+      // {user__field_profile_search_terms}")->execute();
     }
 
     return [
@@ -87,42 +87,45 @@ class StanfordEarthCapxController extends ControllerBase {
     ];
     /*
     $eMigrations = $this->cf
-      ->listAll('migrate_plus.migration.earth_capx_import');
-
+    ->listAll('migrate_plus.migration.earth_capx_import');
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle($this->t('Import Profiles'));
-
     foreach ($eMigrations as $eMigration) {
-      $migration = Migration::load(substr($eMigration, strpos($eMigration, 'earth')));
-      // $mp = \Drupal::getContainer()->get('plugin.manager.migration');
-      $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
-      $migration_plugin->getIdMap()->prepareUpdate();
-      $context = [
-        'sandbox' => [
-          'total' => 200,
-          'counter' => 0,
-          'batch_limit' => 200,
-          'operation' => 1,
-        ],
-      ];
-      $batch_builder->addOperation(
-        '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
-        [
-          substr($eMigration, strpos($eMigration, 'earth')),
-          [
-            'limit' => 0,
-            'update' => 1,
-            'force' => 0,
-          ],
-          $context,
-        ]
-      );
+    $migration = Migration::load(substr($eMigration,
+    strpos($eMigration, 'earth')));
+    // $mp = \Drupal::getContainer()->get('plugin.manager.migration');
+    $migration_plugin = $this->mp->createInstance($migration->id(),
+    $migration->toArray());
+    $migration_plugin->getIdMap()->prepareUpdate();
+    $context = [
+    'sandbox' => [
+    'total' => 200,
+    'counter' => 0,
+    'batch_limit' => 200,
+    'operation' => 1,
+    ],
+    ];
+    $batch_builder->addOperation(
+    '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
+    [
+    substr($eMigration, strpos($eMigration, 'earth')),
+    [
+    'limit' => 0,
+    'update' => 1,
+    'force' => 0,
+    ],
+    $context,
+    ]
+    );
     }
     batch_set($batch_builder->toArray());
     return batch_process('/');
-    */
+     */
   }
 
+  /**
+   * Clean up media files.
+   */
   public function cleanupMedia() {
 
     $batch_builder = new BatchBuilder();
@@ -137,14 +140,14 @@ class StanfordEarthCapxController extends ControllerBase {
     $batch_builder->addOperation(
       [
         new EarthCapxInfo(),
-        'deleteDuplicateProfileImages'
+        'deleteDuplicateProfileImages',
       ]
     );
 
     $batch_builder->addOperation(
       [
         new EarthCapxInfo(),
-        'deleteUnusedProfileImages'
+        'deleteUnusedProfileImages',
       ]
     );
     $wgs = $this->config('migrate_plus.migration_group.earth_capx')
@@ -154,22 +157,16 @@ class StanfordEarthCapxController extends ControllerBase {
       $batch_builder->addOperation(
         [
           new EarthCapxInfo(),
-          'deleteWorkgroupProfileImages'
+          'deleteWorkgroupProfileImages',
         ],
         [
-          $wg
+          $wg,
         ]
       );
     }
-    $batch_builder->setProgressive(true);
+    $batch_builder->setProgressive(TRUE);
     batch_set($batch_builder->toArray());
     return batch_process('/');
-/*
-    return [
-      '#type' => 'markup',
-      '#markup' => $this->t('Hello, World!'),
-    ];
-*/
   }
 
 }

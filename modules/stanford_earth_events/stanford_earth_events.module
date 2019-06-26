@@ -14,7 +14,6 @@ use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\stanford_earth_events\EarthEventsInfo;
 use Drupal\node\Entity\Node;
 use Drupal\file\Entity\File;
-use Drupal\Core\Url;
 
 /**
  * Implements hook_entity_delete().
