@@ -18,7 +18,7 @@ source:
   constants:
     status: 1
     basic_html: basic_html
-    file_destination: 'public://'
+    file_destination: 'public://stanford_person/'
     file_extension: .jpg
     image_alt_value: 'profile photo'
     at_stanford: '@stanford.edu'
@@ -132,19 +132,28 @@ process:
     source: office
     process:
       value: address
+  image_file_timestamp:
+    plugin: callback
+    source: profile_photo
+    callable:
+      - \Drupal\stanford_earth_capx\EarthCapxInfo
+      - getProfileImageTimestamp
   image_file_name:
     plugin: concat
     source:
       - constants/file_destination
       - alias
+      - '@image_file_timestamp'
       - constants/file_extension
-  field_s_person_image:
+  field_s_person_media:
     plugin: stanford_earth_cap_profile_image
     source: profile_photo
     destination: '@image_file_name'
-    alt: !file
+    alt: '!file'
     title: alias
     skip_on_error: true
+    id_only: true
+    reuse: true
   field_s_person_titles:
     plugin: sub_process
     source: titles

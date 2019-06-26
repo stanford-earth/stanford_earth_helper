@@ -14,6 +14,11 @@ use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
  */
 class StanfordEarthJson extends Json {
 
+  /**
+   * Index in the url array of the current url.
+   *
+   * @var string
+   */
   protected $activeUrl;
 
   /**

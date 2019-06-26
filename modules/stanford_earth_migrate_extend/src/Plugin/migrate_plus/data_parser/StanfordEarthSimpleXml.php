@@ -16,6 +16,11 @@ use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
  */
 class StanfordEarthSimpleXml extends SimpleXml {
 
+  /**
+   * Index in the url array of the current url.
+   *
+   * @var string
+   */
   protected $activeUrl;
 
   /**
@@ -33,7 +38,6 @@ class StanfordEarthSimpleXml extends SimpleXml {
     // and kill a lock if we have it to cancel orphan deletion.
     try {
       parent::openSourceUrl($url);
-      //$xml_data = $this->getDataFetcherPlugin()->getResponseContent($url);
     }
     catch (MigrateException $migrateException) {
       // See if we have a lock by looking for a lockid stored in our session.

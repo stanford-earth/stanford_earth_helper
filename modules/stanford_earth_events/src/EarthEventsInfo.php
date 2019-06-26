@@ -33,11 +33,46 @@ class EarthEventsInfo {
    */
   const EARTH_EVENTS_INFO_TABLE = 'migrate_info_earth_events_importer';
 
+  /**
+   * Class guid properties.
+   *
+   * @var string
+   */
   private $guid;
+
+  /**
+   * Class entityId property.
+   *
+   * @var int
+   */
   private $entityId;
+
+  /**
+   * Class unlisted property.
+   *
+   * @var bool
+   */
   private $unlisted;
+
+  /**
+   * Class orphaned property.
+   *
+   * @var bool
+   */
   private $orphaned;
+
+  /**
+   * Class status property.
+   *
+   * @var int
+   */
   private $status;
+
+  /**
+   * Class starttime property.
+   *
+   * @var int
+   */
   private $starttime;
 
   /**
@@ -95,7 +130,7 @@ class EarthEventsInfo {
     if (empty($source['guid']) ||
       $this->status == self::EARTH_EVENTS_INFO_INVALID ||
       $source['guid'] !== $this->guid) {
-      $msg->display(t('Unable to validate new event information.'), 'error');
+      $msg->display('Unable to validate new event information.', 'error');
     }
     elseif ($this->status == self::EARTH_EVENTS_INFO_NEW) {
       $oktoupdate = TRUE;
@@ -131,12 +166,12 @@ class EarthEventsInfo {
     $msg = new MigrateMessage();
     if (empty($source['guid']) ||
       $this->status == self::EARTH_EVENTS_INFO_INVALID) {
-      $msg->display(t('Unable to update EarthEventsInfo table. Missing event guid.'), 'error');
+      $msg->display('Unable to update EarthEventsInfo table. Missing event guid.', 'error');
       return;
     }
     if ($source['guid'] !== $this->guid) {
-      $msg->display(t('Unable to update EarthEventsInfo table. Mismatched ids: @guid1, @guid2',
-        ['@guid1' => $source['guid'], '@guid2' => $this->guid]));
+      $msg->display('Unable to update EarthEventsInfo table. Mismatched ids: @guid1, @guid2',
+        ['@guid1' => $source['guid'], '@guid2' => $this->guid]);
       return;
     }
 
@@ -186,7 +221,7 @@ class EarthEventsInfo {
       catch (Exception $e) {
         // Log the exception to watchdog.
         $m = new MigrateMessage();
-        $m->display(t('Unable to insert new EarthEventsInfo record for @guid', ['guid' => $this->guid]));
+        $m->display('Unable to insert new EarthEventsInfo record for @guid', ['guid' => $this->guid]);
         \Drupal::logger('type')->error($e->getMessage());
       }
     }

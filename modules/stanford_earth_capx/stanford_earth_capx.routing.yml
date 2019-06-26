@@ -13,3 +13,10 @@ stanford_earth_capx.update_all:
     _controller: '\Drupal\stanford_earth_capx\Controller\StanfordEarthCapxController::updateAll'
   requirements:
     _permission: 'administer site configuration'
+stanford_earth_capx.cleanup_media:
+  path: '/admin/config/people/capx_cleanup_media'
+  defaults:
+    _title: 'Cleanup profile images'
+    _controller: '\Drupal\stanford_earth_capx\Controller\StanfordEarthCapxController::cleanupMedia'
+  requirements:
+    _permission: 'administer site configuration'

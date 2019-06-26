@@ -44,8 +44,6 @@ function stanford_earth_capx_migrate_prepare_row(Row $row, MigrateSourceInterfac
   // This hook gets called for every migration so check that it's the CAP-X one.
   if (substr($migration->id(), 0, 19) === 'earth_capx_importer') {
 
-    set_time_limit(30);
-
     // Change incoming links without a scheme as being external.
     $links = $row->getSourceProperty('links');
     if (!empty($links) && is_array($links)) {
