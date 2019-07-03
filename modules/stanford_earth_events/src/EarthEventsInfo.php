@@ -375,15 +375,10 @@ class EarthEventsInfo {
       $qstr .= " LIMIT " . strval($limit);
     }
     $fids = $db->query($qstr);
-    $fid_check = [];
-    $fid_count = 0;
     foreach ($fids as $fid) {
-      $fid_check[] = $fid->fid;
-      $fid_count = $fid_count + 1;
       $file = File::load($fid->fid);
       $file->delete();
     }
-    $xyz = 1;
   }
 
   /**

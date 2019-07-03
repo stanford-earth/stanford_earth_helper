@@ -15,7 +15,6 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrate\MigrateMessage;
 use Drupal\migrate_tools\MigrateBatchExecutable;
-use Drupal\Core\Database\Query\Condition;
 
 /**
  * Stanford events controller.
