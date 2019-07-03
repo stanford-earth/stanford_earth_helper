@@ -5,6 +5,7 @@ namespace Drupal\stanford_earth_events;
 use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate\MigrateMessage;
 use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
+use Drupal\file\Entity\File;
 
 /**
  * Encapsulates an information table for Earth Events imports.
@@ -362,6 +363,27 @@ class EarthEventsInfo {
       }
 
     }
+  }
+
+  public static function deleteUnusedImages($limit = 0) {
+
+    set_time_limit(0);
+    $db = \Drupal::database();
+    $qstr = "SELECT fid FROM file_managed WHERE uri LIKE '%stanford-event%' " .
+      "AND fid NOT IN (SELECT fid FROM file_usage)";
+    if (intval($limit) > 0) {
+      $qstr .= " LIMIT " . strval($limit);
+    }
+    $fids = $db->query($qstr);
+    $fid_check = [];
+    $fid_count = 0;
+    foreach ($fids as $fid) {
+      $fid_check[] = $fid->fid;
+      $fid_count = $fid_count + 1;
+      $file = File::load($fid->fid);
+      $file->delete();
+    }
+    $xyz = 1;
   }
 
   /**

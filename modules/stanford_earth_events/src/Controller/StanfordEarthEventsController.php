@@ -15,6 +15,7 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrate\MigrateMessage;
 use Drupal\migrate_tools\MigrateBatchExecutable;
+use Drupal\Core\Database\Query\Condition;
 
 /**
  * Stanford events controller.
@@ -141,6 +142,33 @@ class StanfordEarthEventsController extends ControllerBase {
     ];
     $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
     $executable->batchImport();
+  }
+
+  /**
+   * Clean up media files.
+   */
+  public function cleanupImages() {
+    set_time_limit(0);
+    $q1 = "SELECT COUNT(fid) FROM file_managed WHERE uri LIKE '%stanford-event%' " .
+      "AND fid NOT IN (SELECT fid FROM file_usage)";
+    $rows = $this->db->query($q1)->fetchField();
+    $rowsper = (round($rows,-3) + 1000) / 100;
+    $batch_builder = new BatchBuilder();
+    $batch_builder->setTitle('Cleanup unused event images');
+    for ($i = 0; $i < 100; $i++) {
+      $batch_builder->addOperation(
+        [
+          new EarthEventsInfo(),
+          'deleteUnusedImages',
+        ],
+        [
+          $rowsper,
+        ]
+      );
+    }
+    $batch_builder->setProgressive(TRUE);
+    batch_set($batch_builder->toArray());
+    return batch_process('/');
   }
 
 }
