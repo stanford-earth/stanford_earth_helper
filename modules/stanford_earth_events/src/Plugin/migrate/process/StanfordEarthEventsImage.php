@@ -131,9 +131,9 @@ class StanfordEarthEventsImage extends FileImport {
           // It's value is not the default media entity id, then use that.
           $val = $node->get('field_s_event_media')->getValue();
           if (!empty($val[0]['target_id']) &&
-            $val[0]['target_id'] !==
-            EarthEventsInfo::getDefaultEventMediaEntity($node)) {
-              $mid = $val[0]['target_id'];
+            $val[0]['target_id']
+            !== EarthEventsInfo::getDefaultEventMediaEntity($node)) {
+            $mid = $val[0]['target_id'];
           }
         }
       }

@@ -20,4 +20,3 @@ stanford_earth_capx.cleanup_media:
     _controller: '\Drupal\stanford_earth_events\Controller\StanfordEarthEventsController::cleanupImages'
   requirements:
     _permission: 'administer site configuration'
-

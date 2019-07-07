@@ -367,6 +367,14 @@ class EarthEventsInfo {
     }
   }
 
+  /**
+   * Deletes images from the files/stanford-event folder if unused.
+   *
+   * @param int $limit
+   *   Limits the number of file records to review when run from batch.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
   public static function deleteUnusedImages($limit = 0) {
 
     set_time_limit(0);
@@ -406,7 +414,7 @@ class EarthEventsInfo {
       if (!empty($found_mid[0]['target_id'])) {
         $media_entity = Media::load($found_mid[0]['target_id']);
       }
-      else if (!empty($found_mid[0]['target_uuid'])) {
+      elseif (!empty($found_mid[0]['target_uuid'])) {
         $media_entity = \Drupal::service('entity.repository')
           ->loadEntityByUuid('media', $found_mid[0]['target_uuid']);
       }

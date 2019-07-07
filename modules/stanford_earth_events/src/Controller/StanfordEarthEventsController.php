@@ -151,7 +151,7 @@ class StanfordEarthEventsController extends ControllerBase {
     $q1 = "SELECT COUNT(fid) FROM file_managed WHERE uri LIKE '%stanford-event%' " .
       "AND fid NOT IN (SELECT fid FROM file_usage)";
     $rows = $this->db->query($q1)->fetchField();
-    $rowsper = (round($rows,-3) + 1000) / 100;
+    $rowsper = (round($rows, -3) + 1000) / 100;
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle('Cleanup unused event images');
     for ($i = 0; $i < 100; $i++) {

@@ -12,8 +12,6 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\stanford_earth_events\EarthEventsInfo;
-use Drupal\node\Entity\Node;
-use Drupal\file\Entity\File;
 
 /**
  * Implements hook_entity_delete().
@@ -75,30 +73,6 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
     if ($event->isValid()) {
       $entityid = $event->entityId();
       if (!empty($entityid)) {
-        $eventNode = Node::load($entityid);
-
-        // If the event node has a media entity image but no image_url in the
-        // event itself, the image will get removed unless we set the source
-        // image_url (field_s_event_image) to the url of the current image.
-        /*
-        if (empty($row->getSourceProperty('field_s_event_image')) &&
-          !empty($eventNode->get('field_s_event_media')->getValue())) {
-          $mids = $eventNode->get('field_s_event_media')->getValue();
-          $mid = reset($mids);
-          if ($mid !== FALSE && !empty($mid['target_id'])) {
-            $mediaEntity = \Drupal::getContainer()->get('entity.manager')
-              ->getStorage('media')->load($mid['target_id']);
-            $fids = $mediaEntity->get('field_media_image')->getValue();
-            if (!empty($fids)) {
-              $fid = reset($fids);
-              if ($fid !== FALSE && !empty($fid['target_id'])) {
-                $row->setSourceProperty('field_s_event_image',
-                  File::load($fid['target_id'])->getFileUri());
-              }
-            }
-          }
-        }
-        */
         $row->setSourceProperty('nid', $entityid);
         $row->setDestinationProperty('nid', $entityid);
       }
