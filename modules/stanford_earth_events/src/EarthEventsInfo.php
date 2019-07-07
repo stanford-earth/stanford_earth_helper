@@ -6,6 +6,8 @@ use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate\MigrateMessage;
 use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
 use Drupal\file\Entity\File;
+use Drupal\node\Entity\Node;
+use Drupal\media\Entity\Media;
 
 /**
  * Encapsulates an information table for Earth Events imports.
@@ -379,6 +381,40 @@ class EarthEventsInfo {
       $file = File::load($fid->fid);
       $file->delete();
     }
+  }
+
+  /**
+   * Return the default media entity for event nodes.
+   *
+   * @return int|string|null
+   *   Entity id or null.
+   */
+  public static function getDefaultEventMediaEntity(Node $node = NULL) {
+    if (empty($node)) {
+      $fields = \Drupal::service('entity_field.manager')
+        ->getFieldDefinitions('node', 'stanford_event');
+      $media_field_def = $fields['field_s_event_media'];
+      $found_mid = $media_field_def->getDefaultValueLiteral();
+    }
+    else {
+      $media_field_def = $node->getFieldDefinition('field_s_event_media');
+      $found_mid = $media_field_def->getDefaultValue($node);
+    }
+    $default_mid = NULL;
+    if (!empty($found_mid) and is_array($found_mid)) {
+      $media_entity = NULL;
+      if (!empty($found_mid[0]['target_id'])) {
+        $media_entity = Media::load($found_mid[0]['target_id']);
+      }
+      else if (!empty($found_mid[0]['target_uuid'])) {
+        $media_entity = \Drupal::service('entity.repository')
+          ->loadEntityByUuid('media', $found_mid[0]['target_uuid']);
+      }
+      if (!empty($media_entity)) {
+        $default_mid = $media_entity->id();
+      }
+    }
+    return $default_mid;
   }
 
   /**

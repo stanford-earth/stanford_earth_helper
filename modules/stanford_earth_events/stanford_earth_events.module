@@ -80,6 +80,7 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
         // If the event node has a media entity image but no image_url in the
         // event itself, the image will get removed unless we set the source
         // image_url (field_s_event_image) to the url of the current image.
+        /*
         if (empty($row->getSourceProperty('field_s_event_image')) &&
           !empty($eventNode->get('field_s_event_media')->getValue())) {
           $mids = $eventNode->get('field_s_event_media')->getValue();
@@ -97,6 +98,7 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
             }
           }
         }
+        */
         $row->setSourceProperty('nid', $entityid);
         $row->setDestinationProperty('nid', $entityid);
       }

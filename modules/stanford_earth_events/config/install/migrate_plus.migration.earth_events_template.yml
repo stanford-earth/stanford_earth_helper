@@ -136,14 +136,27 @@ process:
       from_format: U
       to_format: 'Y-m-d\TH:i:s'
       timezone: Etc/GMT
-  field_s_event_image:
-    plugin: image_import
+  image_file_basename:
+    plugin: callback
     source: field_s_event_image
-    destination: constants/file_destination
-    uid: 0
-    title: title
+    callable:
+      - \Drupal\Core\File\FileSystem
+      - basename
+  image_file_name:
+    plugin: concat
+    source:
+      - constants/file_destination
+      - '@image_file_basename'
+  field_s_event_media:
+    plugin: stanford_earth_events_image
+    source: field_s_event_image
+    destination: '@image_file_name'
     alt: '!file'
-    skip_on_missing_source: true
+    title: title
+    skip_on_error: true
+    id_only: true
+    reuse: true
+    uid: 0
   field_s_event_more_info/uri: field_s_event_more_info
   field_s_event_more_info/title: title
   field_mapurl/uri: field_mapurl

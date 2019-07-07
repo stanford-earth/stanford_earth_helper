@@ -95,14 +95,12 @@ class StanfordEarthEventsImage extends FileImport {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    // Get the event default image media entity id and file id.
-    $defaultEventMid = EarthEventsInfo::getDefaultEventMediaEntity();
     // Get the URL to the profile image from the CAP API.
     $event_photo = $row->getSourceProperty('field_s_event_image');
 
     // If there is no profile photo URL, return the default media entity id.
     if (empty($event_photo)) {
-      return $defaultEventMid;
+      return EarthEventsInfo::getDefaultEventMediaEntity();
     }
     else {
       // The parent will download the image (if necessary) and get its fid.
@@ -129,12 +127,13 @@ class StanfordEarthEventsImage extends FileImport {
       if (!empty($row->getSourceProperty('nid'))) {
         $node = Node::load($row->getSourceProperty('nid'));
         if (!empty($node)) {
-          // If we have an account, and it has its media entity set, and...
+          // If we have an event node, and it has its media entity set, and...
           // It's value is not the default media entity id, then use that.
           $val = $node->get('field_s_event_media')->getValue();
           if (!empty($val[0]['target_id']) &&
-            $val[0]['target_id'] !== $defaultEventMid) {
-            $mid = $val[0]['target_id'];
+            $val[0]['target_id'] !==
+            EarthEventsInfo::getDefaultEventMediaEntity($node)) {
+              $mid = $val[0]['target_id'];
           }
         }
       }
