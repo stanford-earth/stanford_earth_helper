@@ -21,7 +21,7 @@ class StanfordEarthFeedUrl extends ProcessPluginBase {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    $feed_url =  $row->getSourceProperty('current_feed_url');
+    $feed_url = $row->getSourceProperty('current_feed_url');
     $feed_urls = [];
     if (!empty($feed_url)) {
       $feed_urls[] = $feed_url;
