@@ -52,6 +52,9 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
         elseif (strpos($description, 'sustainability') !== FALSE) {
           $department = "Sustainability Science and Practice";
         }
+        elseif (strpos($description, 'donohue family') !== FALSE) {
+          $department = "O'Donohue Family Stanford Educational Farm";
+        }
         break;
       }
     }
