@@ -148,20 +148,23 @@ class StanfordEarthEventsController extends ControllerBase {
    */
   public function cleanupImages() {
     set_time_limit(0);
-    $q1 = "SELECT COUNT(fid) FROM file_managed WHERE uri LIKE '%stanford-event%' " .
-      "AND fid NOT IN (SELECT fid FROM file_usage)";
-    $rows = $this->db->query($q1)->fetchField();
-    $rowsper = (round($rows, -3) + 1000) / 100;
+    $query = \Drupal::entityQuery('node');
+    $group = $query->orConditionGroup()
+      ->condition('type', 'stanford_news')
+      ->condition('type', 'stanford_spotlight');
+    $nids = $query->condition($group)->execute();
+    $rowsper = (round(count($nids), -3) + 100) / 100;
     $batch_builder = new BatchBuilder();
-    $batch_builder->setTitle('Cleanup unused event images');
+    $batch_builder->setTitle('Update mainsite tags on news and spotlights.');
     for ($i = 0; $i < 100; $i++) {
+      $nid_array = array_slice($nids, $i*100, 100);
       $batch_builder->addOperation(
         [
           new EarthEventsInfo(),
           'deleteUnusedImages',
         ],
         [
-          $rowsper,
+          $nid_array,
         ]
       );
     }

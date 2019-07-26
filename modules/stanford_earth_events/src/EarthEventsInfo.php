@@ -368,30 +368,6 @@ class EarthEventsInfo {
   }
 
   /**
-   * Deletes images from the files/stanford-event folder if unused.
-   *
-   * @param int $limit
-   *   Limits the number of file records to review when run from batch.
-   *
-   * @throws \Drupal\Core\Entity\EntityStorageException
-   */
-  public static function deleteUnusedImages($limit = 0) {
-
-    set_time_limit(0);
-    $db = \Drupal::database();
-    $qstr = "SELECT fid FROM file_managed WHERE uri LIKE '%stanford-event%' " .
-      "AND fid NOT IN (SELECT fid FROM file_usage)";
-    if (intval($limit) > 0) {
-      $qstr .= " LIMIT " . strval($limit);
-    }
-    $fids = $db->query($qstr);
-    foreach ($fids as $fid) {
-      $file = File::load($fid->fid);
-      $file->delete();
-    }
-  }
-
-  /**
    * Return the default media entity for event nodes.
    *
    * @return int|string|null
@@ -464,6 +440,54 @@ class EarthEventsInfo {
         'primary key' => ['guid'],
       ],
     ];
+  }
+
+  /**
+   * Deletes images from the files/stanford-event folder if unused.
+   *
+   * @param int $limit
+   *   Limits the number of file records to review when run from batch.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
+   */
+  public static function deleteUnusedImages($nids = []) {
+
+    set_time_limit(0);
+    foreach ($nids as $nid) {
+      $node = Node::load($nid);
+      $depts = NULL;
+      if ($node->getType() === 'stanford_news') {
+        $depts = $node->get('field_s_news_department')->getValue();
+      }
+      else {
+        if ($node->getType() === 'stanford_spotlight') {
+          $depts = $node->get('field_s_spotlight_department_tag')->getValue();
+        }
+      }
+      $found = FALSE;
+      if (empty($depts)) {
+        $depts = [];
+      }
+      foreach ($depts as $tid) {
+        if (!empty($tid) && is_array($tid)) {
+          if (!empty($tid['target_id'] && $tid['target_id'] == '1311')) {
+            $found = TRUE;
+          }
+        }
+      }
+      if (!$found) {
+        $depts[] = ['target_id' => '1311'];
+        if ($node->getType() === 'stanford_news') {
+          $node->field_s_news_department = $depts;
+        }
+        else {
+          if ($node->getType() === 'stanford_spotlight') {
+            $node->field_s_spotlight_department_tag = $depts;
+          }
+        }
+        $node->save();
+      }
+    }
   }
 
 }

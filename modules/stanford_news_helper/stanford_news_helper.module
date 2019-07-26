@@ -27,7 +27,7 @@ function stanford_news_helper_form_node_stanford_news_form_alter(&$form, FormSta
   if (isset($input['_triggering_element_name']) && $input['_triggering_element_name'] == "field_s_news_top_media_stanford_paragraph_hero_banner_add_more") {
     $top_media_widget = $form['field_s_news_top_media']['widget'];
     foreach ($top_media_widget as $key => $value) {
-     if (is_numeric($key)) {
+      if (is_numeric($key)) {
         $form['field_s_news_top_media']['widget'][$key]['subform']['field_p_hero_banner_tall']['widget']['#default_value'] = ["is-tall" => 'is-tall'];
       }
     }
