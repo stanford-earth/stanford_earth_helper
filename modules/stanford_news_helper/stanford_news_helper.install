@@ -1,0 +1,56 @@
+<?php
+
+/**
+ * @file
+ * Install, update, and uninstall functions for stanford_earth_news.
+ */
+
+use Drupal\Core\Database\Database;
+use Drupal\node\Entity\Node;
+
+/**
+ * Add "Mainsite" tag to all news and spotlight nodes.
+ */
+function stanford_news_helper_update_8100() {
+  set_time_limit(0);
+  $query = \Drupal::entityQuery('node');
+  $group = $query->orConditionGroup()
+    ->condition('type', 'stanford_news')
+    ->condition('type', 'stanford_spotlight');
+  $nids = $query->condition($group)->execute();
+  foreach ($nids as $key => $nid) {
+    if ($nid == 3686) {
+      $xyz = 1;
+    }
+    $node = Node::load($nid);
+    $depts = NULL;
+    if ($node->getType() === 'stanford_news') {
+      $depts = $node->get('field_s_news_department')->getValue();
+    }
+    else if ($node->getType() === 'stanford_spotlight') {
+      $depts = $node->get('field_s_spotlight_department_tag')->getValue();
+    }
+    $found = FALSE;
+    if (empty($depts)) {
+      $depts = [];
+    }
+    foreach ($depts as $tid) {
+      if (!empty($tid) && is_array($tid)) {
+        if (!empty($tid['target_id'] && $tid['target_id'] == '1311')) {
+          $found = TRUE;
+        }
+      }
+    }
+    if (!$found) {
+      $depts[] = ['target_id' => '1311'];
+      $depts = NULL;
+      if ($node->getType() === 'stanford_news') {
+        $node->field_s_news_department = $depts;
+      }
+      else if ($node->getType() === 'stanford_spotlight') {
+        $node->field_s_spotlight_department_tag = $depts;
+      }
+      $node->save();
+    }
+  }
+}
