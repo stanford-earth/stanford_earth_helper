@@ -5,7 +5,6 @@ namespace Drupal\stanford_earth_events;
 use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate\MigrateMessage;
 use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
-use Drupal\file\Entity\File;
 use Drupal\node\Entity\Node;
 use Drupal\media\Entity\Media;
 
@@ -445,12 +444,12 @@ class EarthEventsInfo {
   /**
    * Deletes images from the files/stanford-event folder if unused.
    *
-   * @param int $limit
-   *   Limits the number of file records to review when run from batch.
+   * @param array $nids
+   *   List of nids to load and update.
    *
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public static function deleteUnusedImages($nids = []) {
+  public static function deleteUnusedImages(array $nids = []) {
 
     set_time_limit(0);
     foreach ($nids as $nid) {

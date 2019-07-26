@@ -153,11 +153,10 @@ class StanfordEarthEventsController extends ControllerBase {
       ->condition('type', 'stanford_news')
       ->condition('type', 'stanford_spotlight');
     $nids = $query->condition($group)->execute();
-    $rowsper = (round(count($nids), -3) + 100) / 100;
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle('Update mainsite tags on news and spotlights.');
     for ($i = 0; $i < 100; $i++) {
-      $nid_array = array_slice($nids, $i*100, 100);
+      $nid_array = array_slice($nids, $i * 11, 11);
       $batch_builder->addOperation(
         [
           new EarthEventsInfo(),
