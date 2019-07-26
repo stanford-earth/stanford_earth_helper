@@ -11,6 +11,7 @@ use Drupal\node\Entity\Node;
 /**
  * Add "Mainsite" tag to all news and spotlight nodes.
  */
+
 function stanford_news_helper_update_8100() {
   set_time_limit(0);
   $query = \Drupal::entityQuery('node');
@@ -43,7 +44,6 @@ function stanford_news_helper_update_8100() {
     }
     if (!$found) {
       $depts[] = ['target_id' => '1311'];
-      $depts = NULL;
       if ($node->getType() === 'stanford_news') {
         $node->field_s_news_department = $depts;
       }
@@ -54,3 +54,4 @@ function stanford_news_helper_update_8100() {
     }
   }
 }
+
