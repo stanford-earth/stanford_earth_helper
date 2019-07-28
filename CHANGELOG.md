@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha33
+-------------------------------------------------------------------------------_
+_Release Date: 2019-07-28
+
+_Code for MAINSITE tag in news and spotlights, coopts event image cleanup code.
+_Add support for ical feed for events.
+
 8.x-1.0-alpha32
 -------------------------------------------------------------------------------_
 _Release Date: 2019-07-08
