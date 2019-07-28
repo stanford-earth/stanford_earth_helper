@@ -37,7 +37,6 @@
     <{{ field.wrapper_element }}{{ field.wrapper_attributes }}>
   {%- endif %}
   {%- if field.label -%}
-    {{ devel_breakpoint() }}
     {%- if field.label_element -%}
       <{{ field.label_element }}{{ field.label_attributes }}>{{ field.label }}{{ field.label_suffix }}</{{ field.label_element }}>
     {%- else -%}
@@ -45,9 +44,9 @@
     {%- endif %}
   {%- endif %}
   {%- if field.element_type -%}
-    <{{ field.element_type }}{{ field.element_attributes }}>{{ field.content }}</{{ field.element_type }}>
+    <{{ field.element_type }}{{ field.element_attributes }}>{{ field.content | trim }}</{{ field.element_type }}>
   {%- else -%}
-    {{ field.content }}
+    {{ field.content | trim }}
   {%- endif %}
   {%- if field.wrapper_element -%}
     </{{ field.wrapper_element }}>
