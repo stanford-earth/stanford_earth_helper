@@ -82,6 +82,6 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
 }
 
 function stanford_earth_events_theme_registry_alter(&$theme_registry) {
-  $theme_registry['views_view_ical_fields']['path'] =
-    'modules/stanford/stanford_earth_helper/modules/stanford_earth_events/templates';
+  $path = drupal_get_path('module', 'stanford_earth_events');
+  $theme_registry['views_view_ical_fields']['path'] = $path . '/templates';
 }
