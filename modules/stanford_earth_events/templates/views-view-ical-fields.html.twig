@@ -27,8 +27,6 @@
  *   - element_attributes: List of attributes for HTML element for field content.
  * - row: The raw result from the query, with all data it fetched.
  *
- * removed {{ field.content | replace({ ("\n\n"): "\n" }) | trim }}
- *
  * @see template_preprocess_views_view_fields()
  *
  * @ingroup themeable
@@ -42,13 +40,13 @@
     {%- if field.label_element -%}
       <{{ field.label_element }}{{ field.label_attributes }}>{{ field.label }}{{ field.label_suffix }}</{{ field.label_element }}>
     {%- else -%}
-      {{ field.label }}{{ field.label_suffix }}:
+      {{ field.label }}{{ field.label_suffix }}
     {%- endif %}
   {%- endif %}
   {%- if field.element_type -%}
-    <{{ field.element_type }}{{ field.element_attributes }}>{{ field.content | replace ({ ("\t\n"): "" }) | replace({ ("\n\n"): "\n" }) | trim }}</{{ field.element_type }}>
+    <{{ field.element_type }}{{ field.element_attributes }}>{{ field.content }}</{{ field.element_type }}>
   {%- else -%}
-    {{ field.content | replace ({ ("\t\n"): "" }) | replace({ ("\n\n"): "\n" }) | trim }}
+    {{ field.content | replace({ ("\n"): "<br />" }) | trim }}
   {%- endif %}
   {%- if field.wrapper_element -%}
     </{{ field.wrapper_element }}>
