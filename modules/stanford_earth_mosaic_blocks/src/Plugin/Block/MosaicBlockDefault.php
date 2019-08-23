@@ -31,7 +31,7 @@ class MosaicBlockDefault extends BlockBase {
         'tiles' => [
           [
             'cite_name' => $this->t('Elsa M. Ordway'),
-            'cite_title' => $this->t('Ph.D.'),
+            'cite_title' => $this->t('PhD \'18'),
             'classes' => 'photo-mosaic--thumbs-down-quote',
             'description' => $this->t('Together, we pursue science and build lifelong bonds.'),
             'image' => [
