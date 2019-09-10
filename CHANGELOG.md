@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha34
+-------------------------------------------------------------------------------_
+_Release Date: 2019-09-10
+
+_Updates to Mosaic Blocks submodule.
+_Tweaks to Stanford Events ical feed.
+
 8.x-1.0-alpha33
 -------------------------------------------------------------------------------_
 _Release Date: 2019-07-28
