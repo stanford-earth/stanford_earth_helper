@@ -44,9 +44,9 @@
     {%- endif %}
   {%- endif %}
   {%- if field.element_type -%}
-    <{{ field.element_type }}{{ field.element_attributes }}>{{ field.content | replace({ ("\n"): " " }) | replace({ ("&amp;"): "&" }) | replace({ ("&#039;"): "'" }) | raw }}</{{ field.element_type }}>
+    <{{ field.element_type }}{{ field.element_attributes }}>{{ field.content | replace({ ("\n"): " " }) | replace({ ("&amp;"): "&" }) | replace({ ("&#039;"): "'" }) | replace({ ("&quot;"): "" }) | raw }}</{{ field.element_type }}>
   {%- else -%}
-    {{ field.content | replace({ ("\n"): " " }) | replace({ ("&amp;"): "&" }) | replace({ ("&#039;"): "'" }) | raw }}
+    {{ field.content | replace({ ("\n"): " " }) | replace({ ("&amp;"): "&" }) | replace({ ("&#039;"): "'" }) | replace({ ("&quot;"): "" }) | raw }}
   {%- endif %}
   {%- if field.wrapper_element -%}
     </{{ field.wrapper_element }}>
