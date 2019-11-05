@@ -168,7 +168,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
-    // $fp_array_original = Yaml::decode($form_state->getValue('import'));.
     // Validate that the urls are in good format and no extra whitespace has
     // been added.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
@@ -575,6 +574,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
     // Delete the remaining terms.
     $taxonomy_storage->delete($wg_terms);
+
+    // TODO delete from migrate_info_earth_capx_workgroups and sunets with removed workgroup
   }
 
 }

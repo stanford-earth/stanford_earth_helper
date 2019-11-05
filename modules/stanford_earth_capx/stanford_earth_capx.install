@@ -9,56 +9,17 @@ use Drupal\Core\Database\Database;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
 
 /**
- * Return search terms schema for module install and update.
- */
-function _stanford_earth_capx_search_table() {
-  return [
-    'description' => "Stanford Cap-X Profile Search Term Info",
-    'fields' => [
-      'sunetid' => [
-        'type' => 'varchar',
-        'length' => 8,
-        'not null' => TRUE,
-        'description' => "SUNetID for this account and profile",
-      ],
-      'entity_id' => [
-        'type' => 'int',
-        'not null' => FALSE,
-        'description' => "Entity id to which the profile was imported",
-      ],
-      'workgroup_list' => [
-        'type' => 'text',
-        'not null' => FALSE,
-        'size' => 'big',
-        'description' => 'Workgroups in which this profile is found',
-      ],
-      'search_terms' => [
-        'type' => 'text',
-        'not null' => FALSE,
-        'size' => 'big',
-        'description' => 'Search terms by which this profile can be found',
-      ],
-    ],
-    'primary key' => ['sunetid'],
-  ];
-}
-
-/**
  * Implements hook_schema().
  */
 function stanford_earth_capx_schema() {
-  $capxinfo = EarthCapxInfo::getSchema();
-  $search_terms = ['migrate_info_earth_capx_search_terms' => _stanford_earth_capx_search_table()];
-  return array_merge($capxinfo, $search_terms);
+  return EarthCapxInfo::getSchema();
 }
 
 /**
  * Add new fields to schema.
  */
 function stanford_earth_capx_update_8100() {
-  $search_terms = _stanford_earth_capx_search_table();
-  $schema = Database::getConnection()->schema();
-  $schema->createTable('migrate_info_earth_capx_search_terms', $search_terms);
+  // No longer needed. Table once created here not in use and deleted below.
 }
 
 /**
@@ -91,4 +52,19 @@ function stanford_earth_capx_update_8103() {
   $db->query("UPDATE {user__field_s_person_links} SET " .
     "field_s_person_links_uri = CONCAT('http://' , field_s_person_links_uri) " .
     "WHERE field_s_person_links_uri NOT LIKE 'http%'")->execute();
+}
+
+/**
+ * Add new workgroup table; get rid of unused search table.
+ */
+function stanford_earth_capx_update_8104() {
+  $db = Database::getConnection();
+  if ($db->schema()->tableExists('migrate_info_earth_capx_search_terms')) {
+    $db->schema()->dropTable('migrate_info_earth_capx_search_terms');
+  }
+  if (!$db->schema()->tableExists('migrate_info_earth_capx_workgroups')) {
+    $schema = EarthCapxInfo::getSchema();
+    $db->schema()->createTable('migrate_info_earth_capx_workgroups',
+      $schema['migrate_info_earth_capx_workgroups']);
+  }
 }

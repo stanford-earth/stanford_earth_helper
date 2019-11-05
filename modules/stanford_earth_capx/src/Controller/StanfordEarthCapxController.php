@@ -75,6 +75,23 @@ class StanfordEarthCapxController extends ControllerBase {
    */
   public function updateAll($refresh) {
 
+    $query_str = "SELECT IF(COUNT(*)=0,'same','different') FROM ( " .
+      "SELECT sunetid, wg FROM migrate_info_earth_capx_wgs " .
+      "WHERE sunetid = :sunetid AND ( sunetid, wg ) NOT IN " .
+      "( SELECT sunetid, wg FROM migrate_info_earth_capx_wgs_temp " .
+      "WHERE sunetid = :sunetid) UNION " .
+      "SELECT sunetid, wg FROM migrate_info_earth_capx_wgs_temp " .
+      "WHERE sunetid = :sunetid AND ( sunetid, wg ) NOT IN " .
+      "( SELECT sunetid, wg FROM migrate_info_earth_capx_wgs " .
+      "WHERE sunetid = :sunetid )) minusintersec";
+    $sunets = ['aaronc', 'clares', 'ksharp'];
+    foreach ($sunets as $sunetid) {
+      $result = $this->db->query($query_str, [':sunetid' => $sunetid]);
+      foreach ($result as $record) {
+        $xyz = 1;
+      }
+    }
+
     if ($refresh) {
       $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, profile_photo_id = 0, workgroup_list=''")->execute();
       // $this->db->query("DELETE FROM

@@ -405,6 +405,27 @@ class EarthCapxInfo {
    */
   public static function getSchema() {
     return [
+      'migrate_info_earth_capx_workgroups' => [
+        'description' => "List of workgroups found for each SUNetID",
+        'fields' => [
+          'sunetid' => [
+            'type' => 'varchar',
+            'length' => 8,
+            'not null' => TRUE,
+            'description' => "SUNetID for this account and profile",
+          ],
+          'workgroup' => [
+            'type' => 'int',
+            'length' => 11,
+            'not null' => TRUE,
+            'description' => "Workgroup tag from import",
+          ],
+        ],
+        'primary key' => [
+          'sunetid',
+          'workgroup',
+        ],
+      ],
       'migrate_info_earth_capx_importer' => [
         'description' => "Stanford Cap-X Profile Import Information",
         'fields' => [
