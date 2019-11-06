@@ -21,11 +21,21 @@ function stanford_earth_capx_entity_delete(EntityInterface $entity) {
     return;
   }
 
+  $database = \Drupal::database();
+  // Get the sunetid of the user account and delete matching records from wgs.
+  $sunetid = EarthCapxInfo::getSunetid($entity->id());
+  if (!empty($sunetid)) {
+    if ($database->schema()->tableExists('migrate_info_earth_capx_wgs')) {
+      $database->delete('migrate_info_earth_capx_wgs')
+        ->condition('sunetid', $sunetid)
+        ->execute();
+    }
+  }
+
   // Delete record from capx info table.
   EarthCapxInfo::delete($entity->id());
 
   // Delete record from migration map table.
-  $database = \Drupal::database();
   $table = 'migrate_map_earth_capx_importer';
   if ($database->schema()->tableExists($table)) {
     $database->delete($table)

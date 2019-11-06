@@ -339,6 +339,28 @@ class EarthCapxInfo {
   }
 
   /**
+   * Get the sunetid given an entity_id.
+   *
+   * @param string $entity_id
+   *   Entity ID of profile for which to get SUNet ID.
+   */
+  public static function getSunetid($entity_id = 0) {
+    $sunetid = '';
+    if ($entity_id > 0) {
+      $db = \Drupal::database();
+      $result = $db->query("SELECT sunetid FROM {" . self::EARTH_CAPX_INFO_TABLE .
+          "} WHERE entity_id = :entity_id", [':entity_id' => $entity_id]);
+      foreach ($result as $record) {
+        if (!empty($record->sunetid)) {
+          $sunetid = $record->sunetid;
+        }
+        break;
+      }
+    }
+    return $sunetid;
+  }
+
+  /**
    * Return true if this is a new profile import.
    */
   public function isNew() {
@@ -405,7 +427,7 @@ class EarthCapxInfo {
    */
   public static function getSchema() {
     return [
-      'migrate_info_earth_capx_workgroups' => [
+      'migrate_info_earth_capx_wgs' => [
         'description' => "List of workgroups found for each SUNetID",
         'fields' => [
           'sunetid' => [
@@ -414,7 +436,7 @@ class EarthCapxInfo {
             'not null' => TRUE,
             'description' => "SUNetID for this account and profile",
           ],
-          'workgroup' => [
+          'wg_tag' => [
             'type' => 'int',
             'length' => 11,
             'not null' => TRUE,
@@ -423,7 +445,28 @@ class EarthCapxInfo {
         ],
         'primary key' => [
           'sunetid',
-          'workgroup',
+          'wg_tag',
+        ],
+      ],
+      'migrate_info_earth_capx_wgs_temp' => [
+        'description' => "List of workgroups found for each SUNetID",
+        'fields' => [
+          'sunetid' => [
+            'type' => 'varchar',
+            'length' => 8,
+            'not null' => TRUE,
+            'description' => "SUNetID for this account and profile",
+          ],
+          'wg_tag' => [
+            'type' => 'int',
+            'length' => 11,
+            'not null' => TRUE,
+            'description' => "Workgroup tag from import",
+          ],
+        ],
+        'primary key' => [
+          'sunetid',
+          'wg_tag',
         ],
       ],
       'migrate_info_earth_capx_importer' => [

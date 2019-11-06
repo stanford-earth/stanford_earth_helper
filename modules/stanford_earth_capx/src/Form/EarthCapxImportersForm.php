@@ -21,7 +21,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Batch\BatchBuilder;
 
 /**
- * ListedEventsForm description.
+ * EarthCapxImportersForm description.
  */
 class EarthCapxImportersForm extends ConfigSingleImportForm {
 
@@ -40,7 +40,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
   protected $db;
 
   /**
-   * EventImportersForm constructor.
+   * EarthCapxImportersForm constructor.
    *
    * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
    *   The entity manager.
@@ -168,12 +168,12 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
 
-    // Validate that the urls are in good format and no extra whitespace has
-    // been added.
+    // Validate that the workgroups are in good format and no extra whitespace
+    // has been added.
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
 
-    // Check for empty lines and valid urls on listed events.
+    // Check for empty lines on workgroups.
     foreach ($wgs as $wg) {
       // No empty lines.
       if (empty($wg)) {
@@ -574,8 +574,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
     // Delete the remaining terms.
     $taxonomy_storage->delete($wg_terms);
-
-    // TODO delete from migrate_info_earth_capx_workgroups and sunets with removed workgroup
   }
 
 }

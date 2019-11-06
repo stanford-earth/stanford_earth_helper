@@ -10,5 +10,3 @@ dependencies:
   - migrate_plus
   - migrate_file
   - filefield_paths
-# libraries:
-#   - /example_name
