@@ -3,6 +3,7 @@
 namespace Drupal\stanford_earth_capx\Plugin\migrate_plus\data_parser;
 
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
+use Drupal\taxonomy\Entity\Term;
 
 /**
  * Obtain JSON data for migration using this extension of migrate_plus Json API.
@@ -116,9 +117,42 @@ class StanfordEarthCapxJson extends Json {
     // Now we want to get the members of the workgroup from the workgroup API
     // and see if anyone is missing.
     if (!empty($wg)) {
+      // Look up the workgroup term id in the profile_workgroups vocabulary.
+      $wg_tid = 0;
+      $properties = [
+        'vid' => 'profile_workgroups',
+        'name' => $wg,
+      ];
+      $em = \Drupal::service("entity_type.manager");
+      $wg_terms = $em->getStorage('taxonomy_term')
+        ->loadByProperties($properties);
+      if (!empty($wg_terms)) {
+        $wg_tid = array_key_first($wg_terms);
+      }
+
+      if (!empty($wg_tid)) {
+        \Drupal::database()->delete('migrate_info_earth_capx_wgs_temp')
+          ->condition('wg_tag', $wg_tid)
+          ->execute();
+      }
       $wg_service = \Drupal::service('stanford_earth_workgroups.workgroup');
       $wg_members = $wg_service->getMembers($wg);
       if ($wg_members['status']['member_count'] > 0) {
+
+        if (!empty($wg_tid)) {
+          try {
+            $query = \Drupal::database()
+              ->insert('migrate_info_earth_capx_wgs_temp')
+              ->fields(['sunetid', 'wg_tag']);
+            foreach ($wg_members['members'] as $sunet => $name) {
+              $query->values([$sunet, $wg_tid]);
+            }
+            $query->execute();
+           } catch (Exception $e) {
+            // Log the exception to watchdog.
+            \Drupal::logger('type')->error($e->getMessage());
+          }
+        }
         // Put our sunets from CAP in an array so easier to search
         // $wg_cap_members = [].
         foreach ($source_data_out as $profile) {
@@ -155,6 +189,22 @@ class StanfordEarthCapxJson extends Json {
                 ],
               ],
             ];
+          }
+        }
+      } else {
+        if (!empty($wg_tid)) {
+          try {
+            $query = \Drupal::database()
+              ->select('migrate_info_earth_capx_wgs', 'm');
+            $query->addField('m', 'sunetid');
+            $query->addField('m', 'wg_tag');
+            $query->condition('wg_tag', $wg_tid);
+            \Drupal::database()->insert('migrate_info_earth_capx_wgs_temp')
+              ->from($query)
+              ->execute();
+          } catch (Exception $e) {
+            // Log the exception to watchdog.
+            \Drupal::logger('type')->error($e->getMessage());
           }
         }
       }

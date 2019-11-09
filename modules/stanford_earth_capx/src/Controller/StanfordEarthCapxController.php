@@ -4,11 +4,12 @@ namespace Drupal\stanford_earth_capx\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\migrate\Plugin\MigrationPluginManager;
-// Not currently used -- use Drupal\Core\Batch\BatchBuilder; --.
+use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-// Not currently used -- use Drupal\stanford_earth_capx\EarthCapxInfo; --.
+use Drupal\migrate_plus\Entity\Migration;
+use Drupal\stanford_earth_capx\EarthCapxInfo;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -74,7 +75,7 @@ class StanfordEarthCapxController extends ControllerBase {
    * {@inheritdoc}
    */
   public function updateAll($refresh) {
-
+/*
     $query_str = "SELECT IF(COUNT(*)=0,'same','different') FROM ( " .
       "SELECT sunetid, wg FROM migrate_info_earth_capx_wgs " .
       "WHERE sunetid = :sunetid AND ( sunetid, wg ) NOT IN " .
@@ -91,18 +92,18 @@ class StanfordEarthCapxController extends ControllerBase {
         $xyz = 1;
       }
     }
-
+*/
     if ($refresh) {
-      $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, profile_photo_id = 0, workgroup_list=''")->execute();
-      // $this->db->query("DELETE FROM
-      // {user__field_profile_search_terms}")->execute();
+      $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, profile_photo_id = 0")->execute();
     }
 
+    /*
     return [
       '#type' => 'markup',
       '#markup' => $this->t('Run using drush migrate:import.'),
     ];
-    /*
+    */
+
     $eMigrations = $this->cf
     ->listAll('migrate_plus.migration.earth_capx_import');
     $batch_builder = new BatchBuilder();
@@ -110,7 +111,7 @@ class StanfordEarthCapxController extends ControllerBase {
     foreach ($eMigrations as $eMigration) {
     $migration = Migration::load(substr($eMigration,
     strpos($eMigration, 'earth')));
-    // $mp = \Drupal::getContainer()->get('plugin.manager.migration');
+    $mp = \Drupal::getContainer()->get('plugin.manager.migration');
     $migration_plugin = $this->mp->createInstance($migration->id(),
     $migration->toArray());
     $migration_plugin->getIdMap()->prepareUpdate();
@@ -137,7 +138,7 @@ class StanfordEarthCapxController extends ControllerBase {
     }
     batch_set($batch_builder->toArray());
     return batch_process('/');
-     */
+
   }
 
 }

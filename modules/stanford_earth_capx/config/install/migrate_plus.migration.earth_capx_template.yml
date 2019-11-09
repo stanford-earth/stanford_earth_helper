@@ -10,6 +10,7 @@ migration_group: null
 label: 'Stanford Profiles '
 source:
   plugin: url
+  skip_count: true
   data_fetcher_plugin: http
   data_parser_plugin: stanford_earth_capx_json
   headers:
