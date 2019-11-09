@@ -68,6 +68,11 @@ function stanford_earth_capx_update_8104() {
   if ($db->schema()->tableExists('migrate_info_earth_capx_media')) {
     $db->schema()->dropTable('migrate_info_earth_capx_media');
   }
+  if ($db->schema()
+    ->fieldExists('migrate_info_earth_capx_importer', 'workgroup_list')) {
+    $db->schema()
+      ->dropField('migrate_info_earth_capx_importer', 'workgroup_list');
+  }
   if (!$db->schema()->tableExists('migrate_info_earth_capx_wgs')) {
     $schema = EarthCapxInfo::getSchema();
     $db->schema()->createTable('migrate_info_earth_capx_wgs',

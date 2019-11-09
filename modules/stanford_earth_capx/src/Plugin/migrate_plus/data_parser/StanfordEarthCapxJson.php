@@ -127,7 +127,8 @@ class StanfordEarthCapxJson extends Json {
       $wg_terms = $em->getStorage('taxonomy_term')
         ->loadByProperties($properties);
       if (!empty($wg_terms)) {
-        $wg_tid = array_key_first($wg_terms);
+        reset($wg_terms);
+        $wg_tid = key($wg_terms);
       }
 
       if (!empty($wg_tid)) {

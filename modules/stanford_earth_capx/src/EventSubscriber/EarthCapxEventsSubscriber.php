@@ -137,7 +137,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     //  $existing_user->save();
     //}
     // Check source data in the row against etag and photo info stored in table.
-    //$okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id, $wg);
+    //$okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id);
      */
     $okay = TRUE;
 
@@ -195,7 +195,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     $wg = $this->getWorkgroup($event);
 
     $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
-    $info->setInfoRecord($row->getSource(), $destination, $photoId, $wg);
+    $info->setInfoRecord($row->getSource(), $destination, $photoId);
 
     // Update the person search terms based on the workgroup.
     if (!empty($destination)) {
