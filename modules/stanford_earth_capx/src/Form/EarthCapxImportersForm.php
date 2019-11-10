@@ -342,7 +342,10 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // Delete the old migrations.
     $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth_capx_import');
     foreach ($eMigrations as $eMigration) {
-      $this->configFactory->getEditable($eMigration)->delete();
+      if (strpos($eMigration, "000_preprocess") === FALSE &&
+        strpos($eMigration, "999_postprocess") === FALSE) {
+        $this->configFactory->getEditable($eMigration)->delete();
+      }
     }
 
     // Delete the old migration map and message tables.
@@ -404,6 +407,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $batch_builder->setTitle($this->t('Create Profile Migrations'));
     $batch_builder->setInitMessage($this->t('Creating profile import migrations for each requested workgroup.'));
     foreach ($wgs as $wg_idx => $wg) {
+      $m_index = intval($wg_idx) + 1;
       // Create migration configuration in batch mode.
       $batch_builder->addOperation(
         [
@@ -415,7 +419,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
           $form_state,
           $wg,
           $fp_array,
-          $wg_idx,
+          $m_index,
         ]);
 
       // Update taxonomy with search terms for this workgroup.

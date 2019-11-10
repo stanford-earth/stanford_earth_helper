@@ -30,12 +30,17 @@ class EarthMigrationLock extends DatabaseLockBackend {
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection object.
+   *
+   * @param string $lockName
+   *   The name of the lock.
    */
-  public function __construct(Connection $database) {
+  public function __construct(Connection $database,
+                              string $lockName =
+                                self::EARTH_MIGRATION_LOCK_NAME) {
     // Do not call the parent constructor to avoid registering a shutdown
     // function that releases all the locks at the end of a request.
     $this->database = $database;
-    $this->name = $this->normalizeName(self::EARTH_MIGRATION_LOCK_NAME);
+    $this->name = $this->normalizeName($lockName);
   }
 
   /**
@@ -95,7 +100,7 @@ class EarthMigrationLock extends DatabaseLockBackend {
    * {@inheritdoc}
    */
   public function acquireLock($timeout = 30.0) {
-    return parent::acquire(self::EARTH_MIGRATION_LOCK_NAME, $timeout);
+    return parent::acquire($this->name, $timeout);
   }
 
 }

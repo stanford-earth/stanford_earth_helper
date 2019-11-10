@@ -26,17 +26,18 @@ function stanford_earth_capx_update_8100() {
  * Add workgroup list to info table.
  */
 function stanford_earth_capx_update_8101() {
-  // No longer needed, but code will remain, commented out, for now
+  // No longer needed, but code will remain, commented out, for now.
   /*
   $schema = Database::getConnection()->schema();
   $spec = [
-    'type' => 'text',
-    'not null' => FALSE,
-    'size' => 'big',
-    'description' => 'Workgroups in which this profile is found',
+  'type' => 'text',
+  'not null' => FALSE,
+  'size' => 'big',
+  'description' => 'Workgroups in which this profile is found',
   ];
-  $schema->addField(EarthCapxInfo::EARTH_CAPX_INFO_TABLE, 'workgroup_list', $spec);
-  */
+  $schema->addField(EarthCapxInfo::EARTH_CAPX_INFO_TABLE,
+  'workgroup_list', $spec);
+   */
 }
 
 /**

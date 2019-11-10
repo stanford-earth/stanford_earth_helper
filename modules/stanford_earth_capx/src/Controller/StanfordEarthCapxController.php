@@ -75,70 +75,53 @@ class StanfordEarthCapxController extends ControllerBase {
    * {@inheritdoc}
    */
   public function updateAll($refresh) {
-/*
-    $query_str = "SELECT IF(COUNT(*)=0,'same','different') FROM ( " .
-      "SELECT sunetid, wg FROM migrate_info_earth_capx_wgs " .
-      "WHERE sunetid = :sunetid AND ( sunetid, wg ) NOT IN " .
-      "( SELECT sunetid, wg FROM migrate_info_earth_capx_wgs_temp " .
-      "WHERE sunetid = :sunetid) UNION " .
-      "SELECT sunetid, wg FROM migrate_info_earth_capx_wgs_temp " .
-      "WHERE sunetid = :sunetid AND ( sunetid, wg ) NOT IN " .
-      "( SELECT sunetid, wg FROM migrate_info_earth_capx_wgs " .
-      "WHERE sunetid = :sunetid )) minusintersec";
-    $sunets = ['aaronc', 'clares', 'ksharp'];
-    foreach ($sunets as $sunetid) {
-      $result = $this->db->query($query_str, [':sunetid' => $sunetid]);
-      foreach ($result as $record) {
-        $xyz = 1;
+    $eMigrations = $this->cf
+      ->listAll('migrate_plus.migration.earth_capx_importer');
+
+    $batch_builder = new BatchBuilder();
+    $batch_builder->setFinishCallback(
+      [
+        new EarthCapxInfo(),
+        'earthCapxPostImport',
+      ]
+    );
+    foreach ($eMigrations as $eMigration) {
+      if (strpos($eMigration, "process") === FALSE) {
+        $batch_builder->addOperation(
+          [
+            $this,
+            'earthCapxImportFeed',
+          ],
+          [
+            substr($eMigration, strpos($eMigration, 'earth_capx')),
+          ]
+        );
       }
     }
-*/
-    if ($refresh) {
-      $this->db->query("UPDATE {migrate_info_earth_capx_importer} SET photo_timestamp = 0, profile_photo_id = 0")->execute();
-    }
-
-    /*
-    return [
-      '#type' => 'markup',
-      '#markup' => $this->t('Run using drush migrate:import.'),
-    ];
-    */
-
-    $eMigrations = $this->cf
-    ->listAll('migrate_plus.migration.earth_capx_import');
-    $batch_builder = new BatchBuilder();
-    $batch_builder->setTitle($this->t('Import Profiles'));
-    foreach ($eMigrations as $eMigration) {
-    $migration = Migration::load(substr($eMigration,
-    strpos($eMigration, 'earth')));
-    $mp = \Drupal::getContainer()->get('plugin.manager.migration');
-    $migration_plugin = $this->mp->createInstance($migration->id(),
-    $migration->toArray());
-    $migration_plugin->getIdMap()->prepareUpdate();
-    $context = [
-    'sandbox' => [
-    'total' => 200,
-    'counter' => 0,
-    'batch_limit' => 200,
-    'operation' => 1,
-    ],
-    ];
-    $batch_builder->addOperation(
-    '\Drupal\migrate_tools\MigrateBatchExecutable::batchProcessImport',
-    [
-    substr($eMigration, strpos($eMigration, 'earth')),
-    [
-    'limit' => 0,
-    'update' => 1,
-    'force' => 0,
-    ],
-    $context,
-    ]
-    );
-    }
     batch_set($batch_builder->toArray());
-    return batch_process('/');
+    EarthCapxInfo::earthCapxPreImport();
+    return batch_process();
+  }
 
+  /**
+   * Import profiles via batch.
+   *
+   * @param string $migrationId
+   *   Name of the migration to import.
+   */
+  public function earthCapxImportFeed(string $migrationId) {
+    $migration = Migration::load($migrationId);
+    /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
+    $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
+    $migration_plugin->getIdMap()->prepareUpdate();
+    $migrateMessage = new MigrateMessage();
+    $options = [
+      'limit' => 0,
+      'update' => 1,
+      'force' => 0,
+    ];
+    $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
+    $executable->batchImport();
   }
 
 }

@@ -3,7 +3,6 @@
 namespace Drupal\stanford_earth_capx\Plugin\migrate_plus\data_parser;
 
 use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
-use Drupal\taxonomy\Entity\Term;
 
 /**
  * Obtain JSON data for migration using this extension of migrate_plus Json API.
@@ -149,7 +148,8 @@ class StanfordEarthCapxJson extends Json {
               $query->values([$sunet, $wg_tid]);
             }
             $query->execute();
-           } catch (Exception $e) {
+          }
+          catch (Exception $e) {
             // Log the exception to watchdog.
             \Drupal::logger('type')->error($e->getMessage());
           }
@@ -192,7 +192,8 @@ class StanfordEarthCapxJson extends Json {
             ];
           }
         }
-      } else {
+      }
+      else {
         if (!empty($wg_tid)) {
           try {
             $query = \Drupal::database()
@@ -203,7 +204,8 @@ class StanfordEarthCapxJson extends Json {
             \Drupal::database()->insert('migrate_info_earth_capx_wgs_temp')
               ->from($query)
               ->execute();
-          } catch (Exception $e) {
+          }
+          catch (Exception $e) {
             // Log the exception to watchdog.
             \Drupal::logger('type')->error($e->getMessage());
           }
