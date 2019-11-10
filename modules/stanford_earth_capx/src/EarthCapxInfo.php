@@ -6,6 +6,9 @@ use Drupal\migrate\MigrateMessage;
 use Drupal\user\Entity\User;
 use Drupal\media\Entity\Media;
 use Drupal\file\Entity\File;
+use Drupal\migrate_plus\Entity\Migration;
+use Drupal\Core\Batch\BatchBuilder;
+use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
 
 /**
  * Encapsulates an information table for CAP-X Profile imports.
@@ -442,7 +445,7 @@ class EarthCapxInfo {
       // Then clear the workgroups temp file for search tag updates at the end.
       $db->delete('migrate_info_earth_capx_wgs_temp')->execute();
     }
-    // We will release the lock after deleting orphans.
+    // We will release the lock after processing accounts.
   }
 
   /**
@@ -453,8 +456,9 @@ class EarthCapxInfo {
     /** @var \Drupal\Core\Entity\EntityTypeManager $em */
     $em = \Drupal::service("entity_type.manager");
     $sunets = $db->query("SELECT DISTINCT sunetid FROM " .
-      "migrate_info_earth_capx_wgs UNION DISTINCT sunetid FROM " .
-      "migrate_info_earth_capx_wgs_temp");
+      "migrate_info_earth_capx_wgs WHERE sunetid LIKE :initial " .
+      "UNION SELECT DISTINCT sunetid FROM migrate_info_earth_capx_wgs_temp " .
+      "WHERE sunetid LIKE :initial", [':initial' => $initial . '%']);
     foreach ($sunets as $sunet) {
       $sunetid = $sunet->sunetid;
       $result = $db->query(self::EARTH_CAPX_WG_QUERY,
@@ -462,7 +466,6 @@ class EarthCapxInfo {
       foreach ($result as $record) {
         if (reset($record) == 'different') {
           // get the wg_tags for the user
-          $wg_tags = [];
           $term_array = [];
           $wgs = $db->query("SELECT wg_tag FROM " .
             "migrate_info_earth_capx_wgs_temp WHERE sunetid = :sunetid",
@@ -482,9 +485,10 @@ class EarthCapxInfo {
               isset($term_array[$all_affil_tid])) {
               unset($term_array[$all_affil_tid]);
             }
-            $account = $em->getStorage('user')
+            $accounts = $em->getStorage('user')
               ->loadByProperties(['name' => $sunetid]);
-            if (!empty($account)) {
+            if (!empty($accounts)) {
+              $account = reset($accounts);
               $termids = [];
               foreach ($term_array as $tid) {
                 $termids[] = ['target_id' => $tid];
@@ -507,7 +511,7 @@ class EarthCapxInfo {
     // See if we have a lock by looking for a lockid stored in our session.
     /** @var \Drupal\Core\TempStore\PrivateTempStore $session */
     $session = \Drupal::service('tempstore.private')->get('EarthCapxLock');
-    $mylockid = $session->get($lock::EARTH_MIGRATION_LOCK_NAME);
+    $mylockid = $session->get('EarthCapxLock');
     if (!empty($mylockid)) {
       // See if there is a lock in the semaphore table that matches our id.
       $actual = $lock->getExistingLockId();
@@ -543,7 +547,7 @@ class EarthCapxInfo {
     // See if we have a lock by looking for a lockid stored in our session.
     /** @var \Drupal\Core\TempStore\PrivateTempStore $session */
     $session = \Drupal::service('tempstore.private')->get('EarthCapxLock');
-    $mylockid = $session->get($lock::EARTH_MIGRATION_LOCK_NAME);
+    $mylockid = $session->get('EarthCapxLock');
     if (!empty($mylockid)) {
       // See if there is a lock in the semaphore table that matches our id.
       $actual = $lock->getExistingLockId();
@@ -563,24 +567,26 @@ class EarthCapxInfo {
         if (!empty($ps_term)) {
           $term_entity = reset($ps_term);
           $all_reg_tid = intval($term_entity->id());
-          $props['name'] = 'All Affiliated Faculty';
+          $props['name'] = 'All Associated Faculty';
           $ps_term = $em->getStorage('taxonomy_term')->loadByProperties($props);
           if (!empty($ps_term)) {
             $term_entity = reset($ps_term);
             $all_affil_tid = intval($term_entity->id());
           }
         }
-        $batch_builder = new BatchBuilder();
-        $batch_builder->setTitle('Update profile search tags on accounts.');
-        $batch_builder->setFinishCallback(
-          [
-            new EarthCapxInfo(),
-            'earthCapxPostImportCleanup',
-          ]
-        );
+        //$batch_builder = new BatchBuilder();
+        //$batch_builder->setTitle('Update profile search tags on accounts.');
+        //$batch_builder->setFinishCallback(
+        //  [
+        //    new EarthCapxInfo(),
+        //    'earthCapxPostImportCleanup',
+        //  ]
+        //);
         $abc = 'abcdefghijklmnopqrstuvwxyz';
         for ($i=0; $i<strlen($abc); $i++) {
           $istr = substr($abc, $i, 1);
+          self::processAccounts($istr, $all_reg_tid, $all_affil_tid);
+          /*
           $batch_builder->addOperation(
             [
               new EarthCapxInfo(),
@@ -592,10 +598,12 @@ class EarthCapxInfo {
               $all_affil_tid,
             ]
           );
+          */
         }
-        $batch_builder->setProgressive(TRUE);
-        batch_set($batch_builder->toArray());
-        return batch_process();
+        self::earthCapxPostImportCleanup();
+        //$batch_builder->setProgressive(TRUE);
+        //batch_set($batch_builder->toArray());
+        //return batch_process('/');
       }
     }
   }

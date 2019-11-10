@@ -35,11 +35,13 @@ class EarthMigrationLock extends DatabaseLockBackend {
    *   The name of the lock.
    */
   public function __construct(Connection $database,
-                              string $lockName =
-                                self::EARTH_MIGRATION_LOCK_NAME) {
+                              string $lockName = NULL) {
     // Do not call the parent constructor to avoid registering a shutdown
     // function that releases all the locks at the end of a request.
     $this->database = $database;
+    if (empty($lockName)) {
+      $lockName = self::EARTH_MIGRATION_LOCK_NAME;
+    }
     $this->name = $this->normalizeName($lockName);
   }
 

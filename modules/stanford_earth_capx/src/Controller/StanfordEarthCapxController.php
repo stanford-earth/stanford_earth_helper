@@ -100,7 +100,7 @@ class StanfordEarthCapxController extends ControllerBase {
     }
     batch_set($batch_builder->toArray());
     EarthCapxInfo::earthCapxPreImport();
-    return batch_process();
+    return batch_process('/');
   }
 
   /**
@@ -121,7 +121,7 @@ class StanfordEarthCapxController extends ControllerBase {
       'force' => 0,
     ];
     $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
-    $executable->batchImport();
+    $executable->batchImport('/');
   }
 
 }

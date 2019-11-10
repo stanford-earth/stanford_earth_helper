@@ -123,6 +123,9 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     $row = $event->getRow();
     // See if we already have migration information for this profile.
     $sunetid = $row->getSourceProperty('sunetid');
+    if (empty($sunetid)) {
+      return;
+    }
     $info = new EarthCapxInfo($sunetid);
     /*
     //$wg = $this->getWorkgroup($event);
@@ -175,9 +178,14 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
       return;
     }
 
+    $row = $event->getRow();
+    $sunetid = $row->getSourceProperty('sunetid');
+    if (empty($sunetid)) {
+      return;
+    }
+
     // Save CAP API etag and other information so we don't later re-import
     // a profile that has not changed.
-    $row = $event->getRow();
     $destination = 0;
     $destination_ids = $event->getDestinationIdValues();
     if (!empty($destination_ids[0])) {
@@ -194,7 +202,7 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     // Get the workgroup from the import event.
     $wg = $this->getWorkgroup($event);
 
-    $info = new EarthCapxInfo($row->getSourceProperty('sunetid'));
+    $info = new EarthCapxInfo($sunetid);
     $info->setInfoRecord($row->getSource(), $destination, $photoId);
 
     // Update the person search terms based on the workgroup.
