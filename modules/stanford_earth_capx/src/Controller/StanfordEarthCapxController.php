@@ -4,12 +4,9 @@ namespace Drupal\stanford_earth_capx\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\migrate\Plugin\MigrationPluginManager;
-use Drupal\Core\Batch\BatchBuilder;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\migrate_plus\Entity\Migration;
-use Drupal\stanford_earth_capx\EarthCapxInfo;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -75,53 +72,14 @@ class StanfordEarthCapxController extends ControllerBase {
    * {@inheritdoc}
    */
   public function updateAll($refresh) {
-    $eMigrations = $this->cf
-      ->listAll('migrate_plus.migration.earth_capx_importer');
-
-    $batch_builder = new BatchBuilder();
-    $batch_builder->setFinishCallback(
-      [
-        new EarthCapxInfo(),
-        'earthCapxPostImport',
-      ]
-    );
-    foreach ($eMigrations as $eMigration) {
-      if (strpos($eMigration, "process") === FALSE) {
-        $batch_builder->addOperation(
-          [
-            $this,
-            'earthCapxImportFeed',
-          ],
-          [
-            substr($eMigration, strpos($eMigration, 'earth_capx')),
-          ]
-        );
-      }
+    if ($refresh) {
+      $this->db->query("UPDATE {migrate_info_earth_capx_importer} " .
+        "SET photo_timestamp = 0")->execute();
     }
-    batch_set($batch_builder->toArray());
-    EarthCapxInfo::earthCapxPreImport();
-    return batch_process('/');
-  }
 
-  /**
-   * Import profiles via batch.
-   *
-   * @param string $migrationId
-   *   Name of the migration to import.
-   */
-  public function earthCapxImportFeed(string $migrationId) {
-    $migration = Migration::load($migrationId);
-    /** @var \Drupal\migrate\Plugin\MigrationInterface $migration_plugin */
-    $migration_plugin = $this->mp->createInstance($migration->id(), $migration->toArray());
-    $migration_plugin->getIdMap()->prepareUpdate();
-    $migrateMessage = new MigrateMessage();
-    $options = [
-      'limit' => 0,
-      'update' => 1,
-      'force' => 0,
+    return [
+      '#type' => 'markup',
+      '#markup' => $this->t('Run using drush migrate:import.'),
     ];
-    $executable = new MigrateBatchExecutable($migration_plugin, $migrateMessage, $options);
-    $executable->batchImport('/');
   }
-
 }

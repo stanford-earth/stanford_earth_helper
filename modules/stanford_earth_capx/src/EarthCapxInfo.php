@@ -480,7 +480,6 @@ class EarthCapxInfo {
               }
             }
           }
-          if (!empty($term_array)) {
             if (isset($term_array[$all_reg_tid]) &&
               isset($term_array[$all_affil_tid])) {
               unset($term_array[$all_affil_tid]);
@@ -496,7 +495,6 @@ class EarthCapxInfo {
               $account->field_profile_search_terms = $termids;
               $account->save();
             }
-          }
         }
         break;
       }
