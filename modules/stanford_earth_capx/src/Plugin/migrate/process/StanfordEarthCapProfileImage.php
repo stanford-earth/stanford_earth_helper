@@ -104,6 +104,54 @@ class StanfordEarthCapProfileImage extends FileImport {
       return $defaultProfileMid;
     }
     else {
+      // See if there is already a user account associated with CAP API sunetid.
+      // If there is, see if it has an image file with same name as the one from
+      // CAP but stored in a different directory (by filefield_paths module).
+      // If so, update the destination file uri to match the one in the database.
+      $account = NULL;
+      $mid = NULL;
+      $media_entity = NULL;
+      $storage = \Drupal::entityTypeManager()->getStorage('media');
+      if (!empty($row->getSourceProperty('sunetid'))) {
+        $account = user_load_by_name($row->getSourceProperty('sunetid'));
+        if (!empty($account)) {
+          // If we have an account, and it has its media entity set, and...
+          // It's value is not the default media entity id, then look at that.
+          $media_val = $account->get('field_s_person_media')->getValue();
+          if (!empty($media_val[0]['target_id']) &&
+            $media_val[0]['target_id'] !== $defaultProfileMid) {
+            $mid = $media_val[0]['target_id'];
+            $media_entity = $storage->load($mid);
+            if (!empty($media_entity)) {
+              $image_val = $media_entity->get('field_media_image')->getValue();
+              if (!empty($image_val[0]['target_id'])) {
+                $fid = $image_val[0]['target_id'];
+                $file_entity = File::load($fid);
+                if (!empty($file_entity)) {
+                  $file_name = $file_entity->getFilename();
+                  $file_uri = $file_entity->getfileuri();
+                  $dest_uri =
+                    $row->getDestinationProperty('image_file_name');
+                  if (!empty($dest_uri) &&
+                    strrpos($dest_uri, "/") !== FALSE) {
+                    $dest_file_name = substr($dest_uri,
+                      strrpos($dest_uri, "/")+1);
+                    if ($dest_file_name === $file_name
+                      && $dest_uri !== $file_uri) {
+                      $row->setDestinationProperty('image_file_name',
+                        $file_uri);
+                    }
+                  }
+                }
+              }
+            }
+            else {
+              $mid = NULL;
+            }
+          }
+        }
+      }
+
       // If we already have the profile image, return its fid as $value.
       // If not, the parent will download it and create an fid and return it.
       $this->configuration['id_only'] = FALSE;
@@ -133,34 +181,11 @@ class StanfordEarthCapProfileImage extends FileImport {
         }
       }
 
-      // Assume we will need to create a new media entity.
-      $mid = NULL;
-      // See if there is already a user account associated with CAP API sunetid.
-      $account = NULL;
-      if (!empty($row->getSourceProperty('sunetid'))) {
-        $account = user_load_by_name($row->getSourceProperty('sunetid'));
-        if (!empty($account)) {
-          // If we have an account, and it has its media entity set, and...
-          // It's value is not the default media entity id, then use that.
-          $val = $account->get('field_s_person_media')->getValue();
-          if (!empty($val[0]['target_id']) &&
-            $val[0]['target_id'] !== $defaultProfileMid) {
-            $mid = $val[0]['target_id'];
-          }
-        }
-      }
-      // If we got an existing media entity, load it, otherwise create new.
-      $storage = \Drupal::entityTypeManager()->getStorage('media');
-      $media_entity = NULL;
-      if (!empty($mid)) {
-        $media_entity = $storage->load($mid);
-        if (empty($media_entity)) {
-          $mid = NULL;
-        }
-      }
-      if (empty($mid)) {
+      // If we don't have a media entity, create a new one.
+      if (empty($media_entity)) {
         $media_entity = $storage->create(['bundle' => 'image']);
       }
+      // Set the media entity with image information.
       $media_entity->get('field_media_image')->setValue($value);
       $media_entity->save();
       return $media_entity->id();
