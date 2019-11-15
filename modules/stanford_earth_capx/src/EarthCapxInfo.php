@@ -7,7 +7,6 @@ use Drupal\user\Entity\User;
 use Drupal\media\Entity\Media;
 use Drupal\file\Entity\File;
 use Drupal\migrate_plus\Entity\Migration;
-use Drupal\Core\Batch\BatchBuilder;
 use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
 
 /**
@@ -465,7 +464,7 @@ class EarthCapxInfo {
         [':sunetid' => $sunetid]);
       foreach ($result as $record) {
         if (reset($record) == 'different') {
-          // get the wg_tags for the user
+          // Get the wg_tags for the user.
           $term_array = [];
           $wgs = $db->query("SELECT wg_tag FROM " .
             "migrate_info_earth_capx_wgs_temp WHERE sunetid = :sunetid",
@@ -480,27 +479,30 @@ class EarthCapxInfo {
               }
             }
           }
-            if (isset($term_array[$all_reg_tid]) &&
-              isset($term_array[$all_affil_tid])) {
-              unset($term_array[$all_affil_tid]);
+          if (isset($term_array[$all_reg_tid]) &&
+            isset($term_array[$all_affil_tid])) {
+            unset($term_array[$all_affil_tid]);
+          }
+          $accounts = $em->getStorage('user')
+            ->loadByProperties(['name' => $sunetid]);
+          if (!empty($accounts)) {
+            $account = reset($accounts);
+            $termids = [];
+            foreach ($term_array as $tid) {
+              $termids[] = ['target_id' => $tid];
             }
-            $accounts = $em->getStorage('user')
-              ->loadByProperties(['name' => $sunetid]);
-            if (!empty($accounts)) {
-              $account = reset($accounts);
-              $termids = [];
-              foreach ($term_array as $tid) {
-                $termids[] = ['target_id' => $tid];
-              }
-              $account->field_profile_search_terms = $termids;
-              $account->save();
-            }
+            $account->field_profile_search_terms = $termids;
+            $account->save();
+          }
         }
         break;
       }
     }
   }
 
+  /**
+   * Finish post-import cleanup.
+   */
   public static function earthCapxPostImportCleanup() {
     // We need to access the database.
     $db = \Drupal::database();
@@ -517,7 +519,7 @@ class EarthCapxInfo {
       if (!empty($actual) && $actual === $mylockid && $lock->valid()) {
         // Clear the wgs table.
         $db->delete('migrate_info_earth_capx_wgs')->execute();
-        // Copy the temp file to the regular file
+        // Copy the temp file to the regular file.
         try {
           $query = $db->select('migrate_info_earth_capx_wgs_temp', 'm');
           $query->addField('m', 'sunetid');
@@ -535,7 +537,7 @@ class EarthCapxInfo {
   }
 
   /**
-   * Profile import post-processing
+   * Profile import post-processing.
    */
   public static function earthCapxPostImport() {
     // We need to access the database.
@@ -572,36 +574,12 @@ class EarthCapxInfo {
             $all_affil_tid = intval($term_entity->id());
           }
         }
-        //$batch_builder = new BatchBuilder();
-        //$batch_builder->setTitle('Update profile search tags on accounts.');
-        //$batch_builder->setFinishCallback(
-        //  [
-        //    new EarthCapxInfo(),
-        //    'earthCapxPostImportCleanup',
-        //  ]
-        //);
         $abc = 'abcdefghijklmnopqrstuvwxyz';
-        for ($i=0; $i<strlen($abc); $i++) {
+        for ($i = 0; $i < strlen($abc); $i++) {
           $istr = substr($abc, $i, 1);
           self::processAccounts($istr, $all_reg_tid, $all_affil_tid);
-          /*
-          $batch_builder->addOperation(
-            [
-              new EarthCapxInfo(),
-              'processAccounts',
-            ],
-            [
-              $istr,
-              $all_reg_tid,
-              $all_affil_tid,
-            ]
-          );
-          */
         }
         self::earthCapxPostImportCleanup();
-        //$batch_builder->setProgressive(TRUE);
-        //batch_set($batch_builder->toArray());
-        //return batch_process('/');
       }
     }
   }

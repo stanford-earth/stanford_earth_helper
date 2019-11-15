@@ -107,7 +107,7 @@ class StanfordEarthCapProfileImage extends FileImport {
       // See if there is already a user account associated with CAP API sunetid.
       // If there is, see if it has an image file with same name as the one from
       // CAP but stored in a different directory (by filefield_paths module).
-      // If so, update the destination file uri to match the one in the database.
+      // If so, update the destination uri to match the one in the database.
       $account = NULL;
       $mid = NULL;
       $media_entity = NULL;
@@ -135,7 +135,7 @@ class StanfordEarthCapProfileImage extends FileImport {
                   if (!empty($dest_uri) &&
                     strrpos($dest_uri, "/") !== FALSE) {
                     $dest_file_name = substr($dest_uri,
-                      strrpos($dest_uri, "/")+1);
+                      strrpos($dest_uri, "/") + 1);
                     if ($dest_file_name === $file_name
                       && $dest_uri !== $file_uri) {
                       $row->setDestinationProperty('image_file_name',
