@@ -24,7 +24,7 @@ source:
     image_alt_value: 'profile photo'
     at_stanford: '@stanford.edu'
   urls: 
-    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?uids=put-sunetid-here&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,profilePhotos,longTitle,internetLinks,contacts,meta,titles'
+    - 'https://cap.stanford.edu/cap-api/api/profiles/v1?uids=sunetid&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,profilePhotos,longTitle,internetLinks,contacts,meta,titles'
   item_selector: values
   fields:
     -
