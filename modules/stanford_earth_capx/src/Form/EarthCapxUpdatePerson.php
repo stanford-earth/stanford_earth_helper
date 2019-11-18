@@ -45,33 +45,26 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
     $form['import']['#default_value'] = 'unused';
     $form['import']['#disabled'] = TRUE;
 
-    /*
+    // Build a list of all of our profile workgroups.
     $terms = \Drupal::entityTypeManager()->getStorage('taxonomy_term')
-    ->loadByProperties(['vid' => 'people_search_terms']);
+      ->loadByProperties(['vid' => 'profile_workgroups']);
     $term_list = [];
     foreach ($terms as $key => $value) {
-    $kids = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->loadChildren($key);
-    if (empty($kids)) {
-    $term_name = $value->getName();
-    if (substr($term_name,0, 4) !== 'All ') {
-    $term_list[$key] = $value->getName();
-    }
-    }
+      $term_list[$key] = $value->getName();
     }
     asort($term_list);
 
     $form['stanford_earth_update_search_terms'] = [
-    '#type' => 'select',
-    '#title' => 'Directory Search Terms',
-    '#description' => 'Optional. Select terms for which this person is ' .
-    'categorized in directory listings. Note: this gets reset every night ' .
-    'based on workgroup membership.',
-    '#multiple' => TRUE,
-    '#options' => $term_list,
+      '#type' => 'select',
+      '#title' => 'Workgroup Memberships',
+      '#description' => 'Select workgroups to which this person belongs ' .
+        'for directory searches. Note: this is optional as directory search ' .
+        'tags are rebuilt overnight. Do not select any to leave alone current ' .
+        'tags for an existing user.',
+      '#multiple' => TRUE,
+      '#options' => $term_list,
     ];
-
-     */
-
+    $form['#attached']['library'][] = 'stanford_earth_capx/stanford_earth_capx';
     return $form;
   }
 
@@ -86,6 +79,7 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $sunetid = $form_state->getValue('stanford_earth_update_sunetid');
+    $search_terms = $form_state->getValue('stanford_earth_update_search_terms');
     $template = $this->configStorage->read('migrate_plus.migration.earth_capx_single_sunet');
     if (!empty($template['uuid'])) {
       unset($template['uuid']);
@@ -122,6 +116,7 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
       ],
       [
         $sunetid,
+        $search_terms,
       ]
     );
     batch_set($batch_builder->toArray());
@@ -182,7 +177,7 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
    * @param string $sunetid
    *   Id of user to import.
    */
-  public function earthCapxImportSunetCleanup(string $sunetid) {
+  public function earthCapxImportSunetCleanup(string $sunetid, $search_terms) {
     // Delete the old migrations.
     $this->configStorage->delete('migrate_plus.migration.earth_capx_single_sunet_' . $sunetid);
     // Delete the old migration map and message tables.
@@ -192,6 +187,51 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
       $db->schema()->findTables('migrate_message_earth_capx_single_sunet_' . $sunetid));
     foreach ($tables as $table) {
       $db->schema()->dropTable($table);
+    }
+    $em = \Drupal::entityTypeManager();
+    $term_array = [];
+    foreach ($search_terms as $key => $value) {
+      $entity = $em->getStorage('taxonomy_term')->load($key);
+      $search_tags = $entity->field_people_search_terms;
+      foreach ($search_tags as $search_term) {
+        if ($search_term->entity) {
+          $id = $search_term->entity->id();
+          $term_array[intval($id)] = $id;
+        }
+      }
+    }
+    if (!empty($term_array)) {
+      try {
+        $found = FALSE;
+        $result = $db->query("SELECT sunetid FROM migrate_info_earth_capx_wgs" .
+          " WHERE sunetid = :sunetid AND wg_tag = :wg_tag",
+          [':sunetid' => $sunetid, ':wg_tag' => 1]);
+        foreach ($result as $record) {
+          $found = TRUE;
+          break;
+        }
+        if (!$found) {
+          $query = \Drupal::database()
+            ->insert('migrate_info_earth_capx_wgs')
+            ->fields(['sunetid', 'wg_tag']);
+          $query->values([$sunetid, 1]);
+          $query->execute();
+        }
+      } catch (Exception $e) {
+        // Log the exception to watchdog.
+        \Drupal::logger('type')->error($e->getMessage());
+      }
+      $accounts = $em->getStorage('user')
+        ->loadByProperties(['name' => $sunetid]);
+      if (!empty($accounts)) {
+        $account = reset($accounts);
+        $termids = [];
+        foreach ($term_array as $tid) {
+          $termids[] = ['target_id' => $tid];
+        }
+        $account->field_profile_search_terms = $termids;
+        $account->save();
+      }
     }
 
   }

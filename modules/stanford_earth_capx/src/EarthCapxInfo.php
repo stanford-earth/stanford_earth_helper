@@ -443,6 +443,15 @@ class EarthCapxInfo {
 
       // Then clear the workgroups temp file for search tag updates at the end.
       $db->delete('migrate_info_earth_capx_wgs_temp')->execute();
+
+      // Delete leftover individual migration map and message tables.
+      $tables = array_merge($db->schema()
+        ->findTables('migrate_map_earth_capx_single_sunet%'),
+        $db->schema()->findTables('migrate_message_earth_capx_single_sunet%'));
+      foreach ($tables as $table) {
+        $db->schema()->dropTable($table);
+      }
+
     }
     // We will release the lock after processing accounts.
   }

@@ -1,0 +1,6 @@
+#stanford-earth-capx-update-person .form-item-config-type, 
+#stanford-earth-capx-update-person .form-item-import, 
+#stanford-earth-capx-update-person .form-item-custom-entity-id, 
+#stanford-earth-capx-update-person #edit-advanced {
+  display: none;
+}
