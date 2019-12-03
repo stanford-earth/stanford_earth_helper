@@ -367,3 +367,11 @@ function stanford_subsites_pathauto_pattern_alter(&$pattern, array $context) {
 
   return $pattern;
 }
+
+function stanford_subsites_metatags_alter(array &$metatags, array &$context) {
+  $subsite_ref = stanford_subsites_get_parent_reference_from_entity($context['entity']);
+  if (empty($subsite_ref)) {
+    $metatags['title'] = str_replace("[node:field_s_subsite_ref] | ", "", $metatags['title']);
+  }
+  $xyz = 1;
+}
