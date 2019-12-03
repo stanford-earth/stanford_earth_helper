@@ -126,7 +126,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
             ],
             // 'link' => '/community/faculty',
-            'link' => 'https://pangea.stanford.edu/people/all?tmp_associate_type=regular&tmp_affiliation=all&field_ses_phd_student_value=All&name=',
+            'link' => ' /faculty-research/directory',
             'title' => $this->t('Faculty'),
           ],
           [
@@ -173,7 +173,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
             ],
             // 'link' => '/community/alumni',
-            'link' => 'https://pangea.stanford.edu/alumni',
+            'link' => '/alumni',
             'title' => $this->t('Alumni'),
           ],
         ],
