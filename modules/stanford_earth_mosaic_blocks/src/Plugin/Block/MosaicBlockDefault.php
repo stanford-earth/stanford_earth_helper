@@ -44,6 +44,7 @@ class MosaicBlockDefault extends BlockBase {
             'items' => [
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A smiling woman wearing a lab coat.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student1.jpg',
@@ -52,6 +53,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A smiling blonde woman.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student2.jpg',
@@ -60,6 +62,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A couple of students out in examining plant leaves.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student3.jpg',
@@ -68,6 +71,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A dark haired woman with a camera in a bamboo forest.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/student4.jpg',
@@ -94,6 +98,7 @@ class MosaicBlockDefault extends BlockBase {
             'items' => [
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A side profile headshot of a dark haired man.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac1.jpg',
@@ -102,6 +107,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A smiling man with glasses.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac2.jpg',
@@ -110,6 +116,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A smiling blonde woman at a chalkboard.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac3.jpg',
@@ -118,6 +125,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('A smiling lady.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/fac4.jpg',
@@ -141,6 +149,7 @@ class MosaicBlockDefault extends BlockBase {
             'items' => [
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('Smiling woman wearing pink dress.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum1.jpg',
@@ -149,6 +158,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('Couple hugging and looking through glass at the aquarium.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum2.jpg',
@@ -157,6 +167,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('Smiling man with plant.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum3.jpg',
@@ -165,6 +176,7 @@ class MosaicBlockDefault extends BlockBase {
               ],
               [
                 'image' => [
+                  '#class' => $this->t('b-lazy'),
                   '#alt' => $this->t('Smiling man in a pink collard shirt.'),
                   '#theme' => 'image',
                   '#uri' => drupal_get_path('module', 'stanford_earth_mosaic_blocks') . '/img/alum4.jpg',
