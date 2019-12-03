@@ -373,5 +373,4 @@ function stanford_subsites_metatags_alter(array &$metatags, array &$context) {
   if (empty($subsite_ref)) {
     $metatags['title'] = str_replace("[node:field_s_subsite_ref] | ", "", $metatags['title']);
   }
-  $xyz = 1;
 }
