@@ -215,7 +215,6 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
  */
 function stanford_subsites_get_parent_reference_from_entity(EntityInterface $entity) {
   $subsite_ref = FALSE;
-
   try {
     $field = $entity->get('field_s_subsite_ref');
     if (!empty($field)) {
@@ -369,8 +368,16 @@ function stanford_subsites_pathauto_pattern_alter(&$pattern, array $context) {
 }
 
 function stanford_subsites_metatags_alter(array &$metatags, array &$context) {
-  $subsite_ref = stanford_subsites_get_parent_reference_from_entity($context['entity']);
-  if (empty($subsite_ref)) {
-    $metatags['title'] = str_replace("[node:field_s_subsite_ref] | ", "", $metatags['title']);
+  if (!empty($context['entity'])) {
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $context['entity'];
+    if ($entity->getEntityTypeId() === 'node') {
+      if ($entity->getType() === 'stanford_subsite') {
+        $subsite_ref = stanford_subsites_get_parent_reference_from_entity($context['entity']);
+        if (empty($subsite_ref)) {
+          $metatags['title'] = str_replace("[node:field_s_subsite_ref] | ", "", $metatags['title']);
+        }
+      }
+    }
   }
 }
