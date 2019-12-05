@@ -426,38 +426,45 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $wg_parts = explode(':', $wg);
       if ($wg_parts[0] === 'earthsci' && count($wg_parts) > 1) {
         $wg_parts_str = $wg_parts[1];
-        if ($wg_parts_str === 'ssp-staff') {
-          $wg_parts_str = 'ssp-staff-admin';
-        }
-        else {
-          if ($wg_parts_str === 'deans-office-staff') {
+        switch ($wg_parts_str) {
+          case 'ssp-staff':
+            $wg_parts_str = 'ssp-staff-admin';
+            break;
+
+          case 'ssp-students':
+            $wg_parts_str = 'ssp-students-graduate';
+            break;
+
+          case 'changeleadership-faculty':
+            $wg_parts_str = 'ssp-faculty-associated';
+            break;
+
+          case 'deans-office-staff':
             $wg_parts_str = 'deans-staff';
-          }
-          else {
-            if ($wg_parts_str === 'deans-comms-staff') {
-              $wg_parts_str = 'deans-staff-comms';
-            }
-            else {
-              if ($wg_parts_str === 'deans-office-finance') {
-                $wg_parts_str = 'deans-staff-finance';
-              }
-              else {
-                if ($wg_parts_str === 'deans-office-it') {
-                  $wg_parts_str = 'deans-staff-it';
-                }
-                else {
-                  if ($wg_parts_str === 'deans-office-admins') {
-                    $wg_parts_str = 'deans-staff-admin';
-                  }
-                  else {
-                    if ($wg_parts_str == 'deans-office-faculty') {
-                      $wg_parts_str = 'deans-faculty-affiliated';
-                    }
-                  }
-                }
-              }
-            }
-          }
+            break;
+
+          case 'deans-comms-staff':
+            $wg_parts_str = 'deans-staff-comms';
+            break;
+
+          case 'deans-office-finance':
+            $wg_parts_str = 'deans-staff-finance';
+            break;
+
+          case 'deans-office-it':
+            $wg_parts_str = 'deans-staff-it';
+            break;
+
+          case 'deans-office-admins':
+            $wg_parts_str = 'deans-staff-admin';
+            break;
+
+          case 'deans-office-faculty':
+            $wg_parts_str = 'deans-faculty-afffiliated';
+            break;
+
+          default:
+            break;
         }
         $wg_terms = explode('-', $wg_parts_str, 3);
         if (in_array($wg_terms[0], [
@@ -498,9 +505,14 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         }
       }
       else {
-        drupal_set_message($this->t('Invalid workgroup name %wg could not be processed.', [
-          '%wg' => $wg,
-        ]));
+        $messenger = \Drupal::messenger();
+        $messenger->addError(
+          $this->t('Invalid workgroup name %wg could not be processed.',
+            [
+              '%wg' => $wg,
+            ]
+          )
+        );
       }
     }
     $batch_builder->addOperation(

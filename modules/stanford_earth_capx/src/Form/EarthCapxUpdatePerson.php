@@ -54,13 +54,12 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
     }
     asort($term_list);
 
+    $description = $this->t('Select workgroups to which this person belongs for directory searches. Note: this is optional as directory search tags are rebuilt overnight. Do not select any to leave alone current tags for an existing user.');
+
     $form['stanford_earth_update_search_terms'] = [
       '#type' => 'select',
       '#title' => 'Workgroup Memberships',
-      '#description' => 'Select workgroups to which this person belongs ' .
-        'for directory searches. Note: this is optional as directory search ' .
-        'tags are rebuilt overnight. Do not select any to leave alone current ' .
-        'tags for an existing user.',
+      '#description' => $description,
       '#multiple' => TRUE,
       '#options' => $term_list,
     ];
@@ -176,8 +175,10 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
    *
    * @param string $sunetid
    *   Id of user to import.
+   * @param array $search_terms
+   *   Array of search terms for cleanup.
    */
-  public function earthCapxImportSunetCleanup(string $sunetid, $search_terms) {
+  public function earthCapxImportSunetCleanup(string $sunetid, array $search_terms) {
     // Delete the old migrations.
     $this->configStorage->delete('migrate_plus.migration.earth_capx_single_sunet_' . $sunetid);
     // Delete the old migration map and message tables.
@@ -207,7 +208,9 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
           " WHERE sunetid = :sunetid AND wg_tag = :wg_tag",
           [':sunetid' => $sunetid, ':wg_tag' => 1]);
         foreach ($result as $record) {
-          $found = TRUE;
+          if (!empty($record)) {
+            $found = TRUE;
+          }
           break;
         }
         if (!$found) {
@@ -217,7 +220,8 @@ class EarthCapxUpdatePerson extends ConfigSingleImportForm {
           $query->values([$sunetid, 1]);
           $query->execute();
         }
-      } catch (Exception $e) {
+      }
+      catch (Exception $e) {
         // Log the exception to watchdog.
         \Drupal::logger('type')->error($e->getMessage());
       }
