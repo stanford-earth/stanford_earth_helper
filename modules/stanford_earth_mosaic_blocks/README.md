@@ -6,7 +6,7 @@ Changelog: [Changelog.txt](CHANGELOG.txt)
 Description
 ---
 
-Drupal 8 CAP profiles importer from cap.stanford.edu using migrate and migrate plus.
+Mosaic blocks.
 
 Accessibility
 ---

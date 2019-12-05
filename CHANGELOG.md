@@ -1,5 +1,15 @@
 # Stanford Earth Helper
   
+8.x-1.0-alpha36
+-------------------------------------------------------------------------------_
+_Release Date: 2019-12-04
+
+_EARTH-1178 Cleanup profiles import to remove tags; import individual sunet.
+_EARTH-1261 Tagging for farm, wrigley, ssp workgroups.
+_EARTH-1262 Add metags_alter hook for subside titles.
+_EARTH-1300 Update faculty and alumni links.
+_EARTH-1312 Add b-lazy class.
+
 8.x-1.0-alpha35
 -------------------------------------------------------------------------------_
 _Release Date: 2019-09-26
