@@ -234,6 +234,15 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       case 'ssp':
         $dept = 'Change Leadership for Sustainability';
         break;
+
+      case 'farm':
+        $dept = 'O\'Donohue Family Farm';
+        break;
+
+      case 'wrigley':
+        $dept = 'Wrigley Field Program in Hawaii';
+        break;
+
     }
     if (!empty($dept)) {
       $terms[] = $dept;
@@ -366,6 +375,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       'geophysics',
       'ges',
       'ssp',
+      'farm',
+      'wrigley',
     ];
     foreach ($wg_depts as $wg_dept) {
       $terms = $this->getTermNames($wg_dept);
@@ -436,7 +447,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
             break;
 
           case 'changeleadership-faculty':
-            $wg_parts_str = 'ssp-faculty-associated';
+            $wg_parts_str = 'ssp-faculty';
             break;
 
           case 'deans-office-staff':
@@ -463,6 +474,14 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
             $wg_parts_str = 'deans-faculty-afffiliated';
             break;
 
+          case 'web-rg-hawaii':
+            $wg_parts_str = 'wrigley';
+            break;
+
+          case 'web-farm-staff':
+            $wg_parts_str = 'farm';
+            break;
+
           default:
             break;
         }
@@ -476,6 +495,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
           'eiper',
           'esys',
           'ssp',
+          'farm',
+          'wrigley',
         ])) {
           $ptype = NULL;
           $psubtype = NULL;

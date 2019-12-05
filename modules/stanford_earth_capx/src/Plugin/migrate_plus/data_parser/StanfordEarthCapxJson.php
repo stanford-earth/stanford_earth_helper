@@ -154,6 +154,7 @@ class StanfordEarthCapxJson extends Json {
             \Drupal::logger('type')->error($e->getMessage());
           }
         }
+        $wg_cap_members = [];
         // Put our sunets from CAP in an array so easier to search
         // $wg_cap_members = [].
         foreach ($source_data_out as $profile) {
