@@ -17,6 +17,7 @@ use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ModuleInstallerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Batch\BatchBuilder;
 
@@ -67,6 +68,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    *   The EntityTypeManager service.
    * @param \Drupal\Core\Database\Connection $db
    *   The core Database object.
+   * @param \Drupal\Core\Extension\ModuleExtensionList $module_list
+   *   The module extension list.
    */
   public function __construct(EntityManagerInterface $entity_manager,
                               StorageInterface $config_storage,
@@ -79,12 +82,13 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
                               ModuleInstallerInterface $module_installer,
                               ThemeHandlerInterface $theme_handler,
                               EntityTypeManager $entityTypeManager,
-                              Connection $db) {
+                              Connection $db,
+                              ModuleExtensionList $module_list) {
     $this->entityTypeManager = $entityTypeManager;
     $this->db = $db;
 
     parent::__construct($entity_manager, $config_storage, $renderer, $event_dispatcher, $config_manager, $lock,
-      $typed_config, $module_handler, $module_installer, $theme_handler);
+      $typed_config, $module_handler, $module_installer, $theme_handler, $module_list);
   }
 
   /**
@@ -103,7 +107,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       $container->get('module_installer'),
       $container->get('theme_handler'),
       $container->get('entity_type.manager'),
-      $container->get('database')
+      $container->get('database'),
+      $container->get('extension.list.module')
     );
   }
 
