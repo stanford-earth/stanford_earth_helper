@@ -382,7 +382,6 @@ class EarthCapxInfo {
         else {
           $photo_ts = substr($ts2, 3);
         }
-        $photo_ts = '_' . $photo_ts;
       }
     }
     return $photo_ts;

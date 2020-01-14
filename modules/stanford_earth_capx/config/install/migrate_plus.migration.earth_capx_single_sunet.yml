@@ -19,10 +19,13 @@ source:
   constants:
     status: 1
     basic_html: basic_html
+    file_source_1: 'https://profiles.stanford.edu/proxy/api/cap/profiles/'
+    file_source_2: '/resources/profilephoto/350x350.'
     file_destination: 'public://stanford_person/'
     file_extension: .jpg
     image_alt_value: 'profile photo'
     at_stanford: '@stanford.edu'
+    underscore: '_'
   urls: 
     - 'https://cap.stanford.edu/cap-api/api/profiles/v1?uids=sunetid&whitelist=affiliations,displayName,shortTitle,bio,primaryContact,profilePhotos,longTitle,internetLinks,contacts,meta,titles'
   item_selector: values
@@ -87,6 +90,10 @@ source:
       name: titles
       label: Titles
       selector: titles
+    -
+      name: profile_id
+      label: 'Profile Id'
+      selector: profileId
   ids:
     sunetid:
       type: string
@@ -145,11 +152,20 @@ process:
     source:
       - constants/file_destination
       - alias
+      - constants/underscore
+      - '@image_file_timestamp'
+      - constants/file_extension
+  image_file_proxy_path:
+    plugin: concat
+    source:
+      - constants/file_source_1
+      - profile_id
+      - constants/file_source_2
       - '@image_file_timestamp'
       - constants/file_extension
   field_s_person_media:
     plugin: stanford_earth_cap_profile_image
-    source: profile_photo
+    source: '@image_file_proxy_path'
     destination: '@image_file_name'
     alt: '!file'
     title: alias
