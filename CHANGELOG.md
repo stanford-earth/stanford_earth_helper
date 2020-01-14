@@ -1,5 +1,12 @@
 # Stanford Earth Helper
   
+8.x-1.0-alpha37
+-------------------------------------------------------------------------------_
+_Release Date: 2020-01-14
+
+_EARTH-1329 Fix event tagging from Sustainability event feeds.
+_EARTH-1325 Fixes for upgrade to Drupal 8.8.1 and CAP image import.
+
 8.x-1.0-alpha36
 -------------------------------------------------------------------------------_
 _Release Date: 2019-12-04
