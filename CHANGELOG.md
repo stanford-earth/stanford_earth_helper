@@ -1,5 +1,11 @@
 # Stanford Earth Helper
   
+8.x-1.0-alpha38
+-------------------------------------------------------------------------------_
+_Release Date: 2020-02-10
+
+_EARTH-1368 Fix dttucker email address on default contact card.
+
 8.x-1.0-alpha37
 -------------------------------------------------------------------------------_
 _Release Date: 2020-01-14
