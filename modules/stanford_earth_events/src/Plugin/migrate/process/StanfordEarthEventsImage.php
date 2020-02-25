@@ -119,7 +119,8 @@ class StanfordEarthEventsImage extends FileImport {
           }
         }
       }
-
+      // Force alt tag to empty string for now
+      $value['alt'] = '';
       // Assume we will need to create a new media entity.
       $mid = NULL;
       // See if there is already an event node associated with this event.
