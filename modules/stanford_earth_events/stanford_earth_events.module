@@ -69,6 +69,21 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
       $row->setSourceProperty('status_code', '1');
     }
 
+    // Force any keyword tags into a string
+    $keywords = $row->getSourceProperty('field_s_event_tags');
+    if (!empty($keywords)) {
+      if (is_array($keywords)) {
+        $keyword_str = implode(', ', $keywords);
+      }
+      else {
+        $keyword_str = strval($keywords);
+      }
+      if (strlen($keyword_str) > 255) {
+        $keyword_str = substr($keyword_string, 0, 255);
+      }
+      $row->setSourceProperty('field_s_event_tags', $keyword_str);
+    }
+
     // If the event node already exists, set its id in the row data.
     if ($event->isValid()) {
       $entityid = $event->entityId();
