@@ -183,6 +183,7 @@ process:
   field_sponsor: field_sponsor
   field_contact_email: field_contact_email
   field_contact_phone: field_contact_phone
+  field_s_event_feed_keywords: field_s_event_tags
 destination:
   plugin: 'entity:node'
 migration_dependencies: null
