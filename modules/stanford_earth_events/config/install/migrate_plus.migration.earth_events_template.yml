@@ -85,8 +85,16 @@ source:
       selector: eventStatus
     -
       name: status_code
-      label: 'Status'
+      label: Status
       selector: status
+    -
+      name: field_event_categories
+      label: 'Categories'
+      selector: categories
+    -
+      name: link
+      label: Link
+      selector: link
   ids:
     guid:
       type: string
@@ -99,6 +107,7 @@ source:
     source_base_path: 'http://events.stanford.edu/'
     file_destination: 'public://stanford-event/importer/'
     view_map: ' View map'
+    view_events_page: ' View on Stanford Events'
 process:
   feed_urls:
     plugin: stanford_earth_feed_url
@@ -107,6 +116,7 @@ process:
   status: constants/status
   type: constants/type
   title: title
+  field_s_event_guid: guid
   field_s_event_description/value: field_s_event_description
   field_s_event_description/format: constants/basic_html
   field_s_event_admission/value: field_s_event_admission
@@ -161,6 +171,8 @@ process:
   field_s_event_more_info/title: title
   field_mapurl/uri: field_mapurl
   field_mapurl/title: constants/view_map
+  field_s_event_original_page/uri: link
+  field_s_event_original_page/title: constants/view_events_page
   field_s_event_public/value: status_code
   field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
@@ -184,6 +196,7 @@ process:
   field_contact_email: field_contact_email
   field_contact_phone: field_contact_phone
   field_s_event_feed_keywords: field_s_event_tags
+  field_s_event_categories: field_event_categories
 destination:
   plugin: 'entity:node'
 migration_dependencies: null
