@@ -331,6 +331,77 @@ class EarthEventsInfo {
   }
 
   /**
+   * Find events repeated daily and limits them to once per week.
+   */
+  public static function earthEventsOrphanRepeaters() {
+    // We need to access the database.
+    $db = \Drupal::database();
+
+    $update = [];
+    $result = $db->query("SELECT guid, entity_id, " .
+      "DATE_FORMAT(FROM_UNIXTIME(starttime), '%W %M %e, %Y') AS eventdate, " .
+      "DAYOFWEEK(FROM_UNIXTIME(starttime)) AS eventday " .
+      "FROM migrate_info_earth_events_importer WHERE " .
+      "starttime > UNIX_TIMESTAMP() OR DATE(FROM_UNIXTIME(starttime)) = " .
+      "CURDATE() ORDER BY starttime");
+    foreach ($result as $record) {
+      $guid = substr($record->guid, 0, strpos($record->guid, '-'));
+      $eventday = intval($record->eventday);
+      if ($eventday == 1) {
+        $eventday = 8;
+      }
+      if (!array_key_exists($guid, $update)) {
+        $update[$guid] = [
+          'entity_id' => $record->entity_id,
+          'start' => $record->eventdate,
+          'end' => $record->eventdate,
+          'end_day' => $eventday,
+          'multi' => FALSE,
+        ];
+      }
+      else {
+        $diff = intval(date_diff(date_create($update[$guid]['end']),
+          date_create($record->eventdate))->format("%a")) +
+          $update[$guid]['end_day'];
+        if ($diff < 9) {
+          $db->update(EarthEventsInfo::EARTH_EVENTS_INFO_TABLE)
+            ->fields([
+              'orphaned' => 1,
+            ])
+            ->condition('entity_id', $record->entity_id, '=')
+            ->execute();
+          $update[$guid]['multi'] = TRUE;
+        }
+        $update[$guid]['end'] = $record->eventdate;
+        $update[$guid]['end_day'] = $eventday;
+      }
+    }
+    foreach ($update as $guid => $event) {
+      if ($event['multi']) {
+        $node_entities = [];
+        $result = $db->query("SELECT entity_id " .
+          "FROM migrate_info_earth_events_importer WHERE " .
+          "orphaned = 0 AND guid LIKE '" . $guid . "%'");
+        foreach ($result as $record) {
+          $node_entities[] = intval($record->entity_id);
+        }
+        $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
+        $entities = $storage_handler->loadMultiple($node_entities);
+        foreach ($entities as $nid => $node) {
+          $when_field = reset($node->get('field_s_event_when')->getValue());
+          $when = '';
+          if ($when_field && isset($when_field['value'])) {
+            $when = $when_field['value'];
+          }
+          $when .= ' Repeats through ' . $event['end'];
+          $node->set('field_s_event_when', $when);
+          $node->save();
+         }
+      }
+    }
+  }
+
+  /**
    * Deletes records from the Event Info table marked as orphans.
    */
   public static function earthEventsDeleteOrphans() {
@@ -347,6 +418,8 @@ class EarthEventsInfo {
       $actual = $lock->getExistingLockId();
       // If they match, check that the lock hasn't timed out.
       if (!empty($actual) && $actual === $mylockid && $lock->valid()) {
+        // Limit repeated events to once per week.
+        self::earthEventsOrphanRepeaters();
         // Delete orphaned event nodes.
         $orphaned_entities = [];
         $result = $db->query("SELECT entity_id FROM {" .
@@ -359,6 +432,7 @@ class EarthEventsInfo {
           $entities = $storage_handler->loadMultiple($orphaned_entities);
           $storage_handler->delete($entities);
         }
+
         // Release the lock.
         $lock->releaseEarthMigrationLock($mylockid);
       }
