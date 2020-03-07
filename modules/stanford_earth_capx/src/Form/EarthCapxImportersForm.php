@@ -159,24 +159,24 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $form['config_type']['#default_value'] = 'migration';
     $form['config_type']['#disabled'] = TRUE;
     $form['advanced']['custom_entity_id']['#disabled'] = TRUE;
-
+    $description = "Department name to use per code " .
+      "in the form 'dept|name' such as 'ere|Energy Resources Engineering'";
     $form['departments'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Department Names'),
       '#default_value' => $dept_values,
-      '#description' => $this->t("Department name to use per code " .
-        "in the form 'dept|name' such as 'ere|Energy Resources Engineering'"),
+      '#description' => $this->t($description),
       '#rows' => 10,
     ];
-
+    $description = "Enter one workgroup per line. " .
+      "Department Regular Factory workgroups should go first. " .
+      "Workgroup names not in the form stem:dept-persontype-personsubtype " .
+      "should be appended with |dept|persontype|personsubtype";
     $form['workgroups'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Workgroups for which Stanford Profiles are imported'),
       '#default_value' => $wg_values,
-      '#description' => $this->t("Enter one workgroup per line. " .
-        "Department Regular Factory workgroups should go first. " .
-        "Workgroup names not in the form stem:dept-persontype-personsubtype " .
-        "should be appended with |dept|persontype|personsubtype"),
+      '#description' => $this->t($description),
       '#rows' => 30,
     ];
 
@@ -218,8 +218,10 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @return array
    *   Array of search terms; empty array if both $department and $ptype NULL.
    */
-  private function getTermNames($department = NULL, $full_name = NULL,
-                                $ptype = NULL, $psubtype = NULL) {
+  private function getTermNames($department = NULL,
+                                $full_name = NULL,
+                                $ptype = NULL,
+                                $psubtype = NULL) {
     if (empty($department) && empty($ptype)) {
       return [];
     }
@@ -227,7 +229,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     if (!empty($department)) {
       if (!empty($full_name)) {
         $dept = $full_name;
-      } else {
+      }
+      else {
         $dept = $department;
       }
     }
@@ -257,6 +260,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    *   Taxonomy terms to look for in people_search_terms.
    * @param string $wg
    *   Create or update a workgroup term with the matching search terms.
+   * @param bool $notreg
+   *   If true, and is a "reg faculty" workgroup, do not include members in all.
    */
   private function updateSearchTerms(array $terms, $wg = NULL, $notreg = FALSE) {
 
@@ -327,8 +332,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
     // Actually do the save of the new configuration.
-    $config = $this->configFactory->
-      getEditable('migrate_plus.migration_group.earth_capx');
+    $config = $this->configFactory->getEditable('migrate_plus.migration_group.earth_capx');
 
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
@@ -338,8 +342,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $depts = array_map('trim', $depts);
     $config->set('departments', $depts)->save();
     $wg_depts = [];
-    foreach($depts as $dept) {
-      $keyval = explode('|',$dept);
+    foreach ($depts as $dept) {
+      $keyval = explode('|', $dept);
       $wg_depts[$keyval[0]] = $keyval[1];
     }
 

@@ -30,7 +30,6 @@ class EarthMigrationLock extends DatabaseLockBackend {
    *
    * @param \Drupal\Core\Database\Connection $database
    *   The database connection object.
-   *
    * @param string $lockName
    *   The name of the lock.
    */

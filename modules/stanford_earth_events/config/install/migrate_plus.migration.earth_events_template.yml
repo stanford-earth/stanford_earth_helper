@@ -161,7 +161,7 @@ process:
     plugin: stanford_earth_events_image
     source: field_s_event_image
     destination: '@image_file_name'
-    alt: '!file'
+    alt: ''
     title: title
     skip_on_error: true
     id_only: true

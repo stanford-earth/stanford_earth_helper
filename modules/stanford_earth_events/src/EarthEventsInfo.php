@@ -387,7 +387,7 @@ class EarthEventsInfo {
         }
         $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
         $entities = $storage_handler->loadMultiple($node_entities);
-        foreach ($entities as $nid => $node) {
+        foreach ($entities as $node) {
           $when_field = reset($node->get('field_s_event_when')->getValue());
           $when = '';
           if ($when_field && isset($when_field['value'])) {
@@ -396,7 +396,7 @@ class EarthEventsInfo {
           $when .= ' Repeats through ' . $event['end'];
           $node->set('field_s_event_when', $when);
           $node->save();
-         }
+        }
       }
     }
   }
