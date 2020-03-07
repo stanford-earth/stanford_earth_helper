@@ -139,12 +139,15 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       return $form;
     }
 
-    // Create a one field form for editing the list of workgroups for profiles.
+    // Create a field for editing the list of workgroups for profiles.
     $wgs = $this->config('migrate_plus.migration_group.earth_capx')
       ->get('workgroups');
-
-    // Fetch their current values.
     $wg_values = is_array($wgs) ? implode($wgs, PHP_EOL) : $wgs;
+
+    // Create a field for editing department names for profile taxonomies.
+    $depts = $this->config('migrate_plus.migration_group.earth_capx')
+      ->get('departments');
+    $dept_values = is_array($depts) ? implode($depts, PHP_EOL) : $depts;
 
     // Read the raw data for this config name, encode it, and display it.
     $template = $this->configStorage->read('migrate_plus.migration.earth_capx_template');
@@ -157,11 +160,23 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $form['config_type']['#disabled'] = TRUE;
     $form['advanced']['custom_entity_id']['#disabled'] = TRUE;
 
+    $form['departments'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Department Names'),
+      '#default_value' => $dept_values,
+      '#description' => $this->t("Department name to use per code " .
+        "in the form 'dept|name' such as 'ere|Energy Resources Engineering'"),
+      '#rows' => 10,
+    ];
+
     $form['workgroups'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Workgroups for which Stanford Profiles are imported'),
       '#default_value' => $wg_values,
-      '#description' => $this->t("Enter one workgroup per line. Department Regular Factory workgroups should go first."),
+      '#description' => $this->t("Enter one workgroup per line. " .
+        "Department Regular Factory workgroups should go first. " .
+        "Workgroup names not in the form stem:dept-persontype-personsubtype " .
+        "should be appended with |dept|persontype|personsubtype"),
       '#rows' => 30,
     ];
 
@@ -193,6 +208,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    *
    * @param string $department
    *   Department acronym from workgroup; if null, terms for person type only.
+   * @param string $full_name
+   *   Department full name associated with code from workgroup name.
    * @param string $ptype
    *   People Type from workgroup; if null, terms for department only.
    * @param string $psubtype
@@ -201,54 +218,20 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @return array
    *   Array of search terms; empty array if both $department and $ptype NULL.
    */
-  private function getTermNames($department = NULL, $ptype = NULL, $psubtype = NULL) {
+  private function getTermNames($department = NULL, $full_name = NULL,
+                                $ptype = NULL, $psubtype = NULL) {
     if (empty($department) && empty($ptype)) {
       return [];
     }
-    $terms[] = 'All People';
     $dept = '';
-    switch ($department) {
-      case 'deans':
-        $dept = 'Dean\'s Office';
-        break;
-
-      case 'ere':
-        $dept = 'Energy Resources Engineering';
-        break;
-
-      case 'eess':
-        $dept = 'Earth System Science';
-        break;
-
-      case 'ges':
-        $dept = 'Geological Sciences';
-        break;
-
-      case 'geophysics':
-        $dept = 'Geophysics';
-        break;
-
-      case 'eiper':
-        $dept = 'E-IPER Program';
-        break;
-
-      case 'esys':
-        $dept = 'Earth Systems Program';
-        break;
-
-      case 'ssp':
-        $dept = 'Change Leadership for Sustainability';
-        break;
-
-      case 'farm':
-        $dept = 'O\'Donohue Family Farm';
-        break;
-
-      case 'wrigley':
-        $dept = 'Wrigley Field Program in Hawaii';
-        break;
-
+    if (!empty($department)) {
+      if (!empty($full_name)) {
+        $dept = $full_name;
+      } else {
+        $dept = $department;
+      }
     }
+    $terms[] = 'All People';
     if (!empty($dept)) {
       $terms[] = $dept;
     }
@@ -275,12 +258,10 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @param string $wg
    *   Create or update a workgroup term with the matching search terms.
    */
-  private function updateSearchTerms(array $terms, $wg = NULL) {
+  private function updateSearchTerms(array $terms, $wg = NULL, $notreg = FALSE) {
 
     // Only allow department regular faculty to be "all regular faculty".
-    if ($wg === 'earthsci:esys-faculty-regulars' ||
-      $wg === 'earthsci:eiper-faculty-regulars' ||
-      $wg === 'earthsci:ssp-faculty-regular') {
+    if ($notreg) {
       if ($key = array_search('All Regular Faculty', $terms)) {
         unset($terms[$key]);
       }
@@ -346,12 +327,21 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
   public function submitForm(array &$form, FormStateInterface $form_state) {
 
     // Actually do the save of the new configuration.
+    $config = $this->configFactory->
+      getEditable('migrate_plus.migration_group.earth_capx');
+
     $wgs = array_filter(explode(PHP_EOL, $form_state->getValue('workgroups')));
     $wgs = array_map('trim', $wgs);
     // Save the new configuration.
-    $this->configFactory->getEditable('migrate_plus.migration_group.earth_capx')
-      ->set('workgroups', $wgs)
-      ->save();
+    $config->set('workgroups', $wgs)->save();
+    $depts = array_filter(explode(PHP_EOL, $form_state->getValue('departments')));
+    $depts = array_map('trim', $depts);
+    $config->set('departments', $depts)->save();
+    $wg_depts = [];
+    foreach($depts as $dept) {
+      $keyval = explode('|',$dept);
+      $wg_depts[$keyval[0]] = $keyval[1];
+    }
 
     // Delete the old migrations.
     $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth_capx_import');
@@ -371,48 +361,40 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
 
     // Make sure we have generic search terms for departments.
-    $wg_depts = [
-      'deans',
-      'eiper',
-      'esys',
-      'ere',
-      'ess',
-      'geophysics',
-      'ges',
-      'ssp',
-      'farm',
-      'wrigley',
-    ];
-    foreach ($wg_depts as $wg_dept) {
-      $terms = $this->getTermNames($wg_dept);
+    foreach ($wg_depts as $wg_dept => $wg_dept_name) {
+      $terms = $this->getTermNames($wg_dept, $wg_dept_name);
       if ($terms) {
         $this->updateSearchTerms($terms);
       }
     }
     // Make sure we have generic search terms for faculty.
     foreach (['regular', 'emeritus', 'associated'] as $psubtype) {
-      $terms = $this->getTermNames(NULL, 'faculty', $psubtype);
+      $terms = $this->getTermNames(NULL, NULL,
+        'faculty', $psubtype);
       if ($terms) {
         $this->updateSearchTerms($terms);
       }
     }
 
     // Make sure we have generic search terms for postdocs.
-    $terms = $this->getTermNames(NULL, 'postdocs');
+    $terms = $this->getTermNames(NULL, NULL,
+      'postdocs');
     if ($terms) {
       $this->updateSearchTerms($terms);
     }
 
     // Make sure we have generic search terms for students.
     foreach (['graduate', 'undergraduate'] as $psubtype) {
-      $terms = $this->getTermNames(NULL, 'students', $psubtype);
+      $terms = $this->getTermNames(NULL, NULL,
+        'students', $psubtype);
       if ($terms) {
         $this->updateSearchTerms($terms);
       }
     }
     // Make sure we have generic search terms for staff.
     foreach (['admin', 'research', 'teaching'] as $psubtype) {
-      $terms = $this->getTermNames(NULL, 'staff', $psubtype);
+      $terms = $this->getTermNames(NULL, NULL,
+        'staff', $psubtype);
       if ($terms) {
         $this->updateSearchTerms($terms);
       }
@@ -422,7 +404,10 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     $batch_builder = new BatchBuilder();
     $batch_builder->setTitle($this->t('Create Profile Migrations'));
     $batch_builder->setInitMessage($this->t('Creating profile import migrations for each requested workgroup.'));
-    foreach ($wgs as $wg_idx => $wg) {
+    $wgs_used = [];
+    foreach ($wgs as $wg_idx => $wg_str) {
+      $wg_bits = explode('|', $wg_str);
+      $wg = reset($wg_bits);
       $m_index = intval($wg_idx) + 1;
       // Create migration configuration in batch mode.
       $batch_builder->addOperation(
@@ -437,98 +422,45 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
           $fp_array,
           $m_index,
         ]);
-
+      $wgs_used[] = $wg;
       // Update taxonomy with search terms for this workgroup.
       $wg_parts = explode(':', $wg);
-      if ($wg_parts[0] === 'earthsci' && count($wg_parts) > 1) {
-        $wg_parts_str = $wg_parts[1];
-        switch ($wg_parts_str) {
-          case 'ssp-staff':
-            $wg_parts_str = 'ssp-staff-admin';
-            break;
-
-          case 'ssp-students':
-            $wg_parts_str = 'ssp-students-graduate';
-            break;
-
-          case 'changeleadership-faculty':
-            $wg_parts_str = 'ssp-faculty';
-            break;
-
-          case 'deans-office-staff':
-            $wg_parts_str = 'deans-staff';
-            break;
-
-          case 'deans-comms-staff':
-            $wg_parts_str = 'deans-staff-comms';
-            break;
-
-          case 'deans-office-finance':
-            $wg_parts_str = 'deans-staff-finance';
-            break;
-
-          case 'deans-office-it':
-            $wg_parts_str = 'deans-staff-it';
-            break;
-
-          case 'deans-office-admins':
-            $wg_parts_str = 'deans-staff-admin';
-            break;
-
-          case 'deans-office-faculty':
-            $wg_parts_str = 'deans-faculty-afffiliated';
-            break;
-
-          case 'web-rg-hawaii':
-            $wg_parts_str = 'wrigley';
-            break;
-
-          case 'web-farm-staff':
-            $wg_parts_str = 'farm';
-            break;
-
-          default:
-            break;
-        }
-        $wg_terms = explode('-', $wg_parts_str, 3);
-        if (in_array($wg_terms[0], [
-          'deans',
-          'eess',
-          'ere',
-          'ges',
-          'geophysics',
-          'eiper',
-          'esys',
-          'ssp',
-          'farm',
-          'wrigley',
-        ])) {
-          $ptype = NULL;
-          $psubtype = NULL;
-          if (count($wg_terms) > 1) {
-            $ptype = $wg_terms[1];
-            if (count($wg_terms) > 2) {
-              $psubtype = $wg_terms[2];
-              if ($psubtype === 'regulars') {
-                $psubtype = 'regular';
+      if (count($wg_parts) > 1) {
+        $wg_terms = explode('-', $wg_parts[1], 3);
+        $notallregular = FALSE;
+        if (count($wg_bits) > 1) {
+          array_shift($wg_bits);
+          $wg_new_term = [];
+          foreach ($wg_bits as $wgkey => $wg_bit) {
+            if ($wg_bit === 'notallregular') {
+              $notallregular = TRUE;
+            }
+            else {
+              if ($wg_bit === '*') {
+                $wg_new_term[] = $wg_terms[$wgkey];
               }
               else {
-                if ($psubtype === 'graduate-phd') {
-                  $psubtype = 'graduate';
-                }
-                else {
-                  if ($psubtype === 'advisors' || $psubtype === 'affiliated') {
-                    $psubtype = 'associated';
-                  }
-                }
+                $wg_new_term[] = $wg_bit;
               }
             }
           }
-          $terms = $this->getTermNames($wg_terms[0], $ptype, $psubtype);
-          if ($terms) {
-            $this->updateSearchTerms($terms, $wg);
+          $wg_terms = $wg_new_term;
+        }
+
+        $ptype = NULL;
+        $psubtype = NULL;
+        if (count($wg_terms) > 1) {
+          $ptype = $wg_terms[1];
+          if (count($wg_terms) > 2) {
+            $psubtype = $wg_terms[2];
           }
         }
+        $terms = $this->getTermNames($wg_terms[0], $wg_depts[$wg_terms[0]],
+          $ptype, $psubtype);
+        if ($terms) {
+          $this->updateSearchTerms($terms, $wg, $notallregular);
+        }
+
       }
       else {
         $messenger = \Drupal::messenger();
@@ -547,7 +479,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         'earthCapxDeleteUnusedWorkgroupTaxonomyTerms',
       ],
       [
-        $wgs,
+        $wgs_used,
       ]);
     batch_set($batch_builder->toArray());
   }
