@@ -1,5 +1,15 @@
 # Stanford Earth Helper
   
+8.x-1.0-alpha39
+-------------------------------------------------------------------------------_
+_Release Date: 2020-03-07
+
+_EARTH-000 Codesniffer fixes.
+_EARTH-000 Refactor profile migrations configuration.
+_EARTH-1241 Remove daily repeating events.
+_EARTH-1282 Add additional events field to import & turn keywords into string.
+_EARTH-1282 Force alt tag for event images to ‘’.
+
 8.x-1.0-alpha38
 -------------------------------------------------------------------------------_
 _Release Date: 2020-02-10
