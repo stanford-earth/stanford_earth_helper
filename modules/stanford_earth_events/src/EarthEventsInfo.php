@@ -394,6 +394,9 @@ class EarthEventsInfo {
             $when = $when_field['value'];
           }
           $when .= ' Repeats through ' . $event['end'];
+          if (strlen($when) > 512) {
+            $when = substr($when, 0, 512);
+          }
           $node->set('field_s_event_when', $when);
           $node->save();
         }
