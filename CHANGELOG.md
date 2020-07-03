@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha41
+-------------------------------------------------------------------------------_
+_Release Date: 2020-07-03
+
+_EARTH-000 Prevent duplicate event images from propagating.
+
 8.x-1.0-alpha40
 -------------------------------------------------------------------------------_
 _Release Date: 2020-05-13
