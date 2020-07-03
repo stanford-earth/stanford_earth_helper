@@ -147,29 +147,10 @@ class StanfordEarthEventsController extends ControllerBase {
    * Clean up media files.
    */
   public function cleanupImages() {
-    set_time_limit(0);
-    $query = \Drupal::entityQuery('node');
-    $group = $query->orConditionGroup()
-      ->condition('type', 'stanford_news')
-      ->condition('type', 'stanford_spotlight');
-    $nids = $query->condition($group)->execute();
-    $batch_builder = new BatchBuilder();
-    $batch_builder->setTitle('Update mainsite tags on news and spotlights.');
-    for ($i = 0; $i < 100; $i++) {
-      $nid_array = array_slice($nids, $i * 11, 11);
-      $batch_builder->addOperation(
-        [
-          new EarthEventsInfo(),
-          'deleteUnusedImages',
-        ],
-        [
-          $nid_array,
-        ]
-      );
-    }
-    $batch_builder->setProgressive(TRUE);
-    batch_set($batch_builder->toArray());
-    return batch_process('/');
+    return [
+      '#type' => 'markup',
+      '#markup' => $this->t('This function is currently unused.'),
+    ];
   }
 
 }

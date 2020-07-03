@@ -527,43 +527,9 @@ class EarthEventsInfo {
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public static function deleteUnusedImages(array $nids = []) {
-
-    set_time_limit(0);
-    foreach ($nids as $nid) {
-      $node = Node::load($nid);
-      $depts = NULL;
-      if ($node->getType() === 'stanford_news') {
-        $depts = $node->get('field_s_news_department')->getValue();
-      }
-      else {
-        if ($node->getType() === 'stanford_spotlight') {
-          $depts = $node->get('field_s_spotlight_department_tag')->getValue();
-        }
-      }
-      $found = FALSE;
-      if (empty($depts)) {
-        $depts = [];
-      }
-      foreach ($depts as $tid) {
-        if (!empty($tid) && is_array($tid)) {
-          if (!empty($tid['target_id'] && $tid['target_id'] == '1311')) {
-            $found = TRUE;
-          }
-        }
-      }
-      if (!$found) {
-        $depts[] = ['target_id' => '1311'];
-        if ($node->getType() === 'stanford_news') {
-          $node->field_s_news_department = $depts;
-        }
-        else {
-          if ($node->getType() === 'stanford_spotlight') {
-            $node->field_s_spotlight_department_tag = $depts;
-          }
-        }
-        $node->save();
-      }
-    }
+    /*
+     * This function is currently unused.
+     */
   }
 
 }

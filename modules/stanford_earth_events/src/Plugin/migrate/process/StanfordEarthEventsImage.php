@@ -103,6 +103,21 @@ class StanfordEarthEventsImage extends FileImport {
       return EarthEventsInfo::getDefaultEventMediaEntity();
     }
     else {
+      // Check if we already have the image and return it if we do.
+      if (!empty($event_photo) &&
+        strrpos($event_photo, "/") !== FALSE) {
+        $event_file_name = substr($event_photo,
+          strrpos($event_photo, "/") + 1);
+        if (!empty($event_file_name)) {
+          $event_mids = \Drupal::entityTypeManager()->getStorage('media')
+            ->loadByProperties(['name' => $event_file_name]);
+          $existing_mid = array_key_first($event_mids);
+          if (!empty($existing_mid)) {
+            return $existing_mid;
+          }
+        }
+      }
+
       // The parent will download the image (if necessary) and get its fid.
       $this->configuration['id_only'] = FALSE;
       $value = parent::transform($value, $migrate_executable, $row,
