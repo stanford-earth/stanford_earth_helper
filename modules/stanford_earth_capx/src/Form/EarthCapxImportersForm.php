@@ -221,7 +221,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
   private function getTermNames($department = NULL,
                                 $full_name = NULL,
                                 $ptype = NULL,
-                                $psubtype = NULL) {
+                                $psubtype = NULL,
+                                $phd = FALSE) {
     if (empty($department) && empty($ptype)) {
       return [];
     }
@@ -247,6 +248,10 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $terms[] = $dept . ' ' . ucfirst($ptype);
         if (!empty($psubtype)) {
           $terms[] = $dept . ' ' . ucfirst($psubtype) . ' ' . ucfirst($ptype);
+          if ($phd) {
+            $terms[] = $dept . ' PhD ' . ucfirst($psubtype) . ' ' .
+              ucfirst($ptype);
+          }
         }
       }
     }
@@ -263,7 +268,9 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @param bool $notreg
    *   If true, and is a "reg faculty" workgroup, do not include members in all.
    */
-  private function updateSearchTerms(array $terms, $wg = NULL, $notreg = FALSE) {
+  private function updateSearchTerms(array $terms,
+                                     $wg = NULL,
+                                     $notreg = FALSE) {
 
     // Only allow department regular faculty to be "all regular faculty".
     if ($notreg) {
@@ -271,7 +278,6 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         unset($terms[$key]);
       }
     }
-
     // Find term existing in People Search Terms vocabulary or create it.
     $termids = [];
     foreach ($terms as $term) {
@@ -432,12 +438,18 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       if (count($wg_parts) > 1) {
         $wg_terms = explode('-', $wg_parts[1], 3);
         $notallregular = FALSE;
+        $phd = FALSE;
         if (count($wg_bits) > 1) {
           array_shift($wg_bits);
           $wg_new_term = [];
           foreach ($wg_bits as $wgkey => $wg_bit) {
             if ($wg_bit === 'notallregular') {
               $notallregular = TRUE;
+            }
+            else if ($wg_bit === 'phd') {
+              $wg_new_term[] = 'graduate';
+              $wg_new_term[] = 'phd';
+              $phd = TRUE;
             }
             else {
               if ($wg_bit === '*') {
@@ -460,7 +472,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
           }
         }
         $terms = $this->getTermNames($wg_terms[0], $wg_depts[$wg_terms[0]],
-          $ptype, $psubtype);
+          $ptype, $psubtype, $phd);
         if ($terms) {
           $this->updateSearchTerms($terms, $wg, $notallregular);
         }
@@ -552,6 +564,10 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     }
     // Delete the remaining terms.
     $taxonomy_storage->delete($wg_terms);
+
+    // Clear workgroups info table for search tags to be updated next import.
+    $this->db->delete('migrate_info_earth_capx_wgs')->execute();
+
   }
 
 }
