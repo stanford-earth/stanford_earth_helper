@@ -54,7 +54,7 @@ workgroups:
   - 'earthsci:ssp-staff|*|*|admin'
   - 'earthsci:esys-students-graduate'
   - 'earthsci:eiper-students-graduate-phd|*|*|phd'
-  - 'earthsci:eiper-students-graduate'
+  - 'earthsci:eiper-students-graduate|*|*|ms'
   - 'earthsci:ges-students-graduate|gs|*|*'
   - 'earthsci:geophysics-students-graduate'
   - 'earthsci:ere-students-graduate'

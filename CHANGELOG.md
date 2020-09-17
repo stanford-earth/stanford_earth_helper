@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha43
+-------------------------------------------------------------------------------_
+_Release Date: 2020-09-17
+
+_EARTH-000 Create separate people search MS tag for E-IPER non phd grads.
+
 8.x-1.0-alpha42
 -------------------------------------------------------------------------------_
 _Release Date: 2020-09-16

@@ -222,7 +222,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
                                 $full_name = NULL,
                                 $ptype = NULL,
                                 $psubtype = NULL,
-                                $phd = FALSE) {
+                                $phd = NULL) {
     if (empty($department) && empty($ptype)) {
       return [];
     }
@@ -248,8 +248,8 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
         $terms[] = $dept . ' ' . ucfirst($ptype);
         if (!empty($psubtype)) {
           $terms[] = $dept . ' ' . ucfirst($psubtype) . ' ' . ucfirst($ptype);
-          if ($phd) {
-            $terms[] = $dept . ' PhD ' . ucfirst($psubtype) . ' ' .
+          if (!empty($phd)) {
+            $terms[] = $dept . ' ' . $phd . ' ' . ucfirst($psubtype) . ' ' .
               ucfirst($ptype);
           }
         }
@@ -438,7 +438,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
       if (count($wg_parts) > 1) {
         $wg_terms = explode('-', $wg_parts[1], 3);
         $notallregular = FALSE;
-        $phd = FALSE;
+        $phd = NULL;
         if (count($wg_bits) > 1) {
           array_shift($wg_bits);
           $wg_new_term = [];
@@ -449,7 +449,12 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
             else if ($wg_bit === 'phd') {
               $wg_new_term[] = 'graduate';
               $wg_new_term[] = 'phd';
-              $phd = TRUE;
+              $phd = 'PhD';
+            }
+            else if ($wg_bit === 'ms') {
+              $wg_new_term[] = 'graduate';
+              $wg_new_term[] = 'ms';
+              $phd = 'MS';
             }
             else {
               if ($wg_bit === '*') {
