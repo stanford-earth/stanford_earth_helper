@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha42
+-------------------------------------------------------------------------------_
+_Release Date: 2020-09-16
+
+_EARTH-000 Update department tagging in events importer.
+_EARTH-000 Update phd workgroup handling for E-IPER.
+
 8.x-1.0-alpha41
 -------------------------------------------------------------------------------_
 _Release Date: 2020-07-03
