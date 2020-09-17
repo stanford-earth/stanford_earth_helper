@@ -21,6 +21,14 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     $department = NULL;
+    $department_list = [];
+    $departments_in = \Drupal::config('migrate_plus.migration_group.earth_events')->get('departments');
+    foreach ($departments_in as $dept_in) {
+      if (strpos($dept_in,'|') !== false) {
+        $dept_split = explode('|',$dept_in,2);
+        $department_list[$dept_split[0]] = $dept_split[1];
+      }
+    }
     $properties = [
       'name' => $row->getSourceProperty('current_feed_url'),
       'vid' => 'stanford_earth_event_feeds',
@@ -31,31 +39,10 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
     if (!empty($terms)) {
       foreach ($terms as $term) {
         $description = $term->description->value;
-        if (strpos($description, 'energy resources engineering') !== FALSE) {
-          $department = "Energy Resources Engineering";
+        if (!empty($department_list[$description])) {
+          $department = $department_list[$description];
+          break;
         }
-        elseif (strpos($description, "emmett") !== FALSE) {
-          $department = "Emmett Interdisciplinary Program in Environment & Resources";
-        }
-        elseif (strpos($description, 'earth system science') !== FALSE) {
-          $department = "Earth System Science";
-        }
-        elseif (strpos($description, 'geophysics') !== FALSE) {
-          $department = "Geophysics";
-        }
-        elseif (strpos($description, 'earth systems program') !== FALSE) {
-          $department = "Earth Systems Program";
-        }
-        elseif (strpos($description, 'geological science') !== FALSE) {
-          $department = "Geological Sciences";
-        }
-        elseif (strpos($description, 'sustainability') !== FALSE) {
-          $department = "Change Leadership for Sustainability Program";
-        }
-        elseif (strpos($description, 'donohue family') !== FALSE) {
-          $department = "O'Donohue Family Stanford Educational Farm";
-        }
-        break;
       }
     }
 

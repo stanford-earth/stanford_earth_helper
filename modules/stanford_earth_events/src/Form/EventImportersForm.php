@@ -138,6 +138,11 @@ class EventImportersForm extends ConfigSingleImportForm {
     // Fetch their current values.
     $feed_values = is_array($feeds) ? implode($feeds, PHP_EOL) : $feeds;
 
+    // Create a field for editing department names for event tagging.
+    $depts = $this->config('migrate_plus.migration_group.earth_events')
+      ->get('departments');
+    $dept_values = is_array($depts) ? implode($depts, PHP_EOL) : $depts;
+
     // Read the raw data for this config name, encode it, and display it.
     $template = $this->configStorage->read('migrate_plus.migration.earth_events_template');
     $template['migration_group'] = 'earth_events';
@@ -148,6 +153,17 @@ class EventImportersForm extends ConfigSingleImportForm {
     $form['config_type']['#default_value'] = 'migration';
     $form['config_type']['#disabled'] = TRUE;
     $form['advanced']['custom_entity_id']['#disabled'] = TRUE;
+
+    $description = "Department name from Departments/Programs taxonomy to " .
+      "match against event feed name for example 'energy resources " .
+      "engineering|Energy Resources Engineering'";
+    $form['departments'] = [
+      '#type' => 'textarea',
+      '#title' => $this->t('Department Names'),
+      '#default_value' => $dept_values,
+      '#description' => $this->t($description),
+      '#rows' => 10,
+    ];
 
     $form['feeds'] = [
       '#type' => 'textarea',
@@ -196,9 +212,11 @@ class EventImportersForm extends ConfigSingleImportForm {
     $feeds = array_map('trim', $feeds);
 
     // Save the new configuration.
-    $this->configFactory->getEditable('migrate_plus.migration_group.earth_events')
-      ->set('feeds', $feeds)
-      ->save();
+    $config = $this->configFactory->getEditable('migrate_plus.migration_group.earth_events');
+    $config->set('feeds', $feeds)->save();
+    $depts = array_filter(explode(PHP_EOL, $form_state->getValue('departments')));
+    $depts = array_map('trim', $depts);
+    $config->set('departments', $depts)->save();
 
     // Delete the old migrations.
     $eMigrations = $this->configFactory->listAll('migrate_plus.migration.earth_events_importer');
