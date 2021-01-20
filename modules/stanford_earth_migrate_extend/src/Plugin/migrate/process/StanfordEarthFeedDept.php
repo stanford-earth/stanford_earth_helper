@@ -38,7 +38,11 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
       ->loadByProperties($properties);
     if (!empty($terms)) {
       foreach ($terms as $term) {
-        $description = $term->description->value;
+        $description = trim(strip_tags($term->description->value));
+        $bookmarked = strpos($description, " - bookmarked");
+        if ($bookmarked !== false) {
+          $description = substr($description, 0, $bookmarked);
+        }
         if (!empty($department_list[$description])) {
           $department = $department_list[$description];
           break;

@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha44
+-------------------------------------------------------------------------------_
+_Release Date: 2021-01-19
+
+_EARTH-000 Make sure "bookmarked" is removed from event feed descriptions.
+
 8.x-1.0-alpha43
 -------------------------------------------------------------------------------_
 _Release Date: 2020-09-17

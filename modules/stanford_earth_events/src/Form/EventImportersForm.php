@@ -253,6 +253,10 @@ class EventImportersForm extends ConfigSingleImportForm {
           $title = $title_attr[0]->__toString();
         }
         if (!empty($title)) {
+          $bookmarked = strpos($title, " - bookmarked");
+          if ($bookmarked !== false) {
+            $title = substr($title, 0, $bookmarked);
+          }
           $properties['description'] = $title;
         }
         $entity = $this->entityTypeManager
