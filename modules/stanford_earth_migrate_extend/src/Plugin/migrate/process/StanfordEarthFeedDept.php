@@ -41,7 +41,7 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
         $description = trim(strip_tags($term->description->value));
         $bookmarked = strpos($description, " - bookmarked");
         if ($bookmarked !== false) {
-          $description = substr($description, 0, $bookmarked);
+          $description = trim(substr($description, 0, $bookmarked));
         }
         if (!empty($department_list[$description])) {
           $department = $department_list[$description];

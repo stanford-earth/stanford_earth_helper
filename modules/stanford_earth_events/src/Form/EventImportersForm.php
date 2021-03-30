@@ -255,7 +255,7 @@ class EventImportersForm extends ConfigSingleImportForm {
         if (!empty($title)) {
           $bookmarked = strpos($title, " - bookmarked");
           if ($bookmarked !== false) {
-            $title = substr($title, 0, $bookmarked);
+            $title = trim(substr($title, 0, $bookmarked));
           }
           $properties['description'] = $title;
         }
