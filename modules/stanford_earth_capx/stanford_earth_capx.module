@@ -10,6 +10,7 @@ use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\stanford_earth_capx\EarthCapxInfo;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 
 /**
  * Implements hook_entity_delete().
@@ -140,4 +141,32 @@ function stanford_earth_capx_batch_alter(&$batch) {
     }
   }
 
+}
+
+/**
+ * Implements hook_entity_view().
+ */
+function stanford_earth_capx_entity_view(array &$build,
+                                         \Drupal\Core\Entity\EntityInterface $entity,
+                                         \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display,
+                                         $view_mode) {
+
+  // A profile no longer with SE3 should redirect to Stanford Profiles.
+  if (
+    $entity->getEntityTypeId() == "user" &&
+    $view_mode == "full" &&
+    $entity->get('field_profile_search_terms')->isEmpty() &&
+    !$entity->get('field_s_person_alias')->isEmpty()
+  ) {
+      $url = 'https://profiles.stanford.edu/';
+      $alias = $entity->get('field_s_person_alias')->getValue();
+      if (is_array($alias) && !empty($alias[0]['value'])) {
+        $url .= $alias[0]['value'];
+      }
+      \Drupal::logger('stanford_earth_capx')->notice('Redirect to: '.$url);
+      $response = new TrustedRedirectResponse($url);
+      \Drupal::service('page_cache_kill_switch')->trigger();
+      $response->send();
+      exit;
+  }
 }
