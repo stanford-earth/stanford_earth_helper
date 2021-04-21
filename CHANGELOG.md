@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha45
+-------------------------------------------------------------------------------_
+_Release Date: 2021-04-21
+
+_EARTH-000 Trim extra space from event feed "bookmark" titles.
+_EARTH-000 Redirect profiles to Stanford Profiles when no longer SE3.
+
 8.x-1.0-alpha44
 -------------------------------------------------------------------------------_
 _Release Date: 2021-01-19
