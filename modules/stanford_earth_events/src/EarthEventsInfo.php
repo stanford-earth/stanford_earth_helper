@@ -435,11 +435,21 @@ class EarthEventsInfo {
           $entities = $storage_handler->loadMultiple($orphaned_entities);
           $storage_handler->delete($entities);
         }
-
+        // Cleanup extraneous url aliases
+        try {
+          $tempTable = $db->queryTemporary("select min(id) as id from path_alias where alias like '/events/%' group by alias");
+          $query = $db->query("DELETE FROM {path_alias} WHERE alias like '/events/%' AND id NOT IN (SELECT id FROM " . $tempTable .")");
+          $query->execute();
+          $query = $db->query("DELETE FROM {path_alias_revision} WHERE alias like '/events/%' AND id NOT IN (SELECT id FROM " . $tempTable .")");
+          $query->execute();
+        }
+        catch (Exception $e) {
+          // Log the exception to watchdog.
+          \Drupal::logger('type')->error($e->getMessage());
+        }
         // Release the lock.
         $lock->releaseEarthMigrationLock($mylockid);
       }
-
     }
   }
 

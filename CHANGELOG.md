@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha46
+-------------------------------------------------------------------------------_
+_Release Date: 2021-05-26
+
+_EARTH-000 Delete extraneous url aliases after capx and event imports.
+
 8.x-1.0-alpha45
 -------------------------------------------------------------------------------_
 _Release Date: 2021-04-21

@@ -538,6 +538,18 @@ class EarthCapxInfo {
           // Log the exception to watchdog.
           \Drupal::logger('type')->error($e->getMessage());
         }
+        // Cleanup extraneous url aliases
+        try {
+          $tempTable = $db->queryTemporary("select min(id) as id from path_alias where alias like '/people/%' group by alias");
+          $query = $db->query("DELETE FROM {path_alias} WHERE alias like '/people/%' AND id NOT IN (SELECT id FROM " . $tempTable .")");
+          $query->execute();
+          $query = $db->query("DELETE FROM {path_alias_revision} WHERE alias like '/people/%' AND id NOT IN (SELECT id FROM " . $tempTable .")");
+          $query->execute();
+        }
+        catch (Exception $e) {
+          // Log the exception to watchdog.
+          \Drupal::logger('type')->error($e->getMessage());
+        }
         // Release the lock.
         $lock->releaseEarthMigrationLock($mylockid);
       }
