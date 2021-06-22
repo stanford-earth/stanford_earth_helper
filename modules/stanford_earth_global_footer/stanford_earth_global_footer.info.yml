@@ -1,0 +1,7 @@
+name: Stanford Earth Global Footer Block
+type: module
+description: Footer block for Non-Earth-Matters Stanford Earth pages.
+core_version_requirement: ^8.8 || ^9
+package: Custom
+dependencies:
+  - block

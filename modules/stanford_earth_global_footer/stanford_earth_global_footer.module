@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+
+function stanford_earth_global_footer_theme() {
+  return array(
+   'custom_block_example_block' => array(
+            'variables' => NULL,
+            'template' => 'block--stanford_earth_global_footer',
+        ),
+  );
+}
