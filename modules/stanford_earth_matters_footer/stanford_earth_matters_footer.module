@@ -6,7 +6,7 @@
 
 function stanford_earth_matters_footer_theme() {
   return array(
-   'custom_block_example_block' => array(
+   'stanford_earth_matters_footer_block' => array(
             'variables' => NULL,
             'template' => 'block--stanford_earth_matters_footer',
         ),

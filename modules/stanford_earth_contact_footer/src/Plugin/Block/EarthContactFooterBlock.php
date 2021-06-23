@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\stanford_earth_global_footer\Plugin\Block;
+namespace Drupal\stanford_earth_contact_footer\Plugin\Block;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Block\BlockBase;
@@ -12,18 +12,18 @@ use Drupal\term_condition\Plugin\Condition\Term;
  * Provides a block with a simple text.
  *
  * @Block(
- *   id = "stanford_earth_global_footer_block",
- *   admin_label = @Translation("Stanford Earth Global Footer Block"),
+ *   id = "stanford_earth_contact_footer_block",
+ *   admin_label = @Translation("Earth Contact Footer Block"),
  * )
  */
-class EarthGlobalFooterBlock extends BlockBase {
+class EarthContactFooterBlock extends BlockBase {
   /**
    * {@inheritdoc}
    */
   public function build() {
 
     $build = [
-      '#theme' => 'stanford_earth_global_footer_block',
+      '#theme' => 'stanford_earth_contact_footer_block',
     ];
     
     return $build;
@@ -49,6 +49,6 @@ class EarthGlobalFooterBlock extends BlockBase {
    * {@inheritdoc}
    */
   public function blockSubmit($form, FormStateInterface $form_state) {
-    $this->configuration['stanford_earth_global_footer_settings'] = $form_state->getValue('stanford_earth_global_footer_block_settings');
+    $this->configuration['stanford_earth_contact_footer_settings'] = $form_state->getValue('stanford_earth_contact_footer_block_settings');
   }
 }
