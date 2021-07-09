@@ -3,12 +3,11 @@
 /**
  * Implements hook_theme().
  */
-
 function stanford_earth_contact_footer_theme() {
-  return array(
-   'stanford_earth_contact_footer_block' => array(
-            'variables' => NULL,
-            'template' => 'block--stanford_earth_contact_footer',
-        ),
-  );
+  return [
+   'stanford_earth_contact_footer_block' => [
+     'variables' => NULL,
+     'template' => 'block--stanford-earth-contact-footer',
+    ]
+  ]
 }
