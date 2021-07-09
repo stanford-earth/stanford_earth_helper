@@ -1,0 +1,77 @@
+{#
+/**
+* @file
+* Implementation for the basic structure of the stanford earth matters footer
+*/
+#}
+
+<style media="screen">
+  #footer__container .earth-matters-footer.visible {background-image: linear-gradient(rgba(47,36,36,0.8), rgba(47,36,36,0.8)), url('/{{ base_path ~ directory }}/img/optimized/earth-matters-footer-bg.jpg');}
+</style>
+<footer id="footer__container">
+  <section class="earth-matters-footer visible">
+    <div class="earth-matters-footer__logo-container">
+      <span class="earth-matters-footer__logo">{{ 'Stanford Earth Matters'|trans }}<span class="earth-matters-footer__logo-2">{{ 'magazine'|trans }}</span></span>
+      <hr>
+    </div>
+    <div class="earth-matters-footer__links-container">
+      <div>
+        <ul class="earth-matters-footer__links">
+          <li><a href="https://earth.stanford.edu/" class="earth-matters-footer__menu-item">{{ 'School of Earth, Energy & Environmental Sciences'|trans }}</a></li>
+          <li><a href="https://energy.stanford.edu/" class="earth-matters-footer__menu-item">{{ 'Precourt Institute for Energy'|trans }}</a></li>
+          <li><a href="https://woods.stanford.edu/" class="earth-matters-footer__menu-item">{{ 'Stanford Woods Institute for the Environment'|trans }}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="earth-matters-footer__list-heading">
+        <span><span class="visually-hidden">{{ 'Twitter'|trans }}</span>
+          <svg class="i-svg i-svg--twitter earth-matters-footer__social-twitter is-yellow" role="img" aria-labelledby="svg_twitter"><title id="svg_twitter">{{ 'Twitter'|t }}</title><use xlink:href="#i-twitter" xmlns:xlink="http://www.w3.org/1999/xlink"></use></svg>
+          </span>{{ 'Join the conversation'|trans }}</h2>
+          {{ drupal_menu('earth-matters-footer') }}
+      </div>
+      <div class="earth-matters-footer__subscribe">
+        <h2 class="earth-matters-footer__list-heading">{{ 'Subscribe to Stanford Earth Matters Magazine'|trans }}</h2>
+        <a class="button__hollow" href="/earth-matters/subscribe">{{ 'Subscribe'|trans}}</a>
+      </div>
+    </div>
+    <!-- <div>
+      <p class="earth-matters-footer__address">{{ '555 Street Name, Room 555 &nbsp; | &nbsp; Stanford, CA 94305 &nbsp; | &nbsp; 650-555-5555'|trans }}</p>
+    </div> -->
+  </section>
+
+  <section id="footer__global-footer">
+    <div class="global-footer__inner">
+      <div id="global-footer__brand">
+        <img alt="Stanford University" src="/{{ base_path ~ directory }}/assets/svg/su_sig_stack_linked.svg" height="49" tabindex="-1" width="105" />
+      </div>
+
+      <div id="global-footer__nav" role="navigation">
+        <nav id="nav__global-links">
+          <a href="https://www.stanford.edu">{{ 'Stanford Home'|trans }}</a>
+          <a href="https://visit.stanford.edu/plan/">{{ 'Maps &amp; Directions'|trans }}</a>
+          <a href="https://stanford.edu/search/">{{ 'Search Stanford'|trans }}</a>
+          <a href="https://emergency.stanford.edu/">{{ 'Emergency Info'|trans }}</a>
+        </nav>
+      </div>
+
+      <div id="global-footer__info">
+        <div class="vcard">
+          <span class="copyright-links">
+            <a href="https://www.stanford.edu/site/terms/" title="{{ "Terms of use for sites"|t }}">{{ "Terms of Use"|t }}</a>
+            <a href="https://www.stanford.edu/site/privacy/" title="{{ "Privacy and cookie policy"|t }}">{{ "Privacy"|t }}</a>
+            <a href="https://uit.stanford.edu/security/copyright-infringement" title="{{ "Report alleged copyright infringement"|t }}">{{ "Copyright"|t }}</a>
+            <a href="https://adminguide.stanford.edu/chapter-1/subchapter-5/policy-1-5-4" title="{{ "Ownership and use of Stanford trademarks and images"|t }}">{{ "Trademarks"|t }}</a>
+            <a href="http://exploredegrees.stanford.edu/nonacademicregulations/nondiscrimination/" title="{{ "Non-discrimination policy"|t }}">{{ "Non-Discrimination"|t }}</a>
+            <a href="https://www.stanford.edu/site/accessibility" title="{{ "Report web accessibility issues"|t }}">{{ "Accessibility"|t }}</a>
+          </span>
+        </div>
+        <span class="fn org">{{ '© Stanford University. '|trans }}</span>
+        <span class="adr">
+          <span class="locality">{{ 'Stanford, '|trans }}</span>
+          <span class="region">{{ 'California '|trans }}</span>
+          <span class="postal-code">94305. </span>
+        </span>
+      </div>
+    </div>
+  </section>
+</footer>

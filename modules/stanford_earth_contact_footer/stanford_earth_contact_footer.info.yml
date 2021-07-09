@@ -1,0 +1,7 @@
+name: Stanford Earth Contact Footer Block
+type: module
+description: Footer block for Stanford Earth non-Earth-Matters pages.
+core_version_requirement: ^8.8 || ^9
+package: Custom
+dependencies:
+  - block
