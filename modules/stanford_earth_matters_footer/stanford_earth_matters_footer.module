@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function stanford_earth_matters_footer_theme() {
+  return [
+   'stanford_earth_matters_footer_block' => [
+     'variables' => NULL,
+     'template' => 'block--stanford-earth-matters-footer',
+    ],
+  ];
+}
