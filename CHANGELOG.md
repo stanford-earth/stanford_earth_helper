@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.0-alpha47
+-------------------------------------------------------------------------------_
+_Release Date: 2021-07-21
+
+_EARTH-1474 Updated footers for Stanford Earth Matters magazine.
+
 8.x-1.0-alpha46
 -------------------------------------------------------------------------------_
 _Release Date: 2021-05-26

@@ -6,7 +6,7 @@
 function stanford_earth_contact_footer_theme() {
   return [
    'stanford_earth_contact_footer_block' => [
-     'variables' => NULL,
+     'variables' => [],
      'template' => 'block--stanford-earth-contact-footer',
     ],
   ];
