@@ -36,7 +36,7 @@ class StanfordEarthFeedUrl extends ProcessPluginBase {
         $urls = $existing->get('field_s_event_feed_url')->getValue();
         foreach ($urls as $url) {
           if (!empty($url['target_id'])) {
-            $urlTerm = \Drupal::getContainer()->get('entity.manager')
+            $urlTerm = \Drupal::getContainer()->get('entity_type.manager')
               ->getStorage('taxonomy_term')->load($url['target_id']);
             if (!empty($urlTerm)) {
               $urlTermName = $urlTerm->getName();

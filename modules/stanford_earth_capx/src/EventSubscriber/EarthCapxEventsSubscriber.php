@@ -74,7 +74,10 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
 
     // This event gets thrown for all migrations, so check that first.
     if (strpos($event->getMigration()->id(), 'earth_capx_importer') !== FALSE) {
-      drupal_set_message($this->t('You may not roll back a profiles migration!'));
+      \Drupal::messenger()->addMessage(
+        $this->t('You may not roll back a profiles migration!'),
+        'error',
+        FALSE);
       throw new HttpException('403',
         'You may not roll back a profiles migration, buddy!');
     }

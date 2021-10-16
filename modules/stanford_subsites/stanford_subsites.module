@@ -174,7 +174,7 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
       'label' => $title,
       'description' => 'A subsite menu',
     ])->save();
-    drupal_set_message("Created new menu for subsite", 'status', FALSE);
+    \Drupal::messenger()->addMessage("Created new menu for subsite", 'status', FALSE);
 
     // Create a default link called "Overview" for the menu so that it has
     // something in it by default.
@@ -187,7 +187,7 @@ function stanford_subsites_entity_insert(EntityInterface $entity) {
     $menu_link->save();
   }
   else {
-    drupal_set_message("Menu already existed. Failed to create new one.", 'error', FALSE);
+    \Drupal::messenger()->addMessage("Menu already existed. Failed to create new one.", 'error', FALSE);
   }
 
   // If taxonomy term creation is enabled do so.
@@ -267,7 +267,7 @@ function stanford_subsites_entity_delete(EntityInterface $entity) {
 
   if ($menu) {
     $menu->delete();
-    drupal_set_message("Deleted subsite menu", 'success', FALSE);
+    \Drupal::messenger()->addMessage("Deleted subsite menu", 'status', FALSE);
   }
 }
 

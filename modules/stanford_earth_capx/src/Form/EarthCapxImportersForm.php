@@ -7,7 +7,7 @@ use Drupal\config\Form\ConfigSingleImportForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Serialization\Yaml;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Config\StorageInterface;
 use Drupal\Core\Render\RendererInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -43,7 +43,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
   /**
    * EarthCapxImportersForm constructor.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    *   The entity manager.
    * @param \Drupal\Core\Config\StorageInterface $config_storage
    *   The config storage.
@@ -71,7 +71,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    * @param \Drupal\Core\Extension\ModuleExtensionList $module_list
    *   The module extension list.
    */
-  public function __construct(EntityManagerInterface $entity_manager,
+  public function __construct(EntityTypeManagerInterface $entity_manager,
                               StorageInterface $config_storage,
                               RendererInterface $renderer,
                               EventDispatcherInterface $event_dispatcher,
@@ -96,7 +96,7 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('config.storage'),
       $container->get('renderer'),
       $container->get('event_dispatcher'),
@@ -531,9 +531,12 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     parent::validateForm($form, $form_state);
     $config_importer = $form_state->get('config_importer');
     $config_importer->import();
-    drupal_set_message($this->t('Profile import for workgroup %wg configured.', [
-      '%wg' => $wg,
-    ]));
+    \Drupal::messenger()->addMessage(
+      $this->t('Profile import for workgroup %wg configured.', [
+        '%wg' => $wg,
+      ]),
+      'status',
+      FALSE);
   }
 
   /**

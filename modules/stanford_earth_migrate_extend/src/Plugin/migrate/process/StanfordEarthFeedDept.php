@@ -64,7 +64,7 @@ class StanfordEarthFeedDept extends ProcessPluginBase {
         $depts = $existing->get('field_s_event_department')->getValue();
         foreach ($depts as $dept) {
           if (!empty($dept['target_id'])) {
-            $deptTerm = \Drupal::getContainer()->get('entity.manager')
+            $deptTerm = \Drupal::getContainer()->get('entity_type.manager')
               ->getStorage('taxonomy_term')->load($dept['target_id']);
             if (!empty($deptTerm)) {
               $deptTermName = $deptTerm->getName();

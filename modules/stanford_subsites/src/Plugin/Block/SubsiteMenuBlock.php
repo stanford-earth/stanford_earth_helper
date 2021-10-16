@@ -83,7 +83,8 @@ class SubsiteMenuBlock extends BlockBase {
     $menu = $menu_tree->build($tree);
 
     // This might be ok as a render array some day.
-    return array('#markup' => drupal_render($menu));
+    return array('#markup' =>
+      \Drupal::getContainer()->get('renderer')->render($menu));
   }
 
   /**

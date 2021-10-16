@@ -7,7 +7,7 @@ use Drupal\Component\Utility\UrlHelper;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\config\Form\ConfigSingleImportForm;
 use Drupal\Core\Serialization\Yaml;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Config\StorageInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\RendererInterface;
@@ -44,7 +44,7 @@ class EventImportersForm extends ConfigSingleImportForm {
   /**
    * EventImportersForm constructor.
    *
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_manager
    *   The entity manager.
    * @param \Drupal\Core\Config\StorageInterface $config_storage
    *   The config storage.
@@ -72,7 +72,7 @@ class EventImportersForm extends ConfigSingleImportForm {
    * @param \Drupal\Core\Extension\ModuleExtensionList $module_list
    *   The module extension list.
    */
-  public function __construct(EntityManagerInterface $entity_manager,
+  public function __construct(EntityTypeManagerInterface $entity_manager,
                               StorageInterface $config_storage,
                               RendererInterface $renderer,
                               EventDispatcherInterface $event_dispatcher,
@@ -97,7 +97,7 @@ class EventImportersForm extends ConfigSingleImportForm {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('entity.manager'),
+      $container->get('entity_type.manager'),
       $container->get('config.storage'),
       $container->get('renderer'),
       $container->get('event_dispatcher'),
@@ -136,7 +136,7 @@ class EventImportersForm extends ConfigSingleImportForm {
       ->get('feeds');
 
     // Fetch their current values.
-    $feed_values = is_array($feeds) ? implode($feeds, PHP_EOL) : $feeds;
+    $feed_values = is_array($feeds) ? implode(PHP_EOL, $feeds) : $feeds;
 
     // Create a field for editing department names for event tagging.
     $depts = $this->config('migrate_plus.migration_group.earth_events')
@@ -317,9 +317,12 @@ class EventImportersForm extends ConfigSingleImportForm {
     parent::validateForm($form, $form_state);
     $config_importer = $form_state->get('config_importer');
     $config_importer->import();
-    drupal_set_message($this->t('Stanford events import for feed %feed configured.', [
-      '%feed' => $feed,
-    ]));
+    \Drupal::messenger()->addMessage(
+      $this->t('Stanford events import for feed %feed configured.', [
+        '%feed' => $feed,
+      ]),
+        'status',
+        FALSE);
   }
 
 }

@@ -324,7 +324,9 @@ class EarthEventsInfo {
         ->fields([
           'orphaned' => 1,
         ])
-        ->condition('starttime', REQUEST_TIME, '>')
+        ->condition('starttime',
+          \Drupal::time()->getRequestTime(),
+          '>')
         ->execute();
     }
     // We will release the lock after deleting orphans.
