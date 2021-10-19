@@ -6,9 +6,5 @@
   "authors": [],
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
-  "require": {
-    "drupal/migrate_plus": "~4.0",
-    "drupal/migrate_tools": "~4.0",
-    "drupal/migrate_file": "~1.0-alpha3"
-  }
+  "require": { }
 }
