@@ -4,5 +4,3 @@ description: Helper functionality for Stanford News
 core_version_requirement: ^8.9 || ^9
 version: 8.x-1.0-dev
 package: Stanford Earth
-dependencies:
-  - stanford_paragraph_types

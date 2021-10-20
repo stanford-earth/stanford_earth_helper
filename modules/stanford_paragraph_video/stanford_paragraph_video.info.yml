@@ -12,5 +12,4 @@ dependencies:
   - options
   - paragraphs
   - stanford_layouts
-  - stanford_paragraph_types
   - video_embed_field
