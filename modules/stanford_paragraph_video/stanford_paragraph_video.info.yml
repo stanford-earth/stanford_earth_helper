@@ -1,0 +1,16 @@
+name: 'Video Paragraph'
+description: '3rd party video player paragraph type.'
+type: module
+core: 8.x
+package: Stanford
+version: 8.x-1.0-dev
+dependencies:
+  - ds
+  - field
+  - field_formatter_class
+  - field_group
+  - options
+  - paragraphs
+  - stanford_layouts
+  - stanford_paragraph_types
+  - video_embed_field

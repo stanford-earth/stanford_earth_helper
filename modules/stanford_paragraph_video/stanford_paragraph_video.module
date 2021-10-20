@@ -1,0 +1,62 @@
+<?php
+
+/**
+ * @file
+ * stanford_paragraph_video.module
+ */
+
+/**
+ * Implements hook_preprocess_field().
+ */
+function stanford_paragraph_video_preprocess_field(&$variables) {
+
+  if ($variables['field_name'] != 'field_p_video_url') {
+    return;
+  }
+
+  // Some always set variables.
+  $variables['items'][0]['content']['children']['#query']['showinfo'] = FALSE;
+  $variables['items'][0]['content']['children']['#query']['rel'] = FALSE;
+  $variables['items'][0]['content']['children']['#query']['enablejsapi'] = TRUE;
+
+  /** @var \Drupal\Core\Field\FieldItemList $autoplay_field */
+  $autoplay_field = $variables['element']['#object']->get('field_p_video_autoplay');
+  if ($autoplay_field && $autoplay_field->getValue()) {
+    $autoplay = $autoplay_field->getValue();
+
+    // If the paragraph is checked to autoplay, set the query parameter.
+    if ($autoplay[0]['value']) {
+      $variables['items'][0]['content']['children']['#query']['autoplay'] = TRUE;
+    }
+  }
+
+  // Pass through the value of the loop field.
+  $loop_field = $variables['element']['#object']->get('field_p_video_loop');
+  if ($loop_field && $loop_field->getValue()) {
+    $loop = $loop_field->getValue();
+    // If the paragraph is checked to loop, set the query parameter & playlist.
+    if ($loop[0]['value']) {
+      $variables['items'][0]['content']['children']['#query']['loop'] = TRUE;
+      $video_url = $variables['element']['#object']->get('field_p_video_url')->getValue();
+      $explody = explode("/", $video_url[0]['value']);
+      $video_hash = array_pop($explody);
+      $variables['items'][0]['content']['children']['#query']['playlist'] = $video_hash;
+    }
+  }
+
+  try {
+    $muted_field = $variables['element']['#object']->get('field_p_video_muted');
+    if ($muted_field && $muted_field->getValue()) {
+      $muted_field = $muted_field->getValue();
+
+      // If the paragraph is checked to autoplay, set the query parameter.
+      if ($muted_field[0]['value']) {
+        $variables['items'][0]['content']['children']['#query']['mute'] = TRUE;
+      }
+    }
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('stanford_paragraph_video')->error($e->getMessage());
+  }
+
+}
