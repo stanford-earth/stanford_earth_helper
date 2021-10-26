@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * Implements hook_theme().
+ */
+function stanford_earth_matters_topic_bar_theme() {
+  return [
+   'stanford_earth_matters_topic_bar_block' => [
+     'variables' => [],
+     'template' => 'block--stanford-earth-matters-topic-bar',
+    ],
+  ];
+}

@@ -1,0 +1,93 @@
+{#
+/**
+* @file
+* Implementation for the basic structure of the stanford earth matters topic bar
+*/
+#}
+
+<style media="screen">
+  #footer__container .earth-matters-footer.visible {background-image: linear-gradient(rgba(47,36,36,0.8), rgba(47,36,36,0.8)), url('/{{ base_path ~ directory }}/img/optimized/earth-matters-footer-bg.jpg');}
+</style>
+
+<nav id="block-sectionmenuinsightstopics" class="c-block c-block--earth-magazine" role="navigation" aria-label="Topics menu">
+  <div class="container">
+    <ul class="topics-nav--earth-magazine">
+      <li>
+        <a href="#">Climate</a>
+      </li>
+      <li>
+        <a href="#">Energy</a>
+      </li>
+      <li>
+        <a href="#">Water</a>
+      </li>
+      <li>
+        <a href="#">Hazards</a>
+      </li>
+      <li>
+        <a href="#">Oceans</a>
+      </li>
+    </ul>
+    <div class="c-block__menu-wrapper c-block__menu-wrapper--earth-magazine open">
+      <button class="c-block__menu-title c-block__menu-title--earth-magazine" aria-haspopup="true" aria-expanded="false">All Topics</button>
+      <div class="c-block__menu-content c-block__menu-content--earth-magazine">
+
+        <ul data-region="hero" region="hero" class="c-menu c-menu--normal">
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">All</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+                        <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Climate Change</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Dynamic Earth</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Energy</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Evolution of Earth and Life</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Food and Agriculture</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Freshwater Resources</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Human Dimensions and Sustainability</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Natural Hazards</a>
+          </li>
+
+          <li class="c-menu__item c-menu__item--normal l-0">
+            <a class="c-menu__item-link c-menu__item-link--normal l-0" href="#">Oceans</a>
+          </li>
+
+        </ul>
+
+      </div>
+    </div>
+
+    <div class="c-block__search-wrapper c-block__search-wrapper--earth-magazine">
+      <a class="icon--insights-search" href="JavaScript:void(0);" aria-label="Open search for earth-magazine"></a>
+      <form action="/insights/search" method="get" id="earth-magazine-search-block-form" accept-charset="UTF-8">
+        <label for="search-earth-magazine">
+          Enter the terms you wish to search for.
+        </label>
+        <input placeholder="Search Insights" aria-label="Search Insights" type="text" id="search-earth-magazine" name="term" value="" size="15" maxlength="128" class="form-text">
+        <input type="submit" id="submit-earth-magazine-search" name="op" value="Search" class="form-submit">
+      </form>
+    </div>
+  </div>
+</nav>

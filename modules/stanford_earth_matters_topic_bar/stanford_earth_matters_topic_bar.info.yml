@@ -1,0 +1,8 @@
+name: Stanford Earth Matters Topic Bar Block
+type: module
+description: Topic Bar block for Stanford Earth Matters pages.
+core_version_requirement: ^8.8 || ^9
+package: Custom
+version: 8.x-1.0-dev
+dependencies:
+  - block
