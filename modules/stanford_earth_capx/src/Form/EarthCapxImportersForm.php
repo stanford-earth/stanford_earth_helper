@@ -142,12 +142,12 @@ class EarthCapxImportersForm extends ConfigSingleImportForm {
     // Create a field for editing the list of workgroups for profiles.
     $wgs = $this->config('migrate_plus.migration_group.earth_capx')
       ->get('workgroups');
-    $wg_values = is_array($wgs) ? implode($wgs, PHP_EOL) : $wgs;
+    $wg_values = is_array($wgs) ? implode(PHP_EOL, $wgs) : $wgs;
 
     // Create a field for editing department names for profile taxonomies.
     $depts = $this->config('migrate_plus.migration_group.earth_capx')
       ->get('departments');
-    $dept_values = is_array($depts) ? implode($depts, PHP_EOL) : $depts;
+    $dept_values = is_array($depts) ? implode(PHP_EOL, $depts) : $depts;
 
     // Read the raw data for this config name, encode it, and display it.
     $template = $this->configStorage->read('migrate_plus.migration.earth_capx_template');

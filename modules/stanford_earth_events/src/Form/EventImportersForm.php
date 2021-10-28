@@ -141,7 +141,7 @@ class EventImportersForm extends ConfigSingleImportForm {
     // Create a field for editing department names for event tagging.
     $depts = $this->config('migrate_plus.migration_group.earth_events')
       ->get('departments');
-    $dept_values = is_array($depts) ? implode($depts, PHP_EOL) : $depts;
+    $dept_values = is_array($depts) ? implode(PHP_EOL, $depts) : $depts;
 
     // Read the raw data for this config name, encode it, and display it.
     $template = $this->configStorage->read('migrate_plus.migration.earth_events_template');
