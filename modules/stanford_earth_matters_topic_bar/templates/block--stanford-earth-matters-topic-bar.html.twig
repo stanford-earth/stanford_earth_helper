@@ -5,10 +5,29 @@
 */
 #}
 
-<style media="screen">
-  #footer__container .earth-matters-footer.visible {background-image: linear-gradient(rgba(47,36,36,0.8), rgba(47,36,36,0.8)), url('/{{ base_path ~ directory }}/img/optimized/earth-matters-footer-bg.jpg');}
-</style>
+<style media="screen"></style>
 
+<div class="earth-matters-topic-bar__container>
+  <div class="earth-matters-topic-bar__header-container">
+    <a href="https://earth.stanford.edu/earth-matters" style="margin:auto;"><span class="earth-matters-footer__logo earth-matters-topic-bar__header">Stanford Earth Matters magazine</span></a>
+  </div>
+
+  <nav id="block-sectionmenuinsightstopics" class="c-block c-block--earth-magazine" role="navigation" aria-label="Topics menu">
+    <div class="earth-matters-topic-bar__featured-links-container">
+      <ul class="topics-nav--earth-magazine">
+        {{ drupal_menu('earth-matters-topic-bar-featured') }}
+      </ul>
+      <div class="dropdown">
+        <button class="dropbtn">All Topics</button>
+        <div class="earth-matters-topic-bar__all-links-container">
+          {{ drupal_menu('earth-matters-topic-bar-all-link') }}
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+{#
 <div class="earth-matters-topic-bar__header-container">
   <a href="https://earth.stanford.edu/earth-matters" style="margin:auto;"><span class="earth-matters-footer__logo earth-matters-topic-bar__header">Stanford Earth Matters magazine</span></a>
 </div>
@@ -16,6 +35,7 @@
 <nav id="block-sectionmenuinsightstopics" class="c-block c-block--earth-magazine" role="navigation" aria-label="Topics menu">
   <div class="container">
     <ul class="topics-nav--earth-magazine">
+      {{ drupal_menu('earth-matters-topic-bar-featured') }}
       <li>
         <a href="#">Climate</a>
       </li>
@@ -85,6 +105,7 @@
 
     <div class="dropdown">
       <button class="dropbtn">All Topics</button>
+      {{ drupal_menu('earth-matters-topic-bar-all-link') }}
       <div class="dropdown-content">
         <ul data-region="hero" region="hero" class="">
 
@@ -132,7 +153,6 @@
       </div>
     </div>
 
-    {#
     <div class="c-block__search-wrapper c-block__search-wrapper--earth-magazine">
       <a class="icon--insights-search" href="JavaScript:void(0);" aria-label="Open search for earth-magazine"></a>
       <form action="/insights/search" method="get" id="earth-magazine-search-block-form" accept-charset="UTF-8">
@@ -143,6 +163,6 @@
         <input type="submit" id="submit-earth-magazine-search" name="op" value="Search" class="form-submit">
       </form>
     </div>
-    #}
   </div>
 </nav>
+#}
