@@ -3,4 +3,4 @@ type: module
 description: Limit the options of paragraph types for fields.
 core_version_requirement: ^8.9 || ^9
 package: Stanford Earth
-version: 8.x-1.0-dev
+version: 8.x-1.1

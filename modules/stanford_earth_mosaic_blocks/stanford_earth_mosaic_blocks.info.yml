@@ -2,7 +2,7 @@ name: Stanford Earth Mosaic Blocks
 type: module
 description: Hard Coded Mosaic Blocks
 core_version_requirement: ^8.9 || ^9
-version: 8.x-1.0-dev
+version: 8.x-1.1
 package: Stanford Earth
 dependencies:
     - stanford_components
