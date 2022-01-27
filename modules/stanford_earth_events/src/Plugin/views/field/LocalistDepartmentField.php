@@ -2,11 +2,13 @@
 
 namespace Drupal\stanford_earth_events\Plugin\views\field;
 
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ViewExecutable;
 use Drupal\Core\Entity\EntityTypeManager;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * A handler to provide a Localist department tags based on Earth terms.
@@ -15,7 +17,13 @@ use Drupal\Core\Entity\EntityTypeManager;
  *
  * @ViewsField("localist_department_field")
  */
-class LocalistDepartmentField extends FieldPluginBase {
+class LocalistDepartmentField extends FieldPluginBase implements
+  ContainerFactoryPluginInterface {
+
+  /**
+   * @var $entityTypeManager \Drupal\Core\Entity\EntityTypeManager
+   */
+  protected $entityTypeManager;
 
   /**
    * The current display.
@@ -25,7 +33,43 @@ class LocalistDepartmentField extends FieldPluginBase {
    */
   protected $currentDisplay;
 
+
+
   /**
+   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   *
+   * @return static
+   */
+  public static function create(ContainerInterface $container,
+                                array $configuration,
+                                $plugin_id,
+                                $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('entity_type.manager')
+    );
+  }
+
+  /**
+   * @param array $configuration
+   * @param string $plugin_id
+   * @param mixed $plugin_definition
+   * @param \Drupal\Core\Entity\EntityTypeManager $entityTypeManager
+   */
+  public function __construct(array $configuration,
+                              $plugin_id,
+                              $plugin_definition,
+                              EntityTypeManager $entityTypeManager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->entityTypeManager = $entityTypeManager;
+  }
+
+   /**
    * {@inheritdoc}
    */
   public function init(ViewExecutable $view, DisplayPluginBase $display, array &$options = NULL) {
@@ -71,7 +115,8 @@ class LocalistDepartmentField extends FieldPluginBase {
         if (!empty($deptArray['target_id'])) {
           $target_id = $deptArray['target_id'];
           if (!empty($target_id)) {
-            $deptTerm = \Drupal::getContainer()->get('entity_type.manager')
+            // $deptTerm = \Drupal::getContainer()->get('entity_type.manager')
+            $deptTerm = $this->entityTypeManager
               ->getStorage('taxonomy_term')->load($target_id);
             if (!empty($deptTerm)) {
               $localistArray = $deptTerm->get('field_term_department_localist')->getValue();
