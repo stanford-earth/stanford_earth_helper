@@ -7,17 +7,19 @@ use Drupal\views\Plugin\views\field\FieldPluginBase;
 use Drupal\views\ResultRow;
 use Drupal\views\Plugin\views\display\DisplayPluginBase;
 use Drupal\views\ViewExecutable;
-use Drupal\Core\Entity\EntityTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\media\Entity\Media;
+use Drupal\file\Entity\File;
 
 /**
- * A handler to provide a Localist department tags based on Earth terms.
+ * A handler to provide the URL of the events media image for export.
  *
  * @ingroup views_field_handlers
  *
- * @ViewsField("localist_department_field")
+ * @ViewsField("stanford_earth_events_media_url")
  */
-class LocalistDepartmentField extends FieldPluginBase implements
+class StanfordEarthEventsMediaUrl extends FieldPluginBase implements
   ContainerFactoryPluginInterface {
 
   /**
@@ -32,8 +34,6 @@ class LocalistDepartmentField extends FieldPluginBase implements
    *   The current display of the view.
    */
   protected $currentDisplay;
-
-
 
   /**
    * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
@@ -106,33 +106,26 @@ class LocalistDepartmentField extends FieldPluginBase implements
    */
   public function render(ResultRow $values) {
     $node = $values->_entity;
-    $departments = $node->get('field_s_event_department')->getValue();
-    $deptStr = '';
-    if (!empty($departments)) {
-      foreach ($departments as $deptArray) {
-        $target_id = '';
-        if (!empty($deptArray['target_id'])) {
-          $target_id = $deptArray['target_id'];
-          if (!empty($target_id)) {
-            $deptTerm = $this->entityTypeManager
-              ->getStorage('taxonomy_term')->load($target_id);
-            if (!empty($deptTerm)) {
-              $localistArray = $deptTerm->get('field_term_department_localist')->getValue();
-              if (!empty($localistArray)) {
-                $localistDept = reset($localistArray);
-                if (!empty($localistDept['value'])) {
-                  if (!empty($deptStr)) {
-                    $deptStr .= ', ';
-                  }
-                  $deptStr .= $localistDept['value'];
-                }
-              }
-            }
-          }
+    $mids = $node->get('field_s_event_media')->getValue();
+    $mid = 0;
+    if (!empty($mids)) {
+      foreach ($mids as $midArray) {
+        if (!empty($midArray['target_id'])) {
+          $mid = $midArray['target_id'];
+          break;
         }
       }
     }
-    return $deptStr;
+    $url = '';
+    if (!empty($mid)) {
+      $media = Media::load($mid);
+      $fid = $media->field_media_image->target_id;
+      if (!empty($fid)) {
+        $file = File::load($fid);
+        $url = $file->createFileUrl(FALSE);
+      }
+    }
+    return $url;
   }
 
 }
