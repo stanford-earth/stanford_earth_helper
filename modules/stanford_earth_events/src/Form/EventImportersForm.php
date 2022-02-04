@@ -21,6 +21,7 @@ use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Database\Connection;
 use Drupal\Core\Batch\BatchBuilder;
+use Drupal\Component\Serialization\Json;
 
 /**
  * ListedEventsForm description.
@@ -245,23 +246,34 @@ class EventImportersForm extends ConfigSingleImportForm {
         ->getStorage('taxonomy_term')
         ->loadByProperties($properties);
       if (empty($terms)) {
-        $title = '';
-        $contents = file_get_contents($name);
-        $xml = simplexml_load_string($contents);
-        $title_attr = $xml->xpath('title');
-        if (!empty($title_attr)) {
-          $title = $title_attr[0]->__toString();
-        }
-        if (!empty($title)) {
-          $bookmarked = strpos($title, " - bookmarked");
-          if ($bookmarked !== false) {
-            $title = trim(substr($title, 0, $bookmarked));
+        // Get group_id from feed URL.
+        $groupid_pos = strpos($name, "group_id=");
+        if ($groupid_pos !== false) {
+          $groupid_pos += 9;
+          $groupid_end = strpos($name, '&', $groupid_pos);
+          if ($groupid_end === FALSE) {
+            $groupid = substr($name, $groupid_pos);
           }
-          $properties['description'] = $title;
+          else {
+            $groupid = substr($name, $groupid_pos, ($groupid_end - $groupid_pos));
+          }
+          if (!empty($groupid)) {
+            $title = '';
+            $contents = file_get_contents(
+              'https://stanford.enterprise.localist.com/api/2/departments/' .
+              $groupid);
+            $json = Json::decode($contents);
+            if (!empty($json['department']['name'])) {
+              $title = $json['department']['name'];
+            }
+            if (!empty($title)) {
+              $properties['description'] = $title;
+            }
+            $entity = $this->entityTypeManager
+              ->getStorage('taxonomy_term')->create($properties);
+            $entity->save();
+          }
         }
-        $entity = $this->entityTypeManager
-          ->getStorage('taxonomy_term')->create($properties);
-        $entity->save();
       }
     }
 

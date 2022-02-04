@@ -1,24 +1,25 @@
 langcode: en
 status: true
 dependencies: {  }
-id: earth_events_template
+id: earth_events_importer_020
 class: null
 field_plugin_method: null
 cck_plugin_method: null
 migration_tags: null
-migration_group: null
+migration_group: earth_events
 label: 'Events importer'
 source:
   plugin: stanford_earth_url
   data_fetcher_plugin: file
-  urls: {  }
-  data_parser_plugin: stanford_earth_simple_xml
-  item_selector: /EventList/Event
+  urls:
+    - "https://events.stanford.edu/api/2/events?group_id=37955141103466&start=2022-01-31&days=365"
+  data_parser_plugin: stanford_earth_localist_json
+  item_selector: 2
   fields:
     -
       name: guid
       label: GUID
-      selector: guid
+      selector: id
     -
       name: title
       label: 'Event Title'
@@ -28,73 +29,82 @@ source:
       label: Description
       selector: description
     -
-      name: field_s_event_admission
-      label: Admission
-      selector: admissionDescription
-    -
-      name: field_s_event_audience
+      name: field_event_audience
       label: Audience
-      selector: audiences
+      selector: filters/event_audience
     -
       name: field_s_event_date
       label: Date
-      selector: isoEventDate
+      selector: event_instances/0/event_instance/start
     -
       name: field_s_event_image
       label: 'Image URL'
-      selector: imageUrl
+      selector: photo_url
     -
       name: field_s_event_more_info
       label: 'More info'
       selector: url
     -
-      name: field_s_event_tags
-      label: Tags
-      selector: Keywords/tag
-    -
-      name: field_s_event_when
-      label: When
-      selector: eventDate
-    -
       name: field_s_event_where
       label: Location
-      selector: locationText
+      selector: location_name
     -
       name: field_event_date_end_time
       label: 'End Date'
-      selector: isoEventEndDate
-    -
-      name: field_sponsor
-      label: Sponsor
-      selector: sponsor
-    -
-      name: field_mapurl
-      label: MapURL
-      selector: mapUrl
-    -
-      name: field_contact_email
-      label: 'Contact Email'
-      selector: contactEmail
-    -
-      name: field_contact_phone
-      label: 'Contact Phone'
-      selector: contactPhone
+      selector: event_instances/0/event_instance/end
     -
       name: field_event_status
       label: 'Event Status'
-      selector: eventStatus
-    -
-      name: status_code
-      label: Status
       selector: status
     -
-      name: field_event_categories
-      label: 'Categories'
-      selector: categories
+      name: field_s_event_room
+      label: Room
+      selector: room_number
+    -
+      name: field_experience
+      label: Experience
+      selector: experience
+    -
+      name: field_stream_url
+      label: 'Stream URL'
+      selector: stream_url
+    -
+      name: field_s_event_dialin
+      label: 'Dial-In Instructions'
+      selector: stream_info
+    -
+      name: field_s_event_stream_embed
+      label: 'Stream Embed'
+      selector: stream_embed_code
+    -
+      name: field_event_subject
+      label: Subject
+      selector: filters/event_subject
+    -
+      name: field_event_type
+      label: Type
+      selector: filters/event_types
+    -
+      name: field_s_event_department
+      label: Department
+      selector: departments
+    -
+      name: field_event_restricted_to
+      label: 'Restricted to'
+      selector: custom_fields/restricted_to
+    -
+      name: field_event_banner_text
+      label: 'Banner Text'
+      selector: custom_fields/banner_text
     -
       name: link
-      label: Link
-      selector: link
+      label: 'Localist URL'
+      selector: localist_url
+    -
+      name: origin_id
+      label: 'Origin ID'
+      selector: custom_fields/origin_id
+    -
   ids:
     guid:
       type: string
@@ -119,33 +129,32 @@ process:
   field_s_event_guid: guid
   field_s_event_description/value: field_s_event_description
   field_s_event_description/format: constants/basic_html
-  field_s_event_admission/value: field_s_event_admission
-  field_s_event_admission/format: constants/basic_html
-  field_s_event_audience/value: field_s_event_audience
-  field_s_event_date/value:
-    -
-      plugin: format_date
-      source: field_s_event_date
-      from_format: 'Y-m-d H:i:s O'
-      to_format: U
-      timezone: Etc/GMT
-    -
-      plugin: format_date
-      from_format: U
-      to_format: 'Y-m-d\TH:i:s'
-      timezone: Etc/GMT
-  field_event_date_end_time/value:
-    -
-      plugin: format_date
-      source: field_event_date_end_time
-      from_format: 'Y-m-d H:i:s O'
-      to_format: U
-      timezone: Etc/GMT
-    -
-      plugin: format_date
-      from_format: U
-      to_format: 'Y-m-d\TH:i:s'
-      timezone: Etc/GMT
+  field_event_audience:
+    plugin: entity_lookup
+    source: field_event_audience
+    value_key: name
+    bundle_key: vid
+    bundle: event_audience
+    entity_type: taxonomy_term
+    ignore_case: true
+  field_event_subject:
+    plugin: entity_lookup
+    source: field_event_subject
+    value_key: name
+    bundle_key: vid
+    bundle: event_subject
+    entity_type: taxonomy_term
+    ignore_case: true
+  field_event_type:
+    plugin: entity_lookup
+    source: field_event_type
+    value_key: name
+    bundle_key: vid
+    bundle: event_type
+    entity_type: taxonomy_term
+    ignore_case: true
+  field_s_event_date/value: field_s_event_date
+  field_event_date_end_time/value: field_event_date_end_time
   image_file_basename:
     plugin: callback
     source: field_s_event_image
@@ -169,12 +178,8 @@ process:
     uid: 0
   field_s_event_more_info/uri: field_s_event_more_info
   field_s_event_more_info/title: title
-  field_mapurl/uri: field_mapurl
-  field_mapurl/title: constants/view_map
   field_s_event_original_page/uri: link
   field_s_event_original_page/title: constants/view_events_page
-  field_s_event_public/value: status_code
-  field_s_event_when/value: field_s_event_when
   field_s_event_where/value: field_s_event_where
   field_s_event_feed_url:
     plugin: entity_lookup
@@ -192,11 +197,13 @@ process:
     bundle: department_program
     entity_type: taxonomy_term
     ignore_case: true
-  field_sponsor: field_sponsor
-  field_contact_email: field_contact_email
-  field_contact_phone: field_contact_phone
-  field_s_event_feed_keywords: field_s_event_tags
-  field_s_event_categories: field_event_categories
+  field_event_banner_text: field_event_banner_text
+  field_event_restricted_to: field_event_restricted_to
+  field_s_event_room: field_s_event_room
+  field_stream_url/uri: field_stream_url
+  field_stream_url/title: field_stream_url
+  field_s_event_dialin: field_s_event_dialin
+  field_s_event_stream_embed: field_s_event_stream_embed
 destination:
   plugin: 'entity:node'
 migration_dependencies: null

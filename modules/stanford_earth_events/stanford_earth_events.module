@@ -51,7 +51,10 @@ function stanford_earth_events_cron() {
  */
 function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterface $source, MigrationInterface $migration) {
   if (substr($migration->id(), 0, 21) === 'earth_events_importer') {
-
+    $title = $row->getSourceProperty('title');
+    if (strpos($title,'Test') !== false) {
+      $xyz = 1;
+    }
     $event = new EarthEventsInfo($row->getSourceProperty('guid'));
     $event_status = $row->getSourceProperty('field_event_status');
     if ($event_status == 'Unlisted') {
