@@ -179,10 +179,13 @@ class EarthEventsInfo {
 
     // Get the status field from the source array.
     $unlisted = FALSE;
+    // Under Localist, all imported events are listed.
+    /*
     if (isset($source['status_code']) &&
       intval($source['status_code']) == 0) {
       $unlisted = TRUE;
     }
+    */
 
     $starttime = 0;
     if (isset($source['field_s_event_date'])) {

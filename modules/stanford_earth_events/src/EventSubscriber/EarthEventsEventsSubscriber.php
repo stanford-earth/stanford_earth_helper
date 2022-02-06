@@ -4,6 +4,7 @@ namespace Drupal\stanford_earth_events\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\migrate\Event\MigrateEvents;
+use Drupal\migrate\Event\MigratePreRowSaveEvent;
 use Drupal\migrate\Event\MigratePostRowSaveEvent;
 use Drupal\migrate\Event\MigrateRowDeleteEvent;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
@@ -52,12 +53,25 @@ class EarthEventsEventsSubscriber implements EventSubscriberInterface {
    */
   public static function getSubscribedEvents() {
     return [
+      MigrateEvents::PRE_ROW_SAVE => 'migratePreRowSave',
       MigrateEvents::POST_ROW_SAVE => 'migratePostRowSave',
       MigrateEvents::POST_ROW_DELETE => 'migratePostRowDelete',
     ];
   }
 
   /**
+   * React to a migrate PRE_ROW_SAVE event.
+   *
+   * Save information that we will need to determine whether to reimport.
+   *
+   * @param \Drupal\migrate\Event\MigratePreRowSaveEvent $event
+   *   Contains information about the migration source row being saved.
+   */
+  public function migratePreRowSave(MigratePreRowSaveEvent $event) {
+    return;
+  }
+
+    /**
    * React to a migrate POST_ROW_SAVE event.
    *
    * Save information that we will need to determine whether to reimport.

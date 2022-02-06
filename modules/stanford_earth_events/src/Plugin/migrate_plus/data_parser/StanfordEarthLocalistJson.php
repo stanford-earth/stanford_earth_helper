@@ -82,7 +82,8 @@ class StanfordEarthLocalistJson extends Json {
         if ($field_name === 'guid') {
           $field_data = strval($field_data);
         }
-        else if ($field_name === 'experience') {
+        else if ($field_name === 'field_experience') {
+          $xyz = 1;
           if ($field_data === 'hybrid') {
             $field_data = 0;
           }
@@ -97,7 +98,7 @@ class StanfordEarthLocalistJson extends Json {
             $field_data = 1;
           }
         }
-        else if ($field_name === 'status') {
+        else if ($field_name === 'field_event_status') {
           if ($field_data === 'soldout') {
             $field_data = "Sold Out";
           }
@@ -121,9 +122,10 @@ class StanfordEarthLocalistJson extends Json {
         else if ($field_name === 'field_s_event_date' ||
             $field_name == 'field_event_date_end_time') {
           $tz = DrupalDateTime::createFromTimestamp(time())->getTimezone()->getName();
-          $field_data = DrupalDateTime::createFromFormat(
-            'Y-m-d\TH:i:sP', $field_data)
-            ->format('Y-m-d\TH:i:s',['timezone' => $tz]);
+          $temp_data = DrupalDateTime::createFromFormat(
+            'Y-m-d\TH:i:sP', $field_data);
+          $field_data = $temp_data
+            ->format('Y-m-d\TH:i:s',['timezone' => 'Etc/UTC']);
         }
         $this->currentItem[$field_name] = $field_data;
       }

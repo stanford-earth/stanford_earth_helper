@@ -11,15 +11,14 @@ label: 'Events importer'
 source:
   plugin: stanford_earth_url
   data_fetcher_plugin: file
-  urls:
-    - "https://events.stanford.edu/api/2/events?group_id=37955141103466&start=2022-01-31&days=365"
+  urls: {  }
   data_parser_plugin: stanford_earth_localist_json
   item_selector: 2
   fields:
     -
       name: guid
       label: GUID
-      selector: id
+      selector: event_instances/0/event_instance/id
     -
       name: title
       label: 'Event Title'
@@ -111,14 +110,12 @@ source:
   constants:
     status: 1
     type: stanford_event
-    timezone: 25200
     basic_html: basic_html
-    minimal_html: minimal_html
-    source_base_path: 'http://events.stanford.edu/'
     file_destination: 'public://stanford-event/importer/'
-    view_map: ' View map'
     view_events_page: ' View on Stanford Events'
 process:
+  origin_id:
+    plugin: skip_on_origin_id
   feed_urls:
     plugin: stanford_earth_feed_url
   feed_dept:
@@ -137,20 +134,20 @@ process:
     bundle: event_audience
     entity_type: taxonomy_term
     ignore_case: true
-  field_event_subject:
-    plugin: entity_lookup
-    source: field_event_subject
-    value_key: name
-    bundle_key: vid
-    bundle: event_subject
-    entity_type: taxonomy_term
-    ignore_case: true
   field_event_type:
     plugin: entity_lookup
     source: field_event_type
     value_key: name
     bundle_key: vid
     bundle: event_type
+    entity_type: taxonomy_term
+    ignore_case: true
+  field_event_subject:
+    plugin: entity_lookup
+    source: field_event_subject
+    value_key: name
+    bundle_key: vid
+    bundle: event_subject
     entity_type: taxonomy_term
     ignore_case: true
   field_s_event_date/value: field_s_event_date
@@ -204,6 +201,8 @@ process:
   field_stream_url/title: field_stream_url
   field_s_event_dialin: field_s_event_dialin
   field_s_event_stream_embed: field_s_event_stream_embed
+  field_field_s_event_status: field_event_status
+  field_experience: field_experience
 destination:
   plugin: 'entity:node'
 migration_dependencies: null
