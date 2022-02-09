@@ -82,6 +82,11 @@ class StanfordEarthLocalistJson extends Json {
         $field_data = EarthEventsInfo::tweakLocalistFieldData($field_name,
           $field_data);
         $this->currentItem[$field_name] = $field_data;
+        if ($field_name == 'field_event_status' && $field_data !== 'Live') {
+          if (!empty($this->currentItem['title'])) {
+            $this->currentItem['title'] .= ' - ' . $field_data;
+          }
+        }
       }
       if (!empty($this->configuration['include_raw_data'])) {
         $this->currentItem['raw'] = $current;

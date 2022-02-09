@@ -12,6 +12,7 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\migrate\Row;
 use Drupal\migrate\Plugin\MigrateSourceInterface;
 use Drupal\stanford_earth_events\EarthEventsInfo;
+use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * Implements hook_entity_delete().
@@ -56,25 +57,6 @@ function stanford_earth_events_migrate_prepare_row(Row $row, MigrateSourceInterf
       $xyz = 1;
     }
     $event = new EarthEventsInfo($row->getSourceProperty('guid'));
-    /**
-     * Following code is no longer needed under Localist. All events coming
-     * from Localist are assumed to be Listed.
-    $event_status = $row->getSourceProperty('field_event_status');
-    if ($event_status == 'Unlisted') {
-      $row->setSourceProperty('status_code', '0');
-    }
-    elseif ($event_status == 'CANCELED') {
-      if ($event->isUnlisted()) {
-        $row->setSourceProperty('status_code', '0');
-      }
-      else {
-        $row->setSourceProperty('status_code', '1');
-      }
-    }
-    else {
-      $row->setSourceProperty('status_code', '1');
-    }
-     */
 
     // Force any keyword tags into a string
     $keywords = $row->getSourceProperty('field_s_event_tags');
@@ -132,13 +114,20 @@ function stanford_earth_events_views_data() {
 }
 
 /**
- * @param array $suggestions
- * @param array $variables
- * @param $hook
+ * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
-function matson_theme_suggestions_views_view_field_alter(array &$suggestions, array &$variables, $hook) {
-  if ($variables['view']->id() && $variables['view']->current_display) {
-    $suggestions[] = $hook . '__' . $variables['view']->id() . '__' . $variables['view']->current_display . '__' . $variables['field']->field;
+function stanford_earth_events_node_presave(EntityInterface $node) {
 
+  $evtDate = $node->get('field_s_event_date')->getValue();
+  if (!empty($evtDate[0]['value'])) {
+    $drupalDate = DrupalDateTime::createFromFormat('Y-m-d\TH:i:s',
+      $evtDate[0]['value'],
+      'Etc/UTC'
+    );
   }
+  $tz = DrupalDateTime::createFromTimestamp(time())
+    ->getTimezone()->getName();
+  $when = $drupalDate->format('l F j, Y h:i a',
+    ['timezone' => $tz]);
+  $node->get('field_s_event_when')->setValue($when);
 }
