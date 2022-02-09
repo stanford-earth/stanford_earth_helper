@@ -12,8 +12,8 @@ source:
   plugin: stanford_earth_url
   data_fetcher_plugin: file
   urls: {  }
-  data_parser_plugin: stanford_earth_localist_json
-  item_selector: 2
+  data_parser_plugin: null
+  item_selector: null
   fields:
     -
       name: guid

@@ -325,6 +325,14 @@ class EventImportersForm extends ConfigSingleImportForm {
         STR_PAD_LEFT);
     $fp_array['source']['urls'] = [$feed];
     $fp_array['label'] = 'Events for ' . $feed;
+    $parser = 'stanford_earth_localist_json';
+    $item_selector = 2;
+    if (strpos($feed,"calendar/xml") !== FALSE) {
+      $parser = 'stanford_earth_localist_xml';
+      $item_selector = 'channel/item';
+    }
+    $fp_array['source']['data_parser_plugin'] = $parser;
+    $fp_array['source']['item_selector'] = $item_selector;
     $form_state->setValue('import', Yaml::encode($fp_array));
     parent::validateForm($form, $form_state);
     $config_importer = $form_state->get('config_importer');

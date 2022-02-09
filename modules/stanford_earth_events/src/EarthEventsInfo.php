@@ -2,6 +2,7 @@
 
 namespace Drupal\stanford_earth_events;
 
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\migrate_plus\Entity\Migration;
 use Drupal\migrate\MigrateMessage;
 use Drupal\stanford_earth_migrate_extend\EarthMigrationLock;
@@ -547,4 +548,55 @@ class EarthEventsInfo {
      */
   }
 
+  public static function tweakLocalistFieldData($field_name, $field_data) {
+    if ($field_name === 'guid') {
+      $field_data = strval($field_data);
+    }
+    else if ($field_name === 'field_experience') {
+      if ($field_data === 'hybrid') {
+        $field_data = 0;
+      }
+      else if ($field_data === 'inperson') {
+        $field_data = 1;
+      }
+      else if ($field_data === 'virtual') {
+        $field_data = 2;
+      }
+      else {
+        // Unknown - default to in-person.
+        $field_data = 1;
+      }
+    }
+    else if ($field_name === 'field_event_status') {
+      if ($field_data === 'soldout') {
+        $field_data = "Sold Out";
+      }
+      else {
+        $field_data = ucfirst(($field_data));
+      }
+    }
+    else if (($field_name === 'field_event_audience' ||
+              $field_name === 'field_event_subject' ||
+              $field_name === 'field_event_type' ||
+              $field_name === 'field_s_event_department') &&
+            is_array($field_data)) {
+      $newData = [];
+      foreach ($field_data as $data) {
+        if (is_array($data) && array_key_exists('name', $data)) {
+          $newData[] = $data['name'];
+        }
+      }
+      $field_data = $newData;
+    }
+    else if ($field_name === 'field_s_event_date' ||
+              $field_name == 'field_event_date_end_time') {
+      $tz = DrupalDateTime::createFromTimestamp(time())
+        ->getTimezone()->getName();
+      $temp_data = DrupalDateTime::createFromFormat(
+        'Y-m-d\TH:i:sP', $field_data);
+      $field_data = $temp_data
+        ->format('Y-m-d\TH:i:s', ['timezone' => 'Etc/UTC']);
+    }
+    return $field_data;
+  }
 }

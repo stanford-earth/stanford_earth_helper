@@ -131,3 +131,14 @@ function stanford_earth_events_views_data() {
   return $data;
 }
 
+/**
+ * @param array $suggestions
+ * @param array $variables
+ * @param $hook
+ */
+function matson_theme_suggestions_views_view_field_alter(array &$suggestions, array &$variables, $hook) {
+  if ($variables['view']->id() && $variables['view']->current_display) {
+    $suggestions[] = $hook . '__' . $variables['view']->id() . '__' . $variables['view']->current_display . '__' . $variables['field']->field;
+
+  }
+}
