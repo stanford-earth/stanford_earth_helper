@@ -351,7 +351,7 @@ class EarthEventsInfo {
       "starttime > UNIX_TIMESTAMP() OR DATE(FROM_UNIXTIME(starttime)) = " .
       "CURDATE() ORDER BY starttime");
     foreach ($result as $record) {
-      $guid = substr($record->guid, 0, strpos($record->guid, '-'));
+      $guid = $record->guid; //substr($record->guid, 0, strpos($record->guid, '-'));
       $eventday = intval($record->eventday);
       if ($eventday == 1) {
         $eventday = 8;

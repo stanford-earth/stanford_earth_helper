@@ -269,11 +269,11 @@ class EventImportersForm extends ConfigSingleImportForm {
             if (!empty($title)) {
               $properties['description'] = $title;
             }
-            $entity = $this->entityTypeManager
-              ->getStorage('taxonomy_term')->create($properties);
-            $entity->save();
           }
         }
+        $entity = $this->entityTypeManager
+          ->getStorage('taxonomy_term')->create($properties);
+        $entity->save();
       }
     }
 

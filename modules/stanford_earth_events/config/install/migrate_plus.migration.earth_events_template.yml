@@ -188,8 +188,8 @@ process:
     ignore_case: true
   field_s_event_department:
     plugin: entity_lookup
-    source: '@feed_dept'
-    value_key: name
+    source: field_s_event_department
+    value_key: field_term_department_localist
     bundle_key: vid
     bundle: department_program
     entity_type: taxonomy_term
