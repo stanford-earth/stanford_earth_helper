@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.2
+-------------------------------------------------------------------------------_
+_Release Date: 2022-02-10
+
+- Updates to Events Importer to support switch to Localist platform.
+
 8.x-1.1
 -------------------------------------------------------------------------------_
 _Release Date: 2021-11-16
