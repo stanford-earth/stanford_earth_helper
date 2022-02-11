@@ -439,6 +439,28 @@ class EarthEventsInfo {
         if (!empty($orphaned_entities)) {
           $storage_handler = \Drupal::entityTypeManager()->getStorage('node');
           $entities = $storage_handler->loadMultiple($orphaned_entities);
+          foreach ($entities as $entity_id => $entity) {
+            $feed = $entity->field_s_event_feed_url->getValue();
+            $feed_value = 0;
+            if (is_array($feed) && !empty($feed[0]['target_id'])) {
+              $feed_value = $feed[0]['target_id'];
+            }
+            if ($feed_value > 0) {
+              $feedTerm = \Drupal::entityTypeManager()
+                ->getStorage('taxonomy_term')->load($feed_value);
+              if (!empty($feedTerm)) {
+                $name = $feedTerm->get('name')->getValue();
+                if (strpos($name[0]['value'],'organization=') !== FALSE &&
+                  ($feed_value != 346 && $feed_value != 361)) {
+                    $db->query("UPDATE {" .
+                      EarthEventsInfo::EARTH_EVENTS_INFO_TABLE .
+                      "} SET orphaned = 0 WHERE entity_id = :entity_id",
+                      [':entity_id' => $entity_id]);
+                    unset($entities[$entity_id]);
+                }
+              }
+            }
+          }
           $storage_handler->delete($entities);
         }
         // Cleanup extraneous url aliases
@@ -590,8 +612,8 @@ class EarthEventsInfo {
     }
     else if ($field_name === 'field_s_event_date' ||
               $field_name == 'field_event_date_end_time') {
-      $tz = DrupalDateTime::createFromTimestamp(time())
-        ->getTimezone()->getName();
+      //$tz = DrupalDateTime::createFromTimestamp(time())
+      //  ->getTimezone()->getName();
       $temp_data = DrupalDateTime::createFromFormat(
         'Y-m-d\TH:i:sP', $field_data);
       $field_data = $temp_data

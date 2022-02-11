@@ -203,6 +203,7 @@ process:
   field_s_event_stream_embed: field_s_event_stream_embed
   field_field_s_event_status: field_event_status
   field_experience: field_experience
+  field_sponsor: field_s_event_department
 destination:
   plugin: 'entity:node'
 migration_dependencies: null
