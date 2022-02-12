@@ -100,10 +100,11 @@ class StanfordEarthLocalistXml extends SimpleXml {
           foreach ($json['events'] as $event) {
             if (!empty($event['event'] &&
               is_array($event['event']) &&
-              !empty($event['event']['title']) &&
-              $event['event']['title'] == $evtTitle)) {
-              $current = $event['event'];
-            }
+              !empty($event['event']['title']))) {
+              if (strpos($evtTitle, $event['event']['title']) === 0) {
+                $current = $event['event'];
+              }
+             }
           }
         }
       }

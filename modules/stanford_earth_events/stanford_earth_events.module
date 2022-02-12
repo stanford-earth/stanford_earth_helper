@@ -119,6 +119,10 @@ function stanford_earth_events_views_data() {
  * Implements hook_ENTITY_TYPE_presave() for node entities.
  */
 function stanford_earth_events_node_presave(EntityInterface $node) {
+  $type = $node->type->entity->get('type');
+  if (empty($type) || $type !== 'stanford_event') {
+    return;
+  }
 
   $evtDate = $node->get('field_s_event_date')->getValue();
   if (!empty($evtDate[0]['value'])) {

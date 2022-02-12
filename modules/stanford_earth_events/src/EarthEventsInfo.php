@@ -614,10 +614,12 @@ class EarthEventsInfo {
               $field_name == 'field_event_date_end_time') {
       //$tz = DrupalDateTime::createFromTimestamp(time())
       //  ->getTimezone()->getName();
-      $temp_data = DrupalDateTime::createFromFormat(
-        'Y-m-d\TH:i:sP', $field_data);
-      $field_data = $temp_data
-        ->format('Y-m-d\TH:i:s', ['timezone' => 'Etc/UTC']);
+      if (!empty($field_data)) {
+        $temp_data = DrupalDateTime::createFromFormat(
+          'Y-m-d\TH:i:sP', $field_data);
+        $field_data = $temp_data
+          ->format('Y-m-d\TH:i:s', ['timezone' => 'Etc/UTC']);
+      }
     }
     return $field_data;
   }
