@@ -85,9 +85,12 @@ class StanfordEarthLocalistXml extends SimpleXml {
         }
       }
       $title = $evtTitle;
-      if (substr($title, 0, 1) === '"' &&
-        substr($title, strlen($title) - 1, 1) === '"') {
-        $title = substr($title, 1, strlen($title) - 2);
+      $title = str_replace('"', '', $title);
+      $title = str_replace("'", "", $title);
+      $title = str_replace(',', '', $title);
+      $atPos = strrpos($title, ' at ');
+      if ($atPos !== false) {
+        $title = substr($title, 0, $atPos);
       }
       $title = rawurlencode($title);
       $eventUrl = "https://events.stanford.edu/api/2/events/search?search=%22" .
@@ -101,7 +104,7 @@ class StanfordEarthLocalistXml extends SimpleXml {
             if (!empty($event['event'] &&
               is_array($event['event']) &&
               !empty($event['event']['title']))) {
-              if (strpos($evtTitle, $event['event']['title']) === 0) {
+              if (strpos($evtTitle, $event['event']['title']) !== false) {
                 $current = $event['event'];
               }
              }
