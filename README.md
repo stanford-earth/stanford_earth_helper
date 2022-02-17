@@ -1,5 +1,5 @@
 # [Stanford Earth Helper](https://github.com/stanford-earth/stanford_earth_helper)
-##### Version: 8.x-1.5
+##### Version: 8.x-1.x-dev
 
 Maintainers: [jbickar](https://github.com/jbickar), [sherakama](https://github.com/sherakama)  
 
