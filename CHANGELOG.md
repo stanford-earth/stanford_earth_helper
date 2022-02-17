@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.5
+-------------------------------------------------------------------------------_
+_Release Date: 2022-02-16
+
+- Updated fixes to localist title search on shared account RSS feeds.
+- Minor tweak to events importer template.
+
 8.x-1.4
 -------------------------------------------------------------------------------_
 _Release Date: 2022-02-11
