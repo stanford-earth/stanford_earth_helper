@@ -103,7 +103,6 @@ source:
       name: origin_id
       label: 'Origin ID'
       selector: custom_fields/origin_id
-    -
   ids:
     guid:
       type: string
