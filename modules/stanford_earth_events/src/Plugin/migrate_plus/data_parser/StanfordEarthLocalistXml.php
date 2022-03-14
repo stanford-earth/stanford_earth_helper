@@ -93,6 +93,17 @@ class StanfordEarthLocalistXml extends SimpleXml {
         $title = substr($title, 0, $atPos);
       }
       $title = rawurlencode($title);
+      $instanceId = '';
+      foreach ($target_element->xpath('guid') as $value) {
+        $instanceId = ((string) $value);
+        break;
+      }
+      if (!empty($instanceId)) {
+        $instPos = strpos($instanceId, 'EventInstance_');
+        if ($instPos !== FALSE) {
+          $instanceId = substr($instanceId, $instPos + 14);
+        }
+      }
       $eventUrl = "https://events.stanford.edu/api/2/events/search?search=%22" .
         $title . '%22&days=365';
       $contents = @file_get_contents($eventUrl);
@@ -105,7 +116,14 @@ class StanfordEarthLocalistXml extends SimpleXml {
               is_array($event['event']) &&
               !empty($event['event']['title']))) {
               if (strpos($evtTitle, $event['event']['title']) !== false) {
-                $current = $event['event'];
+                $evtId = '';
+                if (!empty($event['event']['event_instances'][0]['event_instance']['id'])) {
+                  $evtId = ((string) $event['event']['event_instances'][0]['event_instance']['id']);
+                  if ($evtId === $instanceId) {
+                    $current = $event['event'];
+                    break;
+                  }
+                }
               }
              }
           }
