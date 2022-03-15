@@ -1,5 +1,5 @@
 # [Stanford Earth Events](https://github.com/SU-SWS/stanford_earth_helper)
-##### Version: 8.x-1.6
+##### Version: 8.x-1.x
 
 Changelog: [Changelog.txt](CHANGELOG.txt)
 
