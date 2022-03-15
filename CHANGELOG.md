@@ -1,5 +1,12 @@
 # Stanford Earth Helper
 
+8.x-1.6
+-------------------------------------------------------------------------------_
+_Release Date: 2022-03-15
+
+- Stanford events fix to ignore malformed "more info" url.
+- Stanford events fix to handle multi-instance "bookmarked" events.
+
 8.x-1.5
 -------------------------------------------------------------------------------_
 _Release Date: 2022-02-16
