@@ -152,11 +152,8 @@ process:
   field_s_event_date/value: field_s_event_date
   field_event_date_end_time/value: field_event_date_end_time
   image_file_basename:
-    plugin: callback
+    plugin: stanford_earth_events_image_basename
     source: field_s_event_image
-    callable:
-      - \Drupal\Core\File\FileSystem
-      - basename
   image_file_name:
     plugin: concat
     source:
