@@ -1,5 +1,11 @@
 # Stanford Earth Helper
 
+8.x-1.7
+-------------------------------------------------------------------------------_
+_Release Date: 2022-07-17
+
+- Create custom process plugin to call Drupal filesystem basename function.
+
 8.x-1.6
 -------------------------------------------------------------------------------_
 _Release Date: 2022-03-15
