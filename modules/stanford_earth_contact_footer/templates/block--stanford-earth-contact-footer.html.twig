@@ -5,30 +5,10 @@
 */
 #}
 
-<style media="screen">
-  #footer__container .contact-footer.visible {background-image:url('/{{ base_path ~ directory }}/img/optimized/footer-bg.jpg');}
-</style>
 <footer id="footer__container">
   <section class="contact-footer lazy-background">
     <div class="contact-footer__brand">
       {{ drupal_entity('block', 'matson_branding')|render|preg_replace("/(block-matson-branding)/", "footer__block-matson-branding")|raw }}
-    </div>
-    <div class="contact-footer__social">
-      <h2>{{ 'Join us on Social Media'|trans }}</h2>
-      <ul class="social-links">
-        <li><a href="https://twitter.com/stanfordearth"><span class="visually-hidden">Twitter</span>
-          <svg class="i-svg i-svg--twitter is-white" role="img" aria-labelledby="svg_twitter"><title id="svg_twitter">{{ 'Twitter'|t }}</title><use xlink:href="#i-twitter" xmlns:xlink="http://www.w3.org/1999/xlink"></use></svg>
-        </a></li>
-        <li><a href="https://www.facebook.com/stanfordearth"><span class="visually-hidden">Facebook</span>
-          <svg class="i-svg i-svg--fb is-white" role="img" aria-labelledby="svg_facebook"><title id="svg_facebook">{{ 'Facebook'|t }}</title><use xlink:href="#i-fb" xmlns:xlink="http://www.w3.org/1999/xlink"></use></svg>
-        </a></li>
-        <li><a href="https://www.instagram.com/stanfordearth/"><span class="visually-hidden">Instagram</span>
-          <svg class="i-svg i-svg--instagram is-white" role="img" aria-labelledby="svg_instagram"><title id="svg_instagram">{{ 'Instagram'|t }}</title><use xlink:href="#i-instagram" xmlns:xlink="http://www.w3.org/1999/xlink"></use></svg>
-        </a></li>
-        <li><a href="https://www.linkedin.com/company/stanford-earth/"><span class="visually-hidden">Linkedin</span>
-          <svg class="i-svg i-svg--linkedin is-white" role="img" aria-labelledby="svg_linkedin"><title id="svg_linkedin">{{ 'Linkedin'|t }}</title><use xlink:href="#i-linkedin" xmlns:xlink="http://www.w3.org/1999/xlink"></use></svg>
-        </a></li>
-        </ul>
     </div>
     <div class="contact-footer__links">
       {{ drupal_menu('footer') }}
