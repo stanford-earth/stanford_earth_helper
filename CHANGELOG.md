@@ -1,4 +1,10 @@
 # Stanford Earth Helper
+8.x-1.9
+-------------------------------------------------------------------------------_
+_Release Date: 2022-11-29
+
+- Skip attempted CAP profile import for accounts marked as "non-cap".
+
 8.x-1.8
 -------------------------------------------------------------------------------_
 _Release Date: 2022-08-31

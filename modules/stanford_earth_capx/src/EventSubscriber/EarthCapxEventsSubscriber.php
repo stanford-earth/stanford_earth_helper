@@ -145,7 +145,16 @@ class EarthCapxEventsSubscriber implements EventSubscriberInterface {
     // Check source data in the row against etag and photo info stored in table.
     //$okay = $info->getOkayToUpdateProfile($row->getSource(), $photo_id);
      */
+
+    // If the account exists and is "non-CAP", skip the import record.
     $okay = TRUE;
+    $existing_user = user_load_by_name($sunetid);
+    if ($existing_user !== FALSE) {
+      $noncap = $existing_user->get('field_s_person_noncap')->getValue();
+      if (is_array($noncap) && !empty($noncap[0]['value'])) {
+        $okay = FALSE;
+      }
+    }
 
     // If okay and a first time profile import for an existing SAML login...
     // We need to store a migration id_map record for the user.
